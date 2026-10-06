@@ -27,7 +27,7 @@ const ES = {
   "Your computed plan":"Tu plan calculado","Per chapter":"Por capítulo","words":"palabras","word":"palabra","Days left":"Días restantes","until deadline":"para la fecha límite","set a deadline":"pon una fecha límite","Needed / day":"Necesarias / día","to hit target":"para llegar a la meta",
   // premise
   "Stage 2 — Premise & Promise":"Etapa 2 — Premisa y promesa",
-  "Your premise is the heart of your book in a few words: who it's about, what they want, and what stands in their way. If you can't say it in one sentence, the book doesn't know what it is yet.":"La premisa es el corazón de tu libro en pocas palabras: de quién trata, qué quiere y qué se lo impide. Si no la puedes decir en una oración, tu libro todavía no sabe qué es.",
+  "Your premise is the heart of your book in a few words: who it's about, what they want, and what stands in their way. If you can't say it in one sentence, the book doesn't know what it is yet.":"La premisa es el corazón de tu libro en pocas palabras: de quién trata, qué quiere y qué se lo impide. Si no la puedes decir en una oración, tu libro todavía no tiene forma.",
   "Logline — one sentence":"Logline — una oración","Back-cover summary — one paragraph":"Contraportada — un párrafo","Theme — what is this really about?":"Tema — ¿de qué trata en el fondo?",
   "✦ Ask Muse to tighten this":"✦ Pídele a Muse que lo pula","Promise check":"Revisión de la promesa",
   "Logline written":"Logline escrito","Logline is one sentence":"El logline es una sola oración","Summary written":"Resumen escrito","Theme identified":"Tema identificado",
