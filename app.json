@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "MuseBook",
+    "slug": "musebook",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "backgroundColor": "#f6f2e9",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.metavitae.musebook"
+    },
+    "android": {
+      "package": "com.metavitae.musebook",
+      "versionCode": 1,
+      "softwareKeyboardLayoutMode": "resize",
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      "react-native-litert-lm",
+      "expo-sharing",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26,
+            "buildArchs": ["arm64-v8a"]
+          }
+        }
+      ]
+    ]
+  }
+}

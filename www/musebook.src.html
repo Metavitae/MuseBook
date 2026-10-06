@@ -1,0 +1,1393 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>MuseBook</title>
+<style>
+  /* Layout concept: one scrollable phone-width column under a sticky tab rail;
+     four selectable "atmospheres" fully re-skin color + type + texture, chosen
+     by the writer rather than the OS, so the book can feel like the story it's becoming. */
+  :root{
+    --bg:#f6f2e9; --surface:#ffffff; --surface-2:#ece5d4;
+    --text:#26352f; --muted:#6d8078; --border:#dcd3bd;
+    --accent:#2f8f7a; --accent-2:#cf7b46;
+    --good:#2f8f7a; --warn:#a97324; --bad:#b85644;
+    --radius:16px; --font-display:'Cormorant Garamond',Georgia,serif; --font-body:'Jost',system-ui,sans-serif;
+    color-scheme:light;
+  }
+  :root[data-mood="noir"]{
+    --bg:#141210; --surface:#1d1a17; --surface-2:#292420;
+    --text:#e9e1d1; --muted:#938877; --border:#3b352c;
+    --accent:#c9a04e; --accent-2:#8f3a34;
+    --good:#c9a04e; --warn:#c9a04e; --bad:#c2554a;
+    --font-display:'Special Elite','Courier New',monospace; --font-body:'Source Serif 4',Georgia,serif;
+    --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    color-scheme:dark;
+  }
+  /* ---- Noir material pass: brushed brass, leather, lamp-lit paper — not flat color ---- */
+  :root[data-mood="noir"] body{
+    background-color:var(--bg);
+    background-image:
+      radial-gradient(ellipse 900px 560px at 20% -10%, rgba(201,160,78,.22), transparent 62%),
+      radial-gradient(ellipse 800px 600px at 105% 115%, rgba(0,0,0,.55), transparent 60%),
+      var(--noise);
+    background-repeat:no-repeat,no-repeat,repeat;
+    background-attachment:fixed,fixed,fixed;
+  }
+  :root[data-mood="noir"] header{
+    background-color:var(--bg);
+    background-image:radial-gradient(ellipse 900px 320px at 20% -45%, rgba(201,160,78,.20), transparent 60%), var(--noise);
+    background-repeat:no-repeat,repeat;
+    border-bottom:2px solid #8a6a2f;
+    box-shadow:0 2px 6px rgba(0,0,0,.55);
+  }
+  :root[data-mood="noir"] .brand h1 em{
+    background:linear-gradient(180deg, #f0d79a 0%, #c9a04e 45%, #8a6a2f 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  :root[data-mood="noir"] .card{
+    background-color:#1d1a17;
+    background-image:
+      repeating-linear-gradient(112deg, rgba(0,0,0,.20) 0 3px, rgba(255,255,255,.02) 3px 6px, transparent 6px 10px),
+      linear-gradient(165deg, #141210 0%, #1d1a17 55%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), inset 0 -2px 0 rgba(0,0,0,.6), 0 3px 10px rgba(0,0,0,.5);
+    border:1px solid #4a3f2e;
+  }
+  :root[data-mood="noir"] .card h3{ text-shadow:0 1px 0 rgba(0,0,0,.7); }
+  :root[data-mood="noir"] .item{
+    background-color:#292420;
+    background-image:linear-gradient(165deg, #1c1815 0%, #292420 60%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05), inset 0 -2px 0 rgba(0,0,0,.55);
+    border:1px solid #3e3527;
+  }
+  :root[data-mood="noir"] input, :root[data-mood="noir"] textarea, :root[data-mood="noir"] select{
+    box-shadow:inset 0 2px 6px rgba(0,0,0,.6);
+    border:1px solid #4a3f2e;
+  }
+  :root[data-mood="noir"] .editor{
+    background-image:repeating-linear-gradient(0deg, transparent 0 31px, rgba(0,0,0,.14) 31px 32px);
+    box-shadow:inset 0 2px 6px rgba(0,0,0,.6); border-color:#4a3f2e;
+  }
+  :root[data-mood="noir"] .edtools{background:linear-gradient(180deg,#2b251f,#1f1b17); border-color:#4a3f2e; box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 4px 10px rgba(0,0,0,.5)}
+  :root[data-mood="noir"] button.act{
+    background:linear-gradient(180deg, #f0d79a 0%, #c9a04e 48%, #8a6a2f 100%);
+    color:#231705; text-shadow:0 1px 0 rgba(255,255,255,.35);
+    border:1px solid #6b5220;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 3px rgba(0,0,0,.4), 0 3px 8px rgba(0,0,0,.5);
+  }
+  :root[data-mood="noir"] button.ghost{ border:1px solid #5a4a30; color:#d9b561; }
+  :root[data-mood="noir"] nav button{ border:1px solid #3e3527; }
+  :root[data-mood="noir"] nav button.active{
+    background:linear-gradient(180deg, #ecd28f 0%, #c9a04e 55%, #8a6a2f 100%);
+    color:#231705; text-shadow:0 1px 0 rgba(255,255,255,.3);
+    border:1px solid #6b5220;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 2px rgba(0,0,0,.4);
+  }
+  :root[data-mood="noir"] .moodbtn[aria-pressed="true"]{ outline-color:#c9a04e; }
+  :root[data-mood="noir"] .bar{ box-shadow:inset 0 2px 5px rgba(0,0,0,.6); border-color:#3e3527; }
+  :root[data-mood="noir"] .bar > i{ background:linear-gradient(90deg, #8a6a2f, #c9a04e, #f0d79a); }
+  :root[data-mood="noir"] .stat{
+    background-color:#292420;
+    background-image:linear-gradient(165deg, #1c1815 0%, #292420 60%);
+    border:1px solid #3e3527;
+  }
+  :root[data-mood="noir"] .pill{ border:1px solid #4a3f2e; }
+  :root[data-mood="noir"] .grid, :root[data-mood="noir"] .beat .num{ box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
+  :root[data-mood="shore"]{
+    --bg:#f6f2e9; --surface:#ffffff; --surface-2:#ece5d4;
+    --text:#26352f; --muted:#6d8078; --border:#dcd3bd;
+    --accent:#2f8f7a; --accent-2:#cf7b46;
+    --good:#2f8f7a; --warn:#a97324; --bad:#b85644;
+    --font-display:'Cormorant Garamond',Georgia,serif; --font-body:'Jost',system-ui,sans-serif;
+    color-scheme:light;
+  }
+  :root[data-mood="city"]{
+    --bg:#0c0e1a; --surface:#151a2c; --surface-2:#1e2540;
+    --text:#e8eaf6; --muted:#8c92ae; --border:#2d3355;
+    --accent:#ff3d80; --accent-2:#ffb84a;
+    --good:#3ddc9a; --warn:#ffb84a; --bad:#ff3d80;
+    --font-display:'Archivo',system-ui,sans-serif; --font-body:'Work Sans',system-ui,sans-serif;
+    color-scheme:dark;
+  }
+  :root[data-mood="celestial"]{
+    --bg:#0a0e20; --surface:#121a35; --surface-2:#1a2444;
+    --text:#e9ecf8; --muted:#8893b8; --border:#2b3a68;
+    --accent:#d9b561; --accent-2:#82b9e2;
+    --good:#7edba9; --warn:#d9b561; --bad:#e2917f;
+    --font-display:'Cinzel',Georgia,serif; --font-body:'Spectral',Georgia,serif;
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--text); font-family:var(--font-body); font-size:15px; line-height:1.6; padding-inline:16px; transition:background .35s,color .35s}
+  h1,h2,h3{font-family:var(--font-display); text-wrap:balance}
+  b,strong{font-variant-numeric:tabular-nums}
+  a{color:var(--accent)}
+
+  /* ---- Splash ---- */
+  #splash{position:fixed; inset:0; z-index:200; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; cursor:pointer; transition:opacity .35s ease, transform .35s ease}
+  #splash.out{opacity:0; transform:scale(1.02); pointer-events:none}
+  #splash h1{font-size:clamp(34px,11vw,54px); margin:0; font-weight:700}
+  #splash h1 em{color:var(--accent); font-style:normal}
+  #splash .tap{color:var(--muted); font-size:12px; letter-spacing:1.5px; text-transform:uppercase; margin-top:10px}
+
+  /* ---- Slim top bar + collapsible stage switcher ---- */
+  header{position:sticky; top:env(safe-area-inset-top,0px); z-index:30; background:var(--bg); margin-inline:-16px; padding-inline:16px; border-bottom:1px solid var(--border); transition:background .35s,border-color .35s}
+  .topbar{display:flex; align-items:center; justify-content:space-between; gap:8px; padding-block:10px}
+  .iconbtn{background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:10px; padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:7px; font-family:var(--font-body)}
+  .iconbtn .dotmini{width:6px; height:6px; border-radius:99px; background:var(--muted); flex:none}
+  .iconbtn .dotmini.on{background:var(--good)}
+  .iconbtn .dotmini.mid{background:var(--warn)}
+  .wordmark{font-size:17px; margin:0; font-weight:700; letter-spacing:.2px}
+  .wordmark em{color:var(--accent); font-style:normal}
+  .gearbtn{background:transparent; border:1px solid var(--border); color:var(--muted); border-radius:10px; width:36px; height:36px; display:grid; place-items:center; cursor:pointer; font-size:16px}
+
+  nav{display:flex; gap:6px; overflow-x:auto; padding-block:0; scrollbar-width:none; max-height:0; opacity:0; transition:max-height .25s ease, opacity .2s ease, padding-block .25s ease}
+  nav::-webkit-scrollbar{display:none}
+  nav.open{max-height:64px; opacity:1; padding-block:2px 12px}
+  nav button{flex:0 0 auto; background:var(--surface); color:var(--muted); border:1px solid var(--border); border-radius:999px; padding:7px 14px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; font-family:var(--font-body)}
+  nav button.active{background:var(--accent); color:var(--bg); border-color:var(--accent)}
+
+  .moodrow{display:flex; gap:10px; flex-wrap:wrap}
+  .moodopt{flex:0 0 auto; width:84px; display:flex; flex-direction:column; align-items:center; gap:6px; background:transparent; border:none; cursor:pointer; padding:4px}
+  .moodopt i{width:44px; height:44px; border-radius:99px; display:block; border:1.5px solid var(--border)}
+  .moodopt span{font-size:11px; color:var(--muted); font-weight:600; text-align:center}
+  .moodopt[aria-pressed="true"] i{outline:2px solid var(--accent); outline-offset:3px}
+  .moodopt[aria-pressed="true"] span{color:var(--text)}
+  .saved{font-size:13px; color:var(--muted); white-space:nowrap; display:flex; align-items:center; gap:7px}
+  .dot{width:8px; height:8px; border-radius:99px; background:var(--muted); flex:none}
+  .dot.on{background:var(--good)}
+  .dot.mid{background:var(--warn)}
+
+  main{max-width:720px; margin:0 auto; padding-block:18px 100px; min-height:calc(100dvh - 130px)}
+  section{display:none}
+  section.active{display:block}
+
+  h2{font-size:24px; margin:4px 0 4px; font-weight:700}
+  .hint{color:var(--muted); font-size:13px; margin:0 0 16px; max-width:60ch}
+
+  .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; transition:background .35s,border-color .35s}
+  .card h3{margin:0 0 12px; font-size:12px; text-transform:uppercase; letter-spacing:.8px; color:var(--accent-2); font-family:var(--font-body); font-weight:700}
+
+  label{display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; font-weight:600}
+  input, textarea, select{width:100%; background:var(--surface-2); color:var(--text); border:1px solid var(--border); border-radius:9px; padding:9px 11px; font-size:14px; font-family:var(--font-body); outline:none}
+  input:focus, textarea:focus, select:focus, button:focus-visible{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)}
+  textarea{resize:vertical; min-height:80px; line-height:1.6}
+  .row{display:flex; gap:10px; flex-wrap:wrap}
+  .row > div{flex:1 1 150px; min-width:0}
+
+  .btns{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
+  button{font-family:var(--font-body)}
+  button.act{background:var(--accent); color:var(--bg); border:none; border-radius:9px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer}
+  button.ghost{background:transparent; color:var(--accent); border:1px solid var(--border); border-radius:9px; padding:9px 14px; font-size:13px; font-weight:600; cursor:pointer}
+  button.muse{background:color-mix(in srgb, var(--accent-2) 14%, var(--surface)); color:var(--accent-2); border:1px solid color-mix(in srgb, var(--accent-2) 40%, var(--border)); border-radius:9px; padding:8px 13px; font-size:12px; font-weight:700; cursor:pointer}
+  button.danger{background:transparent; color:var(--bad); border:1px solid var(--border); border-radius:9px; padding:7px 12px; font-size:12px; cursor:pointer}
+  button.mini{background:var(--surface-2); color:var(--muted); border:1px solid var(--border); border-radius:7px; padding:4px 9px; font-size:12px; cursor:pointer}
+  button:disabled{opacity:.5; cursor:default}
+
+  .item{background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:12px; margin-bottom:10px}
+  .item-head{display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px}
+  .item-head strong{font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.5px}
+  .item-head .tools{display:flex; gap:5px}
+
+  .beat{display:flex; gap:10px; align-items:flex-start}
+  .beat .num{flex:0 0 26px; height:26px; border-radius:8px; background:var(--surface); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--accent); margin-top:22px}
+  .beat .body{flex:1; min-width:0}
+
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px}
+  .stat{background:var(--surface-2); border:1px solid var(--border); border-radius:10px; padding:12px; min-width:0}
+  .stat .k{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; font-weight:700}
+  .stat .v{font-size:24px; font-weight:700; margin-top:4px; color:var(--accent); font-variant-numeric:tabular-nums}
+  .stat .s{font-size:11px; color:var(--muted); margin-top:2px}
+
+  .bar{height:9px; background:var(--surface-2); border-radius:99px; overflow:hidden; margin-top:8px; border:1px solid var(--border)}
+  .bar > i{display:block; height:100%; background:linear-gradient(90deg,var(--accent),var(--accent-2)); width:0%; transition:width .3s}
+
+  .segmented{display:inline-flex; border:1px solid var(--border); border-radius:9px; overflow:hidden; margin-bottom:10px}
+  .segmented button{border:none; background:var(--surface); color:var(--muted); padding:7px 13px; font-size:12px; font-weight:700; cursor:pointer}
+  .segmented button.active{background:var(--accent); color:var(--bg)}
+
+  .edtools{position:sticky; top:calc(var(--hdr,56px) + env(safe-area-inset-top,0px) + 4px); z-index:20; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:6px; margin-bottom:10px; box-shadow:0 4px 12px rgba(0,0,0,.18)}
+  .edrow{display:flex; gap:5px; flex-wrap:wrap; align-items:center}
+  .edtools button{background:var(--surface-2); color:var(--text); border:1px solid var(--border); border-radius:8px; min-width:38px; height:36px; padding:0 9px; font-size:14px; font-weight:700; cursor:pointer; touch-action:manipulation}
+  .edtools button.on{background:var(--accent); color:var(--bg); border-color:var(--accent)}
+  .edtools .sep{width:1px; height:22px; background:var(--border); margin:0 2px}
+  .edpop{display:flex; flex-wrap:wrap; gap:6px; padding:8px 2px 2px; border-top:1px solid var(--border); margin-top:6px}
+  .edpop[hidden]{display:none}
+  .edpop button{font-weight:500; height:34px}
+  .edpop .sw{width:34px; min-width:34px; padding:0; border-radius:50%; border:2px solid var(--border)}
+  .editor{min-height:42vh; padding:14px 14px; font-size:17px; line-height:1.85; font-family:'Source Serif 4',Georgia,serif; background:var(--surface-2); color:var(--text); border:1px solid var(--border); border-radius:12px; outline:none; overflow-wrap:anywhere; -webkit-user-select:text; user-select:text}
+  .editor:focus{border-color:var(--accent)}
+  .editor:empty::before{content:attr(data-ph); color:var(--muted); font-style:italic; pointer-events:none}
+  .editor p, .readview p{margin:0 0 .85em}
+  .editor h2, .readview h2{font-size:1.35em; margin:.9em 0 .4em}
+  .editor h3, .readview h3{font-size:1.12em; margin:.8em 0 .3em}
+  .editor blockquote, .readview blockquote{margin:.8em 0; padding:.1em 1em; border-left:3px solid var(--accent); color:var(--muted)}
+  #toast{position:fixed; left:50%; bottom:22px; transform:translateX(-50%) translateY(20px); background:var(--text); color:var(--bg); padding:10px 16px; border-radius:12px; font-size:13px; font-weight:600; opacity:0; pointer-events:none; transition:opacity .25s, transform .25s; z-index:300; max-width:88vw; text-align:center}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  .draftbar{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:10px}
+  .draftbar .wc{font-size:13px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .draftbar .wc b{color:var(--good)}
+  .empty{color:var(--muted); font-size:14px; font-style:italic; padding:10px 0}
+  .pill{display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; background:var(--surface-2); color:var(--muted); border:1px solid var(--border)}
+  footer{max-width:720px; margin:0 auto; padding:0 0 30px; color:var(--muted); font-size:11px; text-align:center}
+  .warnbox{background:color-mix(in srgb, var(--warn) 16%, var(--surface)); border:1px solid color-mix(in srgb, var(--warn) 40%, var(--border)); color:var(--text); padding:10px 12px; border-radius:10px; font-size:13px; margin-bottom:8px}
+  .musebox{background:color-mix(in srgb, var(--accent-2) 10%, var(--surface)); border:1px solid color-mix(in srgb, var(--accent-2) 35%, var(--border)); border-radius:10px; padding:12px; margin-top:10px; font-size:13.5px; line-height:1.6; white-space:pre-wrap}
+  .musebox .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--accent-2); font-weight:700; margin-bottom:6px; display:block}
+  .readview{font-family:'Source Serif 4',Georgia,serif; font-size:17px; line-height:1.9}
+  .readview .scenebreak{text-align:center; color:var(--muted); margin:22px 0; letter-spacing:4px}
+  @media (max-width:420px){ .row > div{flex:1 1 100%} }
+  @media (prefers-reduced-motion: reduce){ #splash, #nav{ transition:none !important } }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@400;500;600&family=Archivo:wght@700;900&family=Work+Sans:wght@400;500;600&family=Cinzel:wght@600;700&family=Spectral:wght@400;500;600&display=swap">
+
+<div id="splash">
+  <h1>Muse<em>Book</em></h1>
+  <div class="tap">tap to begin</div>
+</div>
+
+<header>
+  <div class="topbar">
+    <button class="iconbtn" id="stagesToggle" aria-expanded="false" aria-controls="nav">☰ <span id="stageLabel">Contract</span></button>
+    <h1 class="wordmark">Muse<em>Book</em></h1>
+    <button class="gearbtn" id="settingsToggle" title="Settings" aria-label="Settings"><span class="dotmini" id="savedDotMini"></span>&nbsp;⚙</button>
+  </div>
+  <nav id="nav">
+    <button data-tab="contract" class="active">1 · Contract</button>
+    <button data-tab="premise">2 · Premise</button>
+    <button data-tab="bible">3 · Story Bible</button>
+    <button data-tab="outline">4 · Outline</button>
+    <button data-tab="scenes">5 · Scenes</button>
+    <button data-tab="draft">6 · Draft</button>
+    <button data-tab="dash">Dashboard</button>
+  </nav>
+</header>
+
+<main>
+  <!-- CONTRACT -->
+  <section id="tab-contract" class="active">
+    <h2>Stage 1 — The Book Contract</h2>
+    <p class="hint">Define the promise you're making to yourself. Everything else in MuseBook checks against this.</p>
+    <div class="card">
+      <label>Working title</label>
+      <input data-bind="contract.title" placeholder="Untitled Book" />
+      <div class="row">
+        <div><label>Genre</label><input data-bind="contract.genre" placeholder="Fantasy / Thriller / Memoir…" /></div>
+        <div><label>Audience</label><input data-bind="contract.audience" placeholder="YA / Adult / Middle Grade…" /></div>
+      </div>
+      <div class="row">
+        <div><label>Point of view</label>
+          <select data-bind="contract.pov">
+            <option value="">— choose —</option>
+            <option>First person</option><option>Third limited</option>
+            <option>Third omniscient</option><option>Second person</option>
+            <option>Multiple POV</option>
+          </select>
+        </div>
+        <div><label>Tense</label>
+          <select data-bind="contract.tense">
+            <option value="">— choose —</option><option>Past</option><option>Present</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Targets</h3>
+      <div class="row">
+        <div><label>Target word count</label><input type="number" data-bind="contract.targetWords" placeholder="80000" /></div>
+        <div><label>Planned chapters</label><input type="number" data-bind="contract.chapters" placeholder="30" /></div>
+      </div>
+      <div class="row">
+        <div><label>Deadline</label><input type="date" data-bind="contract.deadline" /></div>
+        <div><label>Daily word goal</label><input type="number" data-bind="contract.dailyGoal" placeholder="500" /></div>
+      </div>
+      <label>Writing style</label>
+      <select data-bind="contract.style">
+        <option value="">— choose —</option>
+        <option>Plotter (outline everything first)</option>
+        <option>Pantser (discover as I write)</option>
+        <option>Plantser (a little of both)</option>
+      </select>
+    </div>
+    <div class="card"><h3>Your computed plan</h3><div id="contractSummary"></div></div>
+  </section>
+
+  <!-- PREMISE -->
+  <section id="tab-premise">
+    <h2>Stage 2 — Premise &amp; Promise</h2>
+    <p class="hint">If you can't say it in one sentence, the book doesn't know what it is yet.</p>
+    <div class="card">
+      <label>Logline — one sentence</label>
+      <textarea data-bind="premise.logline" rows="2" placeholder="When a disgraced mapmaker discovers the kingdom's borders are moving, she must cross a country that no longer exists to warn a king who wants her dead."></textarea>
+      <label>Back-cover summary — one paragraph</label>
+      <textarea data-bind="premise.summary" rows="5" placeholder="Who is the hero? What do they want? What stands in the way? What's at stake if they fail?"></textarea>
+      <label>Theme — what is this really about?</label>
+      <input data-bind="premise.theme" placeholder="Loyalty vs. truth / Grief / Belonging" />
+      <div class="btns"><button class="muse" id="museLogline">✦ Ask Muse to tighten this</button></div>
+      <div id="museLoglineOut"></div>
+    </div>
+    <div class="card"><h3>Promise check</h3><div id="premiseCheck"></div></div>
+  </section>
+
+  <!-- BIBLE -->
+  <section id="tab-bible">
+    <h2>Stage 3 — Story Bible</h2>
+    <p class="hint">Your continuity source of truth. Fill in only what you need — you can always add more later.</p>
+    <div class="card"><h3>Characters</h3><div id="charList"></div><button class="ghost" data-add="characters">+ Add character</button></div>
+    <div class="card"><h3>Locations</h3><div id="locList"></div><button class="ghost" data-add="locations">+ Add location</button></div>
+    <div class="card"><h3>World rules / facts</h3><div id="ruleList"></div><button class="ghost" data-add="rules">+ Add rule</button></div>
+  </section>
+
+  <!-- OUTLINE -->
+  <section id="tab-outline">
+    <h2>Stage 4 — Outline &amp; Beats</h2>
+    <p class="hint">Pick a structure template, or build your own. Skipping this is allowed — but it's the #1 cause of a stuck draft.</p>
+    <div class="card"><h3>Load a structure</h3><div class="btns" id="templateBtns"></div></div>
+    <div class="card">
+      <h3>Your beats</h3>
+      <div id="beatList"></div>
+      <div class="btns">
+        <button class="ghost" data-add="beats">+ Add beat</button>
+        <button class="muse" id="museBeat">✦ Suggest the next beat</button>
+      </div>
+      <div id="museBeatOut"></div>
+    </div>
+  </section>
+
+  <!-- SCENES -->
+  <section id="tab-scenes">
+    <h2>Stage 5 — Scene Cards</h2>
+    <p class="hint">Every scene needs a POV, a goal, a conflict, and an outcome. If it has none, it's not a scene — it's a note.</p>
+    <div id="sceneList"></div>
+    <button class="ghost" data-add="scenes">+ Add scene</button>
+  </section>
+
+  <!-- DRAFT -->
+  <section id="tab-draft">
+    <h2>Stage 6 — Draft</h2>
+    <p class="hint">Write forward. Do not edit. Fix it in revision.</p>
+    <div id="draftWrap"></div>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section id="tab-dash">
+    <h2>Dashboard</h2>
+    <p class="hint">Where you actually are, versus where you said you'd be.</p>
+    <div id="dashBody"></div>
+    <div class="card">
+      <h3>Manuscript &amp; Backup</h3>
+      <p class="hint" style="margin:0 0 10px">Your book syncs to your account when you're signed in, so it survives a cleared browser or a new device. Export copies whenever you like.</p>
+      <div class="btns">
+        <button class="act" id="exportManuscript">Export manuscript (.md)</button>
+        <button class="ghost" id="exportBackup">Export data backup (.json)</button>
+        <button class="ghost" id="importBtn">Import backup</button>
+        <button class="danger" id="resetBtn">Erase everything</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json" style="display:none" />
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section id="tab-settings">
+    <h2>Settings</h2>
+    <p class="hint">How MuseBook looks, and where your book is saved.</p>
+    <div class="card">
+      <h3>Atmosphere</h3>
+      <p class="hint" style="margin:0 0 12px">Pick how MuseBook feels while you write. Change it anytime.</p>
+      <div class="moodrow" id="moodRow" role="group" aria-label="Atmosphere">
+        <button class="moodopt" data-mood="shore" aria-pressed="false"><i style="background:linear-gradient(135deg,#2f8f7a,#cf7b46)"></i><span>Calm Shore</span></button>
+        <button class="moodopt" data-mood="noir" aria-pressed="false"><i style="background:linear-gradient(135deg,#c9a04e,#141210)"></i><span>Noir</span></button>
+        <button class="moodopt" data-mood="city" aria-pressed="false"><i style="background:linear-gradient(135deg,#ff3d80,#ffb84a)"></i><span>City Vibe</span></button>
+        <button class="moodopt" data-mood="celestial" aria-pressed="false"><i style="background:linear-gradient(135deg,#d9b561,#0a0e20)"></i><span>Celestial</span></button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Sync</h3>
+      <div class="saved" id="saved"><span class="dot" id="savedDot"></span><span id="savedText">starting…</span></div>
+      <p class="hint" style="margin-top:10px">Signed in, your book saves to your account and follows you to any device. Not signed in, it stays on this device only.</p>
+    </div>
+  </section>
+</main>
+<footer>MuseBook · your book, your voice — Muse only ever suggests, never writes it for you</footer>
+
+<script>
+/* ============================================================
+   DATA
+   ============================================================ */
+const DEFAULT = {
+  contract:{title:"",genre:"",audience:"",pov:"",tense:"",targetWords:"",chapters:"",deadline:"",dailyGoal:"",style:""},
+  premise:{logline:"",summary:"",theme:""},
+  bible:{characters:[],locations:[],rules:[]},
+  beats:[],
+  scenes:[],
+  stats:{date:"",wordsToday:0,lastTotal:0,streak:0,lastWrite:""},
+  ui:{scene:0,draftMode:"write",mood:""}
+};
+
+const TEMPLATES = {
+  "3-Act":[
+    ["Act I — Exposition","1","Ordinary world. Establish the hero, their flaw, and what's missing."],
+    ["Act I — Inciting Incident","1","The event that breaks the status quo and can't be undone."],
+    ["Act I — First Plot Point","1","Hero commits. The door to the old world closes."],
+    ["Act II — Rising Action","2","New world, new rules. Hero struggles and adapts."],
+    ["Act II — Midpoint","2","A revelation flips the story. The stakes sharpen."],
+    ["Act II — Pinch Point","2","Pressure from the antagonist. Hero's flaws cost them."],
+    ["Act II — Second Plot Point","2","All is lost. Hero finds the last piece they need."],
+    ["Act III — Climax","3","Final confrontation. Hero proves they've changed."],
+    ["Act III — Resolution","3","New normal. Thematic question answered."]
+  ],
+  "Save the Cat":[
+    ["Opening Image","1","A snapshot of the hero's world before everything changes."],
+    ["Theme Stated","1","Someone says the theme out loud. The hero doesn't get it yet."],
+    ["Set-Up","1","Introduce the cast and the six things that need fixing."],
+    ["Catalyst","1","The news, the knock, the death — the story starts here."],
+    ["Debate","1","Should I go? Can I go? The hero hesitates."],
+    ["Break into Two","1","The hero chooses to enter the new world."],
+    ["B Story","2","The relationship that carries the theme."],
+    ["Fun and Games","2","The promise of the premise. This is what the reader came for."],
+    ["Midpoint","2","False victory or false defeat. Stakes raise. The clock starts."],
+    ["Bad Guys Close In","2","External pressure and internal fracturing."],
+    ["All Is Lost","2","The lowest point. Something dies. A whiff of death."],
+    ["Dark Night of the Soul","2","Wallowing. The hero has to sit in it."],
+    ["Break into Three","3","A new idea, born from the B story. The hero has what they need."],
+    ["Finale","3","The hero attacks. They must use their new self to win."],
+    ["Final Image","3","Mirror of the opening image — proof of change."]
+  ],
+  "Hero's Journey":[
+    ["Ordinary World","1","The hero's normal, and its limits."],
+    ["Call to Adventure","1","Something demands they leave."],
+    ["Refusal of the Call","1","Fear, duty, or doubt holds them back."],
+    ["Meeting the Mentor","1","A guide, a tool, or a piece of knowledge."],
+    ["Crossing the Threshold","1","They commit. No going back."],
+    ["Tests, Allies, Enemies","2","The new world teaches and wounds."],
+    ["Approach to the Inmost Cave","2","Preparing for the hardest thing."],
+    ["The Ordeal","2","Death and rebirth — literal or emotional."],
+    ["Reward","2","They survive, and take something with them."],
+    ["The Road Back","2","Consequences chase them home."],
+    ["Resurrection","3","Final test. They must prove real change."],
+    ["Return with the Elixir","3","They come home different, bringing something back."]
+  ],
+  "Romance Beats":[
+    ["Setup","1","Show both leads' lives and what's missing."],
+    ["Meet Cute","1","First contact. Sparks, friction, or disaster."],
+    ["No Way","1","A reason they can't be together — stated on the page."],
+    ["Adhesion","2","Circumstance forces them into proximity."],
+    ["Fun and Games","2","The falling-in-love section. Chemistry on display."],
+    ["Midpoint","2","Vulnerability. The first real kiss or confession."],
+    ["Break Up","2","The lie they believe about themselves wrecks it."],
+    ["Dark Moment","2","Both leads alone, certain it's over."],
+    ["Grand Gesture","3","One of them proves they've changed."],
+    ["Happily Ever After","3","Together, on new terms."]
+  ]
+};
+
+let DB = JSON.parse(JSON.stringify(DEFAULT));
+
+/* ============================================================
+   CLOUD SYNC (db + user capabilities, localStorage fallback)
+   ============================================================ */
+let dbApi=null, userApi=null, downloadsApi=null, sampleApi=null, uid=null, docRef=null, cloudReady=false;
+let suppressEcho=false;
+
+function localLoad(){
+  try{
+    const raw = localStorage.getItem("musebook_v1");
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return null;
+}
+function localSave(){
+  try{ localStorage.setItem("musebook_v1", JSON.stringify(DB)); }catch(e){}
+}
+
+/*SANITIZE-START*/
+const ED_FONTS = {
+  "source serif 4":"'Source Serif 4',Georgia,serif",
+  "spectral":"'Spectral',Georgia,serif",
+  "cormorant garamond":"'Cormorant Garamond',Georgia,serif",
+  "special elite":"'Special Elite','Courier New',monospace",
+  "jost":"'Jost',system-ui,sans-serif",
+  "work sans":"'Work Sans',system-ui,sans-serif"
+};
+const ED_SIZES = {"small":".85em","large":"1.15em","x-large":"1.4em","xx-large":"1.8em"};
+const ED_COLORS = ["#1b1b1b","#7a1f1f","#b4541a","#8a6d1f","#2f6b3f","#1f4f7a","#5a2f7a","#6b6b6b"];
+const FONT_SIZE_LEGACY = {"1":"small","2":"small","3":"","4":"","5":"large","6":"x-large","7":"xx-large"};
+function _hex(c){
+  c=String(c||"").trim().toLowerCase();
+  let m=c.match(/^rgba?\(\s*(\d+)[\s,]+(\d+)[\s,]+(\d+)/);
+  if(m) return "#"+[m[1],m[2],m[3]].map(n=>Math.min(255,+n).toString(16).padStart(2,"0")).join("");
+  m=c.match(/^#([0-9a-f]{6})$/); if(m) return "#"+m[1];
+  m=c.match(/^#([0-9a-f]{3})$/); if(m) return "#"+m[1].split("").map(x=>x+x).join("");
+  return "";
+}
+function _fontKey(f){
+  const first=String(f||"").split(",")[0].replace(/["']/g,"").trim().toLowerCase();
+  return ED_FONTS[first]?first:"";
+}
+function sanitizeHTML(html){
+  if(!html) return "";
+  let doc; try{ doc=new DOMParser().parseFromString("<body>"+String(html)+"</body>","text/html"); }catch(e){ return ""; }
+  const BLOCK={p:"p",div:"p",h1:"h2",h2:"h2",h3:"h3",h4:"h3",h5:"h3",h6:"h3",blockquote:"blockquote",li:"p"};
+  function walk(node){
+    let out="";
+    node.childNodes.forEach(n=>{
+      if(n.nodeType===3){ out+=esc(n.nodeValue); return; }
+      if(n.nodeType!==1) return;
+      const t=n.tagName.toLowerCase();
+      if(t==="script"||t==="style"||t==="iframe"||t==="object"||t==="embed"||t==="template") return;
+      const inner=walk(n);
+      if(t==="br") { out+="<br>"; return; }
+      if(BLOCK[t]){
+        const bt=BLOCK[t]; let al=(n.style&&n.style.textAlign||"").toLowerCase();
+        al=(["center","right","justify"].includes(al))?' style="text-align:'+al+'"':"";
+        if(!inner.replace(/<br>/g,"").trim() && bt==="p"){ out+="<p><br></p>"; return; }
+        out+="<"+bt+al+">"+inner+"</"+bt+">"; return;
+      }
+      if(t==="ul"||t==="ol"||t==="body"||t==="html"){ out+=inner; return; }
+      let w=inner;
+      const st=n.style||{};
+      let bold=(t==="b"||t==="strong")||(st.fontWeight==="bold"||+st.fontWeight>=600);
+      let ital=(t==="i"||t==="em")||st.fontStyle==="italic";
+      let und=(t==="u")||/underline/.test(st.textDecoration||st.textDecorationLine||"");
+      let strike=(t==="s"||t==="strike"||t==="del")||/line-through/.test(st.textDecoration||st.textDecorationLine||"");
+      let fam=st.fontFamily||"", size=st.fontSize||"", color=st.color||"";
+      if(t==="font"){
+        fam=n.getAttribute("face")||fam; color=n.getAttribute("color")||color;
+        const fs=n.getAttribute("size"); if(fs && FONT_SIZE_LEGACY[fs]!==undefined) size=FONT_SIZE_LEGACY[fs];
+      }
+      const css=[];
+      const fk=_fontKey(fam); if(fk) css.push("font-family:"+ED_FONTS[fk]);
+      const sk=String(size).toLowerCase(); if(ED_SIZES[sk]) css.push("font-size:"+ED_SIZES[sk]);
+      const hx=_hex(color); if(hx && ED_COLORS.includes(hx) && hx!=="#1b1b1b") css.push("color:"+hx);
+      if(css.length) w='<span style="'+css.join(";")+'">'+w+'</span>';
+      if(strike) w="<s>"+w+"</s>";
+      if(und) w="<u>"+w+"</u>";
+      if(ital) w="<i>"+w+"</i>";
+      if(bold) w="<b>"+w+"</b>";
+      out+=w;
+    });
+    return out;
+  }
+  let res=walk(doc.body);
+  // bare text at top level -> wrap lines into paragraphs
+  if(!/<(p|h2|h3|blockquote)[ >]/.test(res)){
+    res=res.split(/<br>/).map(l=>"<p>"+(l.trim()?l:"<br>")+"</p>").join("");
+  } else {
+    // wrap loose inline runs between blocks
+    const tmp=new DOMParser().parseFromString("<body>"+res+"</body>","text/html").body;
+    let o="", run="";
+    const flush=()=>{ if(run.replace(/<br>/g,"").trim()) o+="<p>"+run+"</p>"; run=""; };
+    tmp.childNodes.forEach(n=>{
+      if(n.nodeType===1 && /^(P|H2|H3|BLOCKQUOTE)$/.test(n.tagName)){ flush(); o+=n.outerHTML; }
+      else run+= n.nodeType===1 ? n.outerHTML : esc(n.nodeValue);
+    });
+    flush(); res=o;
+  }
+  return res;
+}
+function _blocks(html){
+  const b=new DOMParser().parseFromString("<body>"+(html||"")+"</body>","text/html").body;
+  return Array.from(b.children);
+}
+function htmlToText(html){
+  return _blocks(html).map(el=>{
+    const c=el.cloneNode(true); c.querySelectorAll("br").forEach(br=>br.replaceWith("\n"));
+    return c.textContent;
+  }).join("\n").replace(/\n{3,}/g,"\n\n").trim();
+}
+function htmlToMarkdown(html){
+  function inl(node){
+    let o="";
+    node.childNodes.forEach(n=>{
+      if(n.nodeType===3){ o+=n.nodeValue.replace(/([*_`\\])/g,"\\$1"); return; }
+      if(n.nodeType!==1) return;
+      const t=n.tagName.toLowerCase();
+      if(t==="br"){ o+="  \n"; return; }
+      const i=inl(n);
+      if(!i.trim()) { o+=i; return; }
+      if(t==="b") o+="**"+i.trim()+"**";
+      else if(t==="i") o+="*"+i.trim()+"*";
+      else if(t==="s") o+="~~"+i.trim()+"~~";
+      else o+=i;
+    });
+    return o;
+  }
+  return _blocks(html).map(el=>{
+    const t=el.tagName.toLowerCase(), i=inl(el).replace(/(  \n)+$/,"").trim();
+    if(!i) return "";
+    if(t==="h2") return "### "+i;
+    if(t==="h3") return "#### "+i;
+    if(t==="blockquote") return i.split("\n").map(l=>"> "+l).join("\n");
+    return i;
+  }).filter(Boolean).join("\n\n");
+}
+function textToHTML(t){
+  return String(t||"").split(/\n/).map(l=>"<p>"+(l.trim()?esc(l):"<br>")+"</p>").join("");
+}
+function normalizeScenes(d){
+  (d.scenes||[]).forEach(sc=>{
+    if(typeof sc.html==="string" && sc.html) sc.html=sanitizeHTML(sc.html);
+    else sc.html = sc.text ? textToHTML(sc.text) : "";
+    sc.text = htmlToText(sc.html);
+  });
+  return d;
+}
+/*SANITIZE-END*/
+function mergeDefaults(d){
+  return normalizeScenes(Object.assign(JSON.parse(JSON.stringify(DEFAULT)), d,
+    {contract:Object.assign({},DEFAULT.contract,d.contract||{}),
+     premise:Object.assign({},DEFAULT.premise,d.premise||{}),
+     bible:Object.assign({},DEFAULT.bible,d.bible||{}),
+     stats:Object.assign({},DEFAULT.stats,d.stats||{}),
+     ui:Object.assign({},DEFAULT.ui,d.ui||{})}));
+}
+
+function setSaved(state){
+  const dot=document.getElementById("savedDot"), txt=document.getElementById("savedText"), mini=document.getElementById("savedDotMini");
+  const cls="dot"+(state==="cloud"?" on":state==="local"?" mid":"");
+  dot.className=cls;
+  if(mini) mini.className="dotmini"+(state==="cloud"?" on":state==="local"?" mid":"");
+  txt.textContent = state==="cloud"?"synced to your account"
+    : state==="saving"?"saving…"
+    : state==="local"?"saved on this device only"
+    : state==="error"?"sync paused — saved locally"
+    : "starting…";
+}
+
+let saveTimer=null;
+function save(){
+  clearTimeout(saveTimer);
+  setSaved("saving");
+  saveTimer=setTimeout(async ()=>{
+    localSave();
+    if(cloudReady && docRef){
+      try{
+        suppressEcho=true;
+        await docRef.set(JSON.parse(JSON.stringify(DB)));
+        setSaved("cloud");
+      }catch(e){ setSaved("error"); }
+      finally{ setTimeout(()=>{suppressEcho=false;},400); }
+    } else {
+      setSaved("local");
+    }
+  },300);
+}
+
+async function initCloud(){
+  try{
+    if(!window.claude){ setSaved("local"); return; }
+    userApi = await window.claude.use("user");
+    dbApi = await window.claude.use("db");
+    downloadsApi = await window.claude.use("downloads");
+    sampleApi = await window.claude.use("sample");
+    document.getElementById("museLogline").hidden = !sampleApi;
+    document.getElementById("museBeat").hidden = !sampleApi;
+    if(!userApi || !dbApi){ setSaved("local"); return; }
+    uid = await userApi.id();
+    docRef = dbApi.collection("data/users/"+uid).doc("book");
+    const snap = await docRef.get();
+    const local = localLoad();
+    if(snap && snap.data && Object.keys(snap.data).length){
+      DB = mergeDefaults(snap.data);
+    } else if(local){
+      DB = mergeDefaults(local);
+      await docRef.set(JSON.parse(JSON.stringify(DB)));
+    }
+    cloudReady = true;
+    setSaved("cloud");
+    docRef.onSnapshot(s=>{
+      if(suppressEcho || !s || !s.data) return;
+      DB = mergeDefaults(s.data);
+      renderAll();
+    });
+  }catch(e){
+    setSaved("local");
+  }
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function setPath(obj,path,val){ const p=path.split("."); let cur=obj; for(let i=0;i<p.length-1;i++){ cur=cur[p[i]]; if(cur==null) return; } cur[p[p.length-1]]=val; }
+function getPath(obj,path){ return path.split(".").reduce((a,k)=>a==null?a:a[k],obj); }
+function words(t){ if(!t) return 0; const m=String(t).trim().match(/\S+/g); return m?m.length:0; }
+function totalWords(){ return DB.scenes.reduce((n,s)=>n+words(s.text),0); }
+function todayStr(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+function fmt(n){ return Number(n||0).toLocaleString(); }
+
+/* ============================================================
+   GLOBAL INPUT BINDING
+   ============================================================ */
+document.addEventListener("input", e=>{
+  const t=e.target; const path=t.dataset.bind; if(!path) return;
+  let val = t.type==="number" ? (t.value===""?"":Number(t.value)) : t.value;
+  setPath(DB,path,val);
+  if(t.dataset.words){
+    trackWords();
+    const wc=document.getElementById("liveWC");
+    if(wc) wc.innerHTML = "Scene: <b>"+fmt(words(t.value))+"</b> words";
+  }
+  save();
+  if(path.startsWith("contract")) renderContractSummary();
+  if(path.startsWith("premise")) renderPremiseCheck();
+  if(path.startsWith("scenes")||path.startsWith("beats")||path.startsWith("bible")) renderDash();
+});
+document.addEventListener("change", e=>{
+  if(e.target.dataset && e.target.dataset.bind) e.target.dispatchEvent(new Event("input",{bubbles:false}));
+});
+
+/* ============================================================
+   WORD / STREAK TRACKING
+   ============================================================ */
+function trackWords(){
+  const total=totalWords(); const today=todayStr();
+  if(DB.stats.date!==today){ DB.stats.date=today; DB.stats.wordsToday=0; DB.stats.lastTotal=total; }
+  const delta=total-DB.stats.lastTotal;
+  DB.stats.wordsToday+=delta; DB.stats.lastTotal=total;
+  if(delta>0 && DB.stats.lastWrite!==today){
+    const y=new Date(); y.setDate(y.getDate()-1);
+    const yStr=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");
+    DB.stats.streak = (DB.stats.lastWrite===yStr) ? (DB.stats.streak||0)+1 : 1;
+    DB.stats.lastWrite=today;
+  }
+  renderDash();
+}
+
+/* ============================================================
+   MOOD (atmosphere)
+   ============================================================ */
+function applyMood(m, persist){
+  document.documentElement.setAttribute("data-mood", m);
+  document.querySelectorAll(".moodopt").forEach(b=>b.setAttribute("aria-pressed", b.dataset.mood===m?"true":"false"));
+  if(persist){ DB.ui.mood=m; try{ localStorage.setItem("musebook_mood", m); }catch(e){} save(); }
+}
+document.getElementById("moodRow").addEventListener("click", e=>{
+  const b=e.target.closest(".moodopt"); if(!b) return;
+  applyMood(b.dataset.mood, true);
+});
+function initMood(){
+  let m = DB.ui.mood;
+  if(!m){ try{ m = localStorage.getItem("musebook_mood"); }catch(e){} }
+  if(!m) m = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "celestial" : "shore";
+  applyMood(m, false);
+}
+
+/* ============================================================
+   SPLASH
+   ============================================================ */
+function dismissSplash(){
+  const el=document.getElementById("splash");
+  if(!el || el.hidden) return;
+  el.classList.add("out");
+  setTimeout(()=>{ el.hidden=true; },360);
+}
+document.getElementById("splash").addEventListener("click", dismissSplash);
+setTimeout(dismissSplash, 2400);
+
+/* ============================================================
+   NAV — top bar toggles a hideable stage switcher; picking a
+   stage (or leaving it) collapses it again so each screen gets
+   the space. Settings is its own screen, reached by the gear.
+   ============================================================ */
+const TAB_LABELS={contract:"Contract",premise:"Premise",bible:"Story Bible",outline:"Outline",scenes:"Scenes",draft:"Draft",dash:"Dashboard",settings:"Settings"};
+const navEl=document.getElementById("nav"), stagesBtn=document.getElementById("stagesToggle");
+function closeNav(){ navEl.classList.remove("open"); stagesBtn.setAttribute("aria-expanded","false"); }
+function toggleNav(){
+  const open=navEl.classList.toggle("open");
+  stagesBtn.setAttribute("aria-expanded", open?"true":"false");
+}
+function switchTab(name){
+  document.querySelectorAll("#nav button[data-tab]").forEach(x=>x.classList.toggle("active", x.dataset.tab===name));
+  document.querySelectorAll("main section").forEach(s=>s.classList.toggle("active", s.id==="tab-"+name));
+  document.getElementById("stageLabel").textContent = TAB_LABELS[name]||name;
+  window.scrollTo({top:0,behavior:"instant"});
+  if(name==="draft") renderDraft();
+  if(name==="dash") renderDash();
+  DB.ui.tab=name; save();
+}
+stagesBtn.addEventListener("click", toggleNav);
+document.getElementById("settingsToggle").addEventListener("click", ()=>{ closeNav(); switchTab("settings"); });
+navEl.addEventListener("click", e=>{
+  const b=e.target.closest("button[data-tab]"); if(!b) return;
+  switchTab(b.dataset.tab);
+  closeNav();
+});
+
+/* ============================================================
+   CONTRACT
+   ============================================================ */
+function renderContractSummary(){
+  const c=DB.contract;
+  const tw=Number(c.targetWords||0), ch=Number(c.chapters||0);
+  const perCh = (tw&&ch)? Math.round(tw/ch):0;
+  const dg=Number(c.dailyGoal||0);
+  const daysLeft = c.deadline ? Math.ceil((new Date(c.deadline)-new Date())/86400000) : 0;
+  const needed = (tw&&daysLeft>0)? Math.round(tw/daysLeft):0;
+  let html = `<div class="grid">
+    <div class="stat"><div class="k">Per chapter</div><div class="v">${perCh?fmt(perCh):"—"}</div><div class="s">words</div></div>
+    <div class="stat"><div class="k">Days left</div><div class="v">${c.deadline?daysLeft:"—"}</div><div class="s">${c.deadline?"until deadline":"set a deadline"}</div></div>
+    <div class="stat"><div class="k">Needed / day</div><div class="v">${needed?fmt(needed):"—"}</div><div class="s">to hit target</div></div>
+  </div>`;
+  if(dg && needed && needed > dg*1.5){
+    html += `<div class="warnbox" style="margin-top:12px">Your deadline requires ~${fmt(needed)} words/day but your goal is ${fmt(dg)}. Either extend the deadline, lower the target, or raise your daily goal.</div>`;
+  }
+  if(tw && ch && perCh>6000){
+    html += `<div class="warnbox" style="margin-top:12px">${fmt(perCh)} words per chapter is very long. Most chapters land between 1,500 and 4,000.</div>`;
+  }
+  document.getElementById("contractSummary").innerHTML=html;
+}
+
+/* ============================================================
+   PREMISE
+   ============================================================ */
+function renderPremiseCheck(){
+  const p=DB.premise;
+  const checks=[
+    ["Logline written", p.logline.trim().length>10],
+    ["Logline is one sentence", p.logline && p.logline.split(/[.!?]/).filter(x=>x.trim()).length<=1],
+    ["Summary written", p.summary.trim().length>60],
+    ["Theme identified", p.theme.trim().length>2]
+  ];
+  document.getElementById("premiseCheck").innerHTML = checks.map(([t,ok])=>
+    `<div style="padding:5px 0;color:${ok?'var(--good)':'var(--muted)'}">${ok?'✓':'○'} ${esc(t)}</div>`
+  ).join("");
+}
+
+/* ============================================================
+   STORY BIBLE
+   ============================================================ */
+const CHAR_FIELDS=[["name","Name","text"],["role","Role","text"],["want","Wants","text"],["need","Needs","text"],["flaw","Flaw","text"],["arc","Arc","textarea"]];
+const LOC_FIELDS=[["name","Name","text"],["desc","Description","textarea"]];
+const RULE_FIELDS=[["name","Rule","text"],["desc","Details","textarea"]];
+
+function renderBible(){
+  ["characters","locations","rules"].forEach(key=>{
+    const arr=DB.bible[key]||[];
+    const fields = key==="characters"?CHAR_FIELDS : key==="locations"?LOC_FIELDS : RULE_FIELDS;
+    const el=document.getElementById(key==="characters"?"charList":key==="locations"?"locList":"ruleList");
+    if(!arr.length){ el.innerHTML='<div class="empty">Nothing here yet.</div>'; return; }
+    el.innerHTML = arr.map((item,i)=>`
+      <div class="item">
+        <div class="item-head">
+          <strong>${esc(item.name||("Entry "+(i+1)))}</strong>
+          <button class="danger" data-del="${key}.${i}">delete</button>
+        </div>
+        ${fields.map(([f,label,type])=> type==="textarea"
+          ? `<label>${label}</label><textarea rows="2" data-bind="bible.${key}.${i}.${f}">${esc(item[f]||"")}</textarea>`
+          : `<label>${label}</label><input data-bind="bible.${key}.${i}.${f}" value="${esc(item[f]||"")}" />`
+        ).join("")}
+      </div>`).join("");
+  });
+}
+
+/* ============================================================
+   OUTLINE
+   ============================================================ */
+function renderTemplateButtons(){
+  document.getElementById("templateBtns").innerHTML =
+    Object.keys(TEMPLATES).map(k=>`<button class="ghost" data-tpl="${esc(k)}">${esc(k)}</button>`).join("")
+    + `<button class="ghost" data-tpl="__clear">Clear all beats</button>`;
+}
+function renderBeats(){
+  const el=document.getElementById("beatList");
+  if(!DB.beats.length){ el.innerHTML='<div class="empty">No beats yet. Load a template above, or add your own.</div>'; return; }
+  el.innerHTML = DB.beats.map((b,i)=>`
+    <div class="item">
+      <div class="beat">
+        <div class="num">${i+1}</div>
+        <div class="body">
+          <div class="item-head" style="margin-bottom:0">
+            <strong>Beat ${i+1}</strong>
+            <div class="tools">
+              <button class="mini" data-move="beats.${i}.up">↑</button>
+              <button class="mini" data-move="beats.${i}.down">↓</button>
+              <button class="danger" data-del="beats.${i}">delete</button>
+            </div>
+          </div>
+          <div class="row">
+            <div style="flex:2 1 180px"><label>Title</label><input data-bind="beats.${i}.title" value="${esc(b.title||"")}" /></div>
+            <div style="flex:0 1 90px"><label>Act</label><input data-bind="beats.${i}.act" value="${esc(b.act||"")}" /></div>
+          </div>
+          <label>What happens</label>
+          <textarea rows="2" data-bind="beats.${i}.desc">${esc(b.desc||"")}</textarea>
+        </div>
+      </div>
+    </div>`).join("");
+}
+
+/* ============================================================
+   SCENES
+   ============================================================ */
+function renderScenes(){
+  const el=document.getElementById("sceneList");
+  if(!DB.scenes.length){
+    el.innerHTML='<div class="empty">No scenes yet. Add one — or load an outline first and build scenes from your beats.</div>';
+    return;
+  }
+  el.innerHTML = DB.scenes.map((s,i)=>`
+    <div class="item">
+      <div class="item-head">
+        <strong>Scene ${i+1}${s.title?" · "+esc(s.title):""}</strong>
+        <div class="tools">
+          <button class="mini" data-move="scenes.${i}.up">↑</button>
+          <button class="mini" data-move="scenes.${i}.down">↓</button>
+          <button class="danger" data-del="scenes.${i}">delete</button>
+        </div>
+      </div>
+      <div class="row">
+        <div style="flex:0 1 100px"><label>Chapter</label><input data-bind="scenes.${i}.chapter" value="${esc(s.chapter||"")}" /></div>
+        <div style="flex:3 1 180px"><label>Scene title</label><input data-bind="scenes.${i}.title" value="${esc(s.title||"")}" /></div>
+      </div>
+      <div class="row">
+        <div><label>POV</label><input data-bind="scenes.${i}.pov" value="${esc(s.pov||"")}" /></div>
+        <div><label>Goal (what they want)</label><input data-bind="scenes.${i}.goal" value="${esc(s.goal||"")}" /></div>
+      </div>
+      <div class="row">
+        <div><label>Conflict (what blocks them)</label><input data-bind="scenes.${i}.conflict" value="${esc(s.conflict||"")}" /></div>
+        <div><label>Outcome (what changes)</label><input data-bind="scenes.${i}.outcome" value="${esc(s.outcome||"")}" /></div>
+      </div>
+      <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="pill">${fmt(words(s.text))} words written</span>
+        <button class="muse" data-stuck="${i}" ${sampleApi?'':'hidden'}>✦ I'm stuck on this scene</button>
+      </div>
+      <div id="museStuckOut${i}"></div>
+    </div>`).join("");
+}
+
+/* ============================================================
+   DRAFT
+   ============================================================ */
+function renderDraft(){
+  commitEditor();
+  const wrap=document.getElementById("draftWrap");
+  if(!DB.scenes.length){
+    wrap.innerHTML='<div class="card"><div class="empty">You need at least one scene before you can draft. Go to <b>5 · Scenes</b> and add one.</div><button class="act" id="quickScene" style="margin-top:12px">+ Quick add a scene</button></div>';
+    const qs=document.getElementById("quickScene");
+    if(qs) qs.addEventListener("click",()=>{
+      DB.scenes.push({chapter:"",title:"Scene 1",pov:"",goal:"",conflict:"",outcome:"",text:"",html:""});
+      DB.ui.scene=DB.scenes.length-1; save(); renderScenes(); renderDraft();
+    });
+    return;
+  }
+  if(DB.ui.scene>=DB.scenes.length) DB.ui.scene=0;
+  const idx=DB.ui.scene;
+  const s=DB.scenes[idx];
+  const c=DB.contract;
+  const mode = DB.ui.draftMode||"write";
+
+  let modeBody;
+  if(mode==="write"){
+    modeBody = `
+    <div class="card">
+      <div class="draftbar">
+        <div class="wc" id="liveWC">Scene: <b>${fmt(words(s.text))}</b> words</div>
+        <div class="wc" id="dailyWC">Today: <b>${fmt(DB.stats.wordsToday)}</b> / ${c.dailyGoal?fmt(c.dailyGoal):"—"}</div>
+      </div>
+      <div class="edtools" id="edtools">
+        <div class="edrow">
+          <button data-cmd="bold" title="Bold"><b>B</b></button>
+          <button data-cmd="italic" title="Italic"><i>I</i></button>
+          <button data-cmd="underline" title="Underline"><u>U</u></button>
+          <span class="sep"></span>
+          <button data-pop="font" title="Font">Aa ▾</button>
+          <button data-pop="size" title="Size">Size ▾</button>
+          <button data-pop="color" title="Color">Color ▾</button>
+          <span class="sep"></span>
+          <button data-pop="more" title="More">¶ ▾</button>
+          <button data-cmd="undo" title="Undo">↶</button>
+          <button data-cmd="redo" title="Redo">↷</button>
+        </div>
+        <div class="edpop" id="edpop" hidden></div>
+      </div>
+      <div id="draftArea" class="editor" contenteditable="true" spellcheck="true" autocapitalize="sentences" data-ph="Write here. Don't edit. Just go."></div>
+      <div class="btns"><button class="muse" id="museContinue" ${sampleApi?'':'hidden'}>✦ Suggest how this could continue</button></div>
+      <div id="museContinueOut"></div>
+    </div>`;
+  } else {
+    const chap = s.chapter || "—";
+    const chapScenes = DB.scenes.filter(sc=>(sc.chapter||"—")===chap);
+    const body = chapScenes.map(sc=>sc.html||"").filter(t=>t.replace(/<[^>]*>/g,"").trim()).join('<div class="scenebreak">◆ ◆ ◆</div>');
+    modeBody = `<div class="card">
+      <div class="hint" style="margin-bottom:12px">Reading Chapter ${esc(chap)} straight through — ${chapScenes.length} scene${chapScenes.length===1?"":"s"}.</div>
+      <div class="readview">${body || '<div class="empty">Nothing written in this chapter yet.</div>'}</div>
+    </div>`;
+  }
+
+  wrap.innerHTML=`
+    <div class="card">
+      <label>Writing now</label>
+      <select id="sceneSelect">
+        ${DB.scenes.map((sc,i)=>`<option value="${i}" ${i===idx?"selected":""}>${i+1}. ${esc(sc.title||"Untitled scene")}${sc.chapter?" (Ch "+esc(sc.chapter)+")":""}</option>`).join("")}
+      </select>
+      <div style="margin-top:10px;font-size:13px;color:var(--muted)">
+        ${s.pov?`<div><b style="color:var(--accent-2)">POV:</b> ${esc(s.pov)}</div>`:""}
+        ${s.goal?`<div><b style="color:var(--accent-2)">Goal:</b> ${esc(s.goal)}</div>`:""}
+        ${s.conflict?`<div><b style="color:var(--accent-2)">Conflict:</b> ${esc(s.conflict)}</div>`:""}
+        ${s.outcome?`<div><b style="color:var(--accent-2)">Outcome:</b> ${esc(s.outcome)}</div>`:""}
+      </div>
+      <div class="segmented" style="margin-top:12px">
+        <button data-mode="write" class="${mode==='write'?'active':''}">Write</button>
+        <button data-mode="read" class="${mode==='read'?'active':''}">Read chapter</button>
+      </div>
+    </div>
+    ${modeBody}
+  `;
+  document.getElementById("sceneSelect").addEventListener("change",e=>{
+    flushEditor(); DB.ui.scene=Number(e.target.value); save(); renderDraft();
+  });
+  wrap.querySelectorAll("[data-mode]").forEach(b=>b.addEventListener("click",()=>{
+    flushEditor(); DB.ui.draftMode=b.dataset.mode; save(); renderDraft();
+  }));
+  const mc=document.getElementById("museContinue");
+  if(mc) mc.addEventListener("click",()=>museContinue(idx));
+  initEditor(idx);
+}
+
+/* ============================================================
+   RICH TEXT EDITOR
+   ============================================================ */
+let edIdx=-1, edTimer=null, edRange=null, edDirty=false;
+function toast(msg){
+  let t=document.getElementById("toast");
+  if(!t){ t=document.createElement("div"); t.id="toast"; document.body.appendChild(t); }
+  t.textContent=msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove("show"),3200);
+}
+function commitEditor(){
+  clearTimeout(edTimer); edTimer=null;
+  const ed=document.getElementById("draftArea");
+  if(!ed || !edDirty || edIdx<0 || !DB.scenes[edIdx]) { edDirty=false; return; }
+  const sc=DB.scenes[edIdx];
+  sc.html=sanitizeHTML(ed.innerHTML);
+  sc.text=htmlToText(sc.html);
+  edDirty=false;
+  trackWords(); save();
+}
+function flushEditor(){ commitEditor(); }
+function initEditor(idx){
+  const ed=document.getElementById("draftArea"); if(!ed) { edIdx=-1; return; }
+  edIdx=idx; edDirty=false; edRange=null;
+  const sc=DB.scenes[idx];
+  ed.innerHTML = sc.html || "";
+  try{ document.execCommand("defaultParagraphSeparator",false,"p"); document.execCommand("styleWithCSS",false,true); }catch(e){}
+  const pop=document.getElementById("edpop"), tools=document.getElementById("edtools");
+  let openPop="";
+  function remember(){
+    const sel=getSelection();
+    if(sel.rangeCount && ed.contains(sel.anchorNode)) edRange=sel.getRangeAt(0).cloneRange();
+  }
+  function restore(){
+    if(document.activeElement!==ed) ed.focus({preventScroll:true});
+    if(edRange){ const sel=getSelection(); sel.removeAllRanges(); sel.addRange(edRange); }
+  }
+  function mark(){ edDirty=true; clearTimeout(edTimer); edTimer=setTimeout(commitEditor,350); liveCount(); }
+  function liveCount(){
+    const wc=document.getElementById("liveWC");
+    if(wc) wc.innerHTML="Scene: <b>"+fmt(words(ed.innerText))+"</b> words";
+  }
+  function exec(cmd,val){ restore(); try{ document.execCommand(cmd,false,val); }catch(e){} remember(); mark(); refreshState(); }
+  function refreshState(){
+    tools.querySelectorAll("[data-cmd]").forEach(b=>{
+      const c=b.dataset.cmd; if(c==="undo"||c==="redo") return;
+      let on=false; try{ on=document.queryCommandState(c); }catch(e){}
+      b.classList.toggle("on",!!on);
+    });
+  }
+  function showPop(kind){
+    if(openPop===kind){ pop.hidden=true; openPop=""; return; }
+    openPop=kind; pop.hidden=false;
+    let h="";
+    if(kind==="font"){
+      h=Object.keys(ED_FONTS).map(k=>`<button data-font="${k}" style="font-family:${ED_FONTS[k]}">${k.replace(/\b\w/g,c=>c.toUpperCase())}</button>`).join("");
+    } else if(kind==="size"){
+      h=[["Small","2"],["Normal","3"],["Large","5"],["Huge","6"]].map(([l,v])=>`<button data-size="${v}">${l}</button>`).join("");
+    } else if(kind==="color"){
+      h=ED_COLORS.map(c=>`<button class="sw" data-color="${c}" style="background:${c}" aria-label="${c}"></button>`).join("");
+    } else if(kind==="more"){
+      h=`<button data-block="h2">Heading</button><button data-block="h3">Subheading</button><button data-block="blockquote">Quote</button><button data-block="p">Body</button><button data-cmd="justifyLeft">⟸ Left</button><button data-cmd="justifyCenter">Center</button><button data-cmd="justifyRight">Right ⟹</button><button data-cmd="strikeThrough">S̶trike</button><button data-cmd="removeFormat">Clear style</button>`;
+    }
+    pop.innerHTML=h;
+  }
+  tools.addEventListener("pointerdown",e=>{ if(e.target.closest("button")) e.preventDefault(); });
+  tools.addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    if(b.dataset.pop) return showPop(b.dataset.pop);
+    if(b.dataset.cmd) return exec(b.dataset.cmd);
+    if(b.dataset.font) return exec("fontName",ED_FONTS[b.dataset.font].split(",")[0].replace(/'/g,""));
+    if(b.dataset.size) return exec("fontSize",b.dataset.size);
+    if(b.dataset.color) return exec("foreColor",b.dataset.color);
+    if(b.dataset.block) return exec("formatBlock",b.dataset.block);
+  });
+  ed.addEventListener("input",mark);
+  ed.addEventListener("blur",()=>{ remember(); commitEditor(); });
+  ed.addEventListener("keyup",()=>{ remember(); refreshState(); });
+  ed.addEventListener("pointerup",()=>{ remember(); refreshState(); });
+  ed.addEventListener("paste",e=>{
+    e.preventDefault();
+    const t=(e.clipboardData||window.clipboardData).getData("text/plain")||"";
+    try{ document.execCommand("insertText",false,t); }catch(err){}
+    mark();
+  });
+  ed.addEventListener("drop",e=>e.preventDefault());
+  liveCount();
+}
+(function(){
+  const h=document.querySelector("header"); if(!h) return;
+  const set=()=>document.documentElement.style.setProperty("--hdr",h.offsetHeight+"px");
+  set(); if(window.ResizeObserver) new ResizeObserver(set).observe(h); window.addEventListener("resize",set);
+})();
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+function renderDash(){
+  const c=DB.contract, st=DB.stats;
+  const total=totalWords();
+  const target=Number(c.targetWords||0);
+  const pct = target? Math.min(100,Math.round(total/target*100)) : 0;
+  const written = DB.scenes.filter(s=>words(s.text)>0).length;
+  const dailyPct = Number(c.dailyGoal||0)? Math.min(100,Math.round(st.wordsToday/Number(c.dailyGoal)*100)):0;
+  let issues=[];
+  if(!c.title) issues.push("No title set in your Book Contract.");
+  if(!c.targetWords) issues.push("No target word count — you can't measure progress without one.");
+  if(!DB.premise.logline) issues.push("No logline yet. The book doesn't know what it is.");
+  if(!DB.beats.length && !DB.scenes.length) issues.push("No outline and no scenes. You're free-writing into the void.");
+  const weakScenes = DB.scenes.filter(s=>!s.goal||!s.conflict||!s.outcome).length;
+  if(weakScenes) issues.push(weakScenes+" scene(s) missing a goal, conflict, or outcome.");
+  if(c.deadline){
+    const dl=new Date(c.deadline), days=Math.ceil((dl-new Date())/86400000);
+    if(days>0 && target){
+      const need=Math.round((target-total)/days);
+      if(c.dailyGoal && need>Number(c.dailyGoal)) issues.push("You need "+fmt(need)+" words/day to finish on time, but your goal is "+fmt(c.dailyGoal)+".");
+    }
+    if(days<0) issues.push("Your deadline has passed.");
+  }
+  document.getElementById("dashBody").innerHTML=`
+    <div class="grid" style="margin-bottom:12px">
+      <div class="stat"><div class="k">Total words</div><div class="v">${fmt(total)}</div><div class="s">of ${target?fmt(target):"—"} target</div></div>
+      <div class="stat"><div class="k">Progress</div><div class="v">${pct}%</div><div class="s">${target?fmt(Math.max(0,target-total))+" to go":"set a target"}</div></div>
+      <div class="stat"><div class="k">Scenes</div><div class="v">${DB.scenes.length}</div><div class="s">${written} with words</div></div>
+      <div class="stat"><div class="k">Streak</div><div class="v">${st.streak||0}</div><div class="s">day${(st.streak||0)===1?"":"s"} in a row</div></div>
+    </div>
+    <div class="card">
+      <h3>Manuscript progress</h3>
+      <div class="bar"><i style="width:${pct}%"></i></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">${pct}% of ${target?fmt(target):"target"} words</div>
+      <h3 style="margin-top:16px">Today's goal</h3>
+      <div class="bar"><i style="width:${dailyPct}%"></i></div>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">${fmt(st.wordsToday)} of ${c.dailyGoal?fmt(c.dailyGoal):"—"} words today</div>
+    </div>
+    <div class="card">
+      <h3>Checks &amp; balances</h3>
+      ${issues.length? issues.map(i=>`<div class="warnbox" style="margin-bottom:8px">${esc(i)}</div>`).join("")
+        : `<div style="color:var(--good)">✓ No structural issues detected. Keep going.</div>`}
+    </div>
+    <div class="card"><h3>Chapter breakdown</h3>${renderChapterBreakdown()}</div>
+  `;
+}
+function renderChapterBreakdown(){
+  if(!DB.scenes.length) return '<div class="empty">No scenes yet.</div>';
+  const map={};
+  DB.scenes.forEach((s)=>{ const k=s.chapter||"—"; if(!map[k]) map[k]={scenes:0,words:0}; map[k].scenes++; map[k].words+=words(s.text); });
+  const keys=Object.keys(map).sort((a,b)=>{ const na=parseFloat(a), nb=parseFloat(b); if(!isNaN(na)&&!isNaN(nb)) return na-nb; return a.localeCompare(b); });
+  return keys.map(k=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
+    <span>Chapter ${esc(k)}</span><span style="color:var(--muted)">${map[k].scenes} scene${map[k].scenes===1?"":"s"} · ${fmt(map[k].words)} words</span>
+  </div>`).join("");
+}
+
+/* ============================================================
+   MUSE — AI assist (sample capability). Always opt-in, never
+   writes into the manuscript — suggestions only, in their own box.
+   ============================================================ */
+async function askMuse(prompt, targetEl, label){
+  if(!sampleApi){ return; }
+  targetEl.innerHTML = `<div class="musebox"><span class="lbl">Muse</span>Thinking…</div>`;
+  try{
+    const res = await sampleApi(prompt, { onText:({text})=>{
+      targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(label)}</span>${esc(text)}</div>`;
+    }, modelTier:"quick" });
+    targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(label)}</span>${esc(res.text)}</div>`;
+  }catch(e){
+    targetEl.innerHTML = `<div class="musebox"><span class="lbl">Muse</span>Couldn't reach Muse just now — try again in a moment.</div>`;
+  }
+}
+document.getElementById("museLogline").addEventListener("click",()=>{
+  const p=DB.premise;
+  askMuse(
+    `You are a concise developmental editor. Genre: ${p ? '' : ''}${DB.contract.genre||"unspecified"}. `+
+    `Current logline: "${p.logline||"(none yet)"}". Current summary: "${p.summary||"(none yet)"}". Theme: "${p.theme||"(none yet)"}". `+
+    `Give exactly 3 tightened one-sentence logline alternatives, numbered 1-3, each under 35 words, no preamble.`,
+    document.getElementById("museLoglineOut"), "3 tightened loglines"
+  );
+});
+document.getElementById("museBeat").addEventListener("click",()=>{
+  const p=DB.premise;
+  const beatSummary = DB.beats.map((b,i)=>`${i+1}. ${b.title||"(untitled)"} — ${b.desc||""}`).join("\n") || "(no beats yet)";
+  askMuse(
+    `You help plan novel outlines. Logline: "${p.logline||"unspecified"}". Theme: "${p.theme||"unspecified"}". `+
+    `Beats so far:\n${beatSummary}\n\nSuggest ONE next beat that logically follows. Give a short title and one sentence of what happens. No preamble.`,
+    document.getElementById("museBeatOut"), "Next beat, suggested"
+  );
+});
+document.addEventListener("click", e=>{
+  const st=e.target.dataset.stuck;
+  if(st===undefined) return;
+  const i=Number(st); const s=DB.scenes[i]; const p=DB.premise;
+  askMuse(
+    `You help unstick novelists. Story theme: "${p.theme||"unspecified"}". This scene — POV: ${s.pov||"unspecified"}, `+
+    `Goal: ${s.goal||"unspecified"}, Conflict: ${s.conflict||"unspecified"}, Outcome: ${s.outcome||"unspecified"}. `+
+    `Give exactly 3 short, different directions the writer could take this scene, numbered 1-3, one sentence each. No preamble.`,
+    document.getElementById("museStuckOut"+i), "3 directions to try"
+  );
+});
+function museContinue(idx){
+  flushEditor();
+  const s=DB.scenes[idx]; const p=DB.premise;
+  const tail = (s.text||"").trim().split(/\s+/).slice(-120).join(" ");
+  askMuse(
+    `You help novelists past a blank page. Theme: "${p.theme||"unspecified"}". Scene goal: ${s.goal||"unspecified"}, conflict: ${s.conflict||"unspecified"}. `+
+    `Here is the end of what they've written so far:\n"""${tail||"(nothing written yet)"}"""\n\n`+
+    `Suggest ONE short possible next beat or line of action (2-3 sentences) to get them moving again. This is a suggestion only, not text to insert — make that implicit by writing it as a note, not as prose to copy verbatim. No preamble.`,
+    document.getElementById("museContinueOut"), "A way forward"
+  );
+}
+
+/* ============================================================
+   ADD / DELETE / MOVE / TEMPLATES
+   ============================================================ */
+document.addEventListener("click", e=>{
+  const add=e.target.dataset.add; if(add) return handleAdd(add);
+  const del=e.target.dataset.del; if(del) return handleDelete(del);
+  const mv=e.target.dataset.move; if(mv) return handleMove(mv);
+  const tpl=e.target.dataset.tpl; if(tpl) return handleTemplate(tpl);
+});
+function handleAdd(key){
+  commitEditor();
+  if(key==="characters") DB.bible.characters.push({name:"",role:"",want:"",need:"",flaw:"",arc:""});
+  if(key==="locations") DB.bible.locations.push({name:"",desc:""});
+  if(key==="rules") DB.bible.rules.push({name:"",desc:""});
+  if(key==="beats") DB.beats.push({title:"",act:"",desc:""});
+  if(key==="scenes") DB.scenes.push({chapter:"",title:"",pov:"",goal:"",conflict:"",outcome:"",text:"",html:""});
+  save(); renderBible(); renderBeats(); renderScenes(); renderDash(); renderDraft();
+}
+function handleDelete(path){
+  commitEditor();
+  const parts=path.split(".");
+  const key=parts[0], idx=Number(parts[1]);
+  if(key==="bible"){
+    const sub=parts[1], i=Number(parts[2]);
+    DB.bible[sub].splice(i,1);
+  } else {
+    DB[key].splice(idx,1);
+    if(key==="scenes" && DB.ui.scene>=DB.scenes.length) DB.ui.scene=Math.max(0,DB.scenes.length-1);
+  }
+  save(); renderBible(); renderBeats(); renderScenes(); renderDash(); renderDraft();
+}
+function handleMove(path){
+  commitEditor();
+  const [key, idxStr, dir]=path.split(".");
+  const i=Number(idxStr); const j = dir==="up" ? i-1 : i+1;
+  if(j<0 || j>=DB[key].length) return;
+  const tmp=DB[key][i]; DB[key][i]=DB[key][j]; DB[key][j]=tmp;
+  save(); renderBeats(); renderScenes(); renderDash(); renderDraft();
+}
+function handleTemplate(name){
+  if(name==="__clear"){ DB.beats=[]; save(); renderBeats(); renderDash(); return; }
+  DB.beats = TEMPLATES[name].map(([title,act,desc])=>({title,act,desc}));
+  save(); renderBeats(); renderDash();
+}
+
+/* ============================================================
+   MANUSCRIPT EXPORT / BACKUP (downloads capability — no <a download> tricks)
+   ============================================================ */
+function buildManuscript(){
+  const c=DB.contract;
+  const byChapter={};
+  DB.scenes.forEach(s=>{ const k=s.chapter||"—"; (byChapter[k]=byChapter[k]||[]).push(s); });
+  const keys=Object.keys(byChapter).sort((a,b)=>{ const na=parseFloat(a), nb=parseFloat(b); if(!isNaN(na)&&!isNaN(nb)) return na-nb; return a.localeCompare(b); });
+  let out = `# ${c.title||"Untitled Book"}\n\n`;
+  if(c.genre) out += `*${c.genre}*\n\n`;
+  out += `---\n\n`;
+  keys.forEach(k=>{
+    out += `## Chapter ${k}\n\n`;
+    byChapter[k].forEach(s=>{ const md=htmlToMarkdown(s.html||""); if(md.trim()) out += md.trim()+"\n\n"; });
+    out += `\n`;
+  });
+  out += `---\n\n_${fmt(totalWords())} words · exported ${todayStr()} from MuseBook_\n`;
+  return out;
+}
+document.getElementById("exportManuscript").addEventListener("click", async ()=>{
+  flushEditor();
+  const filename=(DB.contract.title||"book")+"-manuscript-"+todayStr()+".md";
+  const data=buildManuscript();
+  if(downloadsApi){
+    try{ await downloadsApi.save({filename, data}); return; }catch(e){}
+  }
+  toast("Manuscript export needs the downloads feature, which isn't available in this view.");
+});
+document.getElementById("exportBackup").addEventListener("click", async ()=>{
+  flushEditor();
+  const filename=(DB.contract.title||"book")+"-backup-"+todayStr()+".json";
+  const data=JSON.stringify(DB,null,2);
+  if(downloadsApi){
+    try{ await downloadsApi.save({filename, data}); return; }catch(e){}
+  }
+  toast("Backup export needs the downloads feature, which isn't available in this view.");
+});
+document.getElementById("importBtn").addEventListener("click",()=>{ document.getElementById("importFile").click(); });
+document.getElementById("importFile").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      edDirty=false;
+      DB=mergeDefaults(d);
+      save(); renderAll();
+    }catch(err){ toast("That file couldn't be read as a MuseBook backup."); }
+  };
+  r.readAsText(f);
+});
+let resetArmed=false;
+document.getElementById("resetBtn").addEventListener("click",(e)=>{
+  if(!resetArmed){
+    resetArmed=true; e.target.textContent="Tap again to confirm erase";
+    setTimeout(()=>{ resetArmed=false; e.target.textContent="Erase everything"; },4000);
+    return;
+  }
+  resetArmed=false; e.target.textContent="Erase everything"; edDirty=false;
+  try{ localStorage.removeItem("musebook_v1"); }catch(err){}
+  DB=JSON.parse(JSON.stringify(DEFAULT));
+  save(); renderAll();
+});
+
+/* ============================================================
+   RENDER ALL + INIT
+   ============================================================ */
+function hydrateForms(){
+  document.querySelectorAll("[data-bind]").forEach(el=>{
+    const v=getPath(DB, el.dataset.bind);
+    if(v!=null && !el.dataset.words) el.value=v;
+  });
+}
+function renderAll(){
+  hydrateForms(); renderContractSummary(); renderPremiseCheck(); renderBible();
+  renderTemplateButtons(); renderBeats(); renderScenes(); renderDraft(); renderDash();
+  applyMood(DB.ui.mood || document.documentElement.getAttribute("data-mood") || "shore", false);
+}
+
+(async ()=>{
+  const local = localLoad();
+  if(local) DB = mergeDefaults(local);
+  if(!DB.stats.date){ DB.stats.date=todayStr(); DB.stats.lastTotal=totalWords(); }
+  if(DB.stats.date!==todayStr()){ DB.stats.date=todayStr(); DB.stats.wordsToday=0; DB.stats.lastTotal=totalWords(); }
+  initMood();
+  renderAll();
+  switchTab(DB.ui.tab || "contract");
+  await initCloud();
+  initMood();
+  renderAll();
+})();
+
+window.addEventListener("beforeunload", ()=>{ try{ commitEditor(); }catch(e){} try{ localStorage.setItem("musebook_v1", JSON.stringify(DB)); }catch(e){} });
+</script>
+
+</body></html>
