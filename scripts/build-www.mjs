@@ -9,6 +9,9 @@ css = css.replace(/url\((f\d+\.woff2)\)/g, (_, f) =>
 let html = fs.readFileSync(new URL("www/musebook.html", root), "utf8");
 if (!html.includes("/*FONTS*/")) throw new Error("font placeholder missing");
 html = html.replace("/*FONTS*/", () => css);
+if (!html.includes("<script>/*I18N*/</script>")) throw new Error("i18n placeholder missing");
+const i18n = fs.readFileSync(new URL("www/i18n.js", root), "utf8");
+html = html.replace("<script>/*I18N*/</script>", () => "<script>" + i18n + "</script>");
 // The app pads around the page for the status and nav bars already, so the
 // page's own safe-area padding would double it (a gap above the top bar).
 html = html.replace(/env\(safe-area-inset-(top|bottom),0px\)/g, "0px");

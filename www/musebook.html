@@ -406,6 +406,13 @@
   <section id="tab-settings">
     <h2>Settings</h2>
     <p class="hint">Muse, how MuseBook looks, and where your book is saved.</p>
+    <div class="card">
+      <h3>Language</h3>
+      <div class="segmented" id="langRow" style="margin:0">
+        <button data-lang="en">English</button>
+        <button data-lang="es">Español</button>
+      </div>
+    </div>
     <div class="card" id="museCard">
       <h3>Muse</h3>
       <p class="hint" style="margin:0 0 10px" id="museStateText">Checking Muse…</p>
@@ -432,6 +439,7 @@
 </main>
 <footer>MuseBook · your book, your voice. Muse only ever suggests; it never writes your book for you.</footer>
 
+<script>/*I18N*/</script>
 <script>
 /* ============================================================
    DATA
@@ -1226,7 +1234,9 @@ function renderChapterBreakdown(){
 async function askMuse(prompt, targetEl, label, kind){
   if(!sampleApi){ return; }
   const st = window.MuseNative ? MuseNative.status.state : "loaded";
-  targetEl.innerHTML = `<div class="musebox"><span class="lbl">Muse</span>${st==="loading"?"Muse is waking up…":"Muse is thinking…"}</div>`;
+  targetEl.innerHTML = `<div class="musebox"><span class="lbl">Muse</span>${t(st==="loading"?"Muse is waking up…":"Muse is thinking…")}</div>`;
+  label = t(label);
+  if(LANG==="es") prompt += "\n\nWrite your whole answer in natural Mexican Spanish.";
   try{
     const res = await sampleApi(prompt, { onText:({text})=>{
       targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(label)}</span>${esc(text)}</div>`;
@@ -1273,29 +1283,31 @@ const LITE = {
 function pick(arr, n){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a.slice(0,n); }
 function liteBeat(){
   const titles = DB.beats.map(b=>(b.title||"").trim().toLowerCase());
-  for(const name of Object.keys(TEMPLATES)){
-    const t=TEMPLATES[name];
-    const used=t.filter(([title])=>titles.includes(title.toLowerCase())).length;
-    if(used && used<t.length){
-      const next=t.find(([title])=>!titles.includes(title.toLowerCase()));
-      return `From the ${name} structure:\n${next[0]}: ${next[2]}`;
+  const sets = LANG==="es" ? [TEMPLATES_ES, TEMPLATES] : [TEMPLATES, TEMPLATES_ES];
+  for(const set of sets) for(const name of Object.keys(set)){
+    const tp=set[name];
+    const used=tp.filter(([title])=>titles.includes(title.toLowerCase())).length;
+    if(used && used<tp.length){
+      const next=tp.find(([title])=>!titles.includes(title.toLowerCase()));
+      return `${t("From the "+name+" structure:")}\n${next[0]}: ${next[2]}`;
     }
   }
-  const n=DB.beats.length, t=TEMPLATES["3-Act"];
-  const next=t[Math.min(n, t.length-1)];
-  return `${next[0]}: ${next[2]}\nTip: load a structure above to see every beat.`;
+  const n=DB.beats.length, tp=(LANG==="es"?TEMPLATES_ES:TEMPLATES)["3-Act"];
+  const next=tp[Math.min(n, tp.length-1)];
+  return `${next[0]}: ${next[2]}\n${t("Tip: load a structure above to see every beat.")}`;
 }
 function showLite(targetEl, kind){
+  const LITE_L = LANG==="es" ? LITE_ES : LITE;
   let label="Muse-lite", text="";
-  if(kind==="logline"){ label="Muse-lite · shape your logline"; text=pick(LITE.logline,1)[0]; }
+  if(kind==="logline"){ label="Muse-lite · shape your logline"; text=pick(LITE_L.logline,1)[0]; }
   else if(kind==="beat"){ label="Muse-lite · a possible next beat"; text=liteBeat(); }
-  else if(kind==="stuck"){ label="Muse-lite · 3 directions to try"; text=pick(LITE.stuck,3).map((x,i)=>(i+1)+". "+x).join("\n"); }
-  else { label="Muse-lite · a way forward"; text=pick(LITE.cont,1)[0]; }
+  else if(kind==="stuck"){ label="Muse-lite · 3 directions to try"; text=pick(LITE_L.stuck,3).map((x,i)=>(i+1)+". "+x).join("\n"); }
+  else { label="Muse-lite · a way forward"; text=pick(LITE_L.cont,1)[0]; }
   const st = window.MuseNative ? MuseNative.status.state : "";
   const note = st==="unsupported" ? "Full Muse can't run on this phone, so Muse-lite is helping."
     : st==="downloading" ? "Full Muse is still downloading. It will answer here once it's ready."
     : "Full Muse isn't downloaded yet. Get it in Settings ⚙.";
-  targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(label)}</span>${esc(text)}<span class="note">${esc(note)}</span></div>`;
+  targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(t(label))}</span>${esc(text)}<span class="note">${esc(t(note))}</span></div>`;
 }
 
 /* ---- Muse status card, first-run sheet ---- */
@@ -1314,10 +1326,12 @@ function renderMuseCard(s){
     loaded:"Muse is ready and works offline."+(s.backend==="cpu"?" (Running on the processor, so answers take a little longer.)":""),
     unsupported:"Muse is downloaded, but this phone can't run it right now. Muse-lite is helping instead."
   };
-  txt.textContent=T[s.state]||"";
+  txt.textContent = s.state==="loaded"
+    ? t("Muse is ready and works offline.")+(s.backend==="cpu"?" "+t("(Running on the processor, so answers take a little longer.)"):"")
+    : t(T[s.state]||"");
   bar.hidden=!(s.state==="downloading"||s.state==="paused");
   fill.style.width=pct+"%";
-  msg.hidden=!s.message; msg.textContent=s.message||"";
+  msg.hidden=!s.message; msg.textContent=t(s.message||"");
   let b="";
   if(s.state==="none") b=`<button class="act" data-muse="download">Download Muse (2.6 GB)</button>`;
   if(s.state==="downloading") b=`<button class="ghost" data-muse="pause">Pause</button>`;
@@ -1331,7 +1345,7 @@ document.getElementById("museBtns").addEventListener("click", e=>{
   if(a==="download") MuseNative.download();
   if(a==="pause") MuseNative.pause();
   if(a==="remove"){
-    if(!removeArmed){ removeArmed=true; e.target.textContent="Tap again to remove"; setTimeout(()=>{ removeArmed=false; renderMuseCard(MuseNative.status); },4000); return; }
+    if(!removeArmed){ removeArmed=true; e.target.textContent=t("Tap again to remove"); setTimeout(()=>{ removeArmed=false; renderMuseCard(MuseNative.status); },4000); return; }
     removeArmed=false; MuseNative.remove();
   }
 });
@@ -1428,7 +1442,7 @@ function handleMove(path){
 }
 function handleTemplate(name){
   if(name==="__clear"){ DB.beats=[]; save(); renderBeats(); renderDash(); return; }
-  DB.beats = TEMPLATES[name].map(([title,act,desc])=>({title,act,desc}));
+  DB.beats = (LANG==="es"?TEMPLATES_ES:TEMPLATES)[name].map(([title,act,desc])=>({title,act,desc}));
   save(); renderBeats(); renderDash();
 }
 
@@ -1444,11 +1458,12 @@ function buildManuscript(){
   if(c.genre) out += `*${c.genre}*\n\n`;
   out += `---\n\n`;
   keys.forEach(k=>{
-    out += `## Chapter ${k}\n\n`;
+    out += `## ${t("Chapter "+k)}\n\n`;
     byChapter[k].forEach(s=>{ const md=htmlToMarkdown(s.html||""); if(md.trim()) out += md.trim()+"\n\n"; });
     out += `\n`;
   });
-  out += `---\n\n_${fmt(totalWords())} words · exported ${todayStr()} from MuseBook_\n`;
+  out += LANG==="es" ? `---\n\n_${fmt(totalWords())} palabras · exportado el ${todayStr()} desde MuseBook_\n`
+    : `---\n\n_${fmt(totalWords())} words · exported ${todayStr()} from MuseBook_\n`;
   return out;
 }
 document.getElementById("exportManuscript").addEventListener("click", async ()=>{
@@ -1518,12 +1533,18 @@ function renderAll(){
   if(DB.stats.date!==todayStr()){ DB.stats.date=todayStr(); DB.stats.wordsToday=0; DB.stats.lastTotal=totalWords(); }
   initMood();
   renderAll();
+  initI18n();
   switchTab(DB.ui.tab || "contract");
   await initCloud();
   initMood();
   renderAll();
+  initI18n();
+  renderLangCard();
   initMuseUI();
 })();
+document.getElementById("langRow").addEventListener("click", e=>{
+  const b=e.target.closest("[data-lang]"); if(b) setLang(b.dataset.lang);
+});
 
 // Phone app: leaving the app (home button, a call) must not lose the last words.
 document.addEventListener("visibilitychange", ()=>{
