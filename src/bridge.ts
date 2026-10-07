@@ -2,12 +2,14 @@
 // same `window.claude.use(...)` API it had as an artifact, backed by the phone:
 // db → a file on this phone, downloads → the share sheet, sample → Muse.
 import type { MuseStatus } from "./muse";
+import type { BackupState } from "./backup";
 
-export function bridgeScript(book: unknown, status: MuseStatus, firstRunSeen: boolean) {
+export function bridgeScript(book: unknown, status: MuseStatus, firstRunSeen: boolean, backup: BackupState) {
   return `(function(){
   var pending = {}, streams = {}, seq = 0, listeners = [];
   var status = ${JSON.stringify(status)};
   var book = ${JSON.stringify(book ?? null)};
+  var backup = ${JSON.stringify(backup)}, backupListeners = [];
   function call(m, a, onStream){
     return new Promise(function(res, rej){
       var id = ++seq; pending[id] = {res: res, rej: rej};
@@ -18,7 +20,18 @@ export function bridgeScript(book: unknown, status: MuseStatus, firstRunSeen: bo
   window.__mb = {
     reply: function(id, ok, v){ var p = pending[id]; delete pending[id]; delete streams[id]; if (p) ok ? p.res(v) : p.rej(new Error(v)); },
     stream: function(id, text){ var s = streams[id]; if (s) s(text); },
-    status: function(s){ status = s; listeners.forEach(function(f){ try { f(s); } catch (e) {} }); }
+    status: function(s){ status = s; listeners.forEach(function(f){ try { f(s); } catch (e) {} }); },
+    backup: function(b){ backup = b; backupListeners.forEach(function(f){ try { f(b); } catch (e) {} }); }
+  };
+  // Backups to a folder the writer picks (phone or their own Drive). See src/backup.ts.
+  window.MuseBackup = {
+    get state(){ return backup; },
+    onState: function(f){ backupListeners.push(f); f(backup); },
+    choose: function(){ return call("backupChoose"); },
+    now: function(d){ return call("backupNow", [d]); },
+    setAuto: function(on){ return call("backupAuto", [!!on]); },
+    safetyCopy: function(d){ return call("backupSafety", [d]); },
+    pick: function(){ return call("backupPick"); }
   };
   window.MuseNative = {
     firstRunSeen: ${firstRunSeen ? "true" : "false"},

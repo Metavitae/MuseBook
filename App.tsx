@@ -6,6 +6,7 @@ import { WebView, type WebViewMessageEvent } from "react-native-webview";
 import { WWW_HTML } from "./src/www.generated";
 import { bridgeScript } from "./src/bridge";
 import * as Muse from "./src/muse";
+import * as Backup from "./src/backup";
 import { loadBook, saveBook, loadPrefs, savePrefs, shareFile, type Prefs } from "./src/storage";
 
 interface Boot {
@@ -26,6 +27,10 @@ export default function App() {
       await Muse.init();
       const [book, p] = await Promise.all([loadBook(), loadPrefs()]);
       prefs.current = p;
+      Backup.init(p.backup, book, async (b) => {
+        prefs.current = { ...prefs.current, backup: b };
+        await savePrefs(prefs.current);
+      }, (b) => run(`window.__mb.backup(${JSON.stringify(b)})`));
       setBoot({ book, prefs: p, status: Muse.getStatus() });
     })();
   }, []);
@@ -45,6 +50,7 @@ export default function App() {
   useEffect(() => {
     const sub = AppState.addEventListener("change", (s) => {
       if (s === "background" && Muse.getStatus().state === "downloading") Muse.pause();
+      if (s === "background") Backup.leaving();
     });
     return () => sub.remove();
   }, []);
@@ -67,7 +73,19 @@ export default function App() {
       switch (m) {
         case "save":
           await saveBook(a[0]);
+          Backup.bookChanged(a[0]);
           return reply(id, true, null);
+        case "backupChoose":
+          return reply(id, true, await Backup.chooseFolder());
+        case "backupNow":
+          return reply(id, true, await Backup.backupNow(a[0]));
+        case "backupAuto":
+          await Backup.setAuto(!!a[0]);
+          return reply(id, true, null);
+        case "backupSafety":
+          return reply(id, true, await Backup.safetyCopy(a[0]));
+        case "backupPick":
+          return reply(id, true, await Backup.pickBackupFile());
         case "share": {
           const o = a[0] as { filename: string; data: string };
           await shareFile(o.filename, o.data);
@@ -104,7 +122,7 @@ export default function App() {
   // Stable props: a new source object would make the WebView reload the page.
   const source = useMemo(() => ({ html: WWW_HTML, baseUrl: "https://musebook.local/" }), []);
   const injected = useMemo(
-    () => (boot ? bridgeScript(boot.book, boot.status, !!boot.prefs.firstRunSeen) : ""),
+    () => (boot ? bridgeScript(boot.book, boot.status, !!boot.prefs.firstRunSeen, Backup.getState()) : ""),
     [boot],
   );
 

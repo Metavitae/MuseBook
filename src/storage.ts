@@ -2,6 +2,7 @@
 // temp file first, then replace the real one, so a crash mid-save can't
 // leave a half-written book.
 import * as FileSystem from "expo-file-system/legacy";
+import type { BackupState } from "./backup";
 
 const BOOK = FileSystem.documentDirectory + "book.json";
 const BOOK_TMP = BOOK + ".tmp";
@@ -32,6 +33,7 @@ export function saveBook(data: unknown) {
 
 export interface Prefs {
   firstRunSeen?: boolean;
+  backup?: BackupState;
 }
 export const loadPrefs = async () => (await readJSON<Prefs>(PREFS)) ?? {};
 export const savePrefs = (p: Prefs) => FileSystem.writeAsStringAsync(PREFS, JSON.stringify(p));

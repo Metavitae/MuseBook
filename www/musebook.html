@@ -233,6 +233,15 @@
   .musebox .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--accent-2); font-weight:700; margin-bottom:6px; display:block}
   .readview{font-family:'Source Serif 4',Georgia,serif; font-size:17px; line-height:1.9}
   .readview .scenebreak{text-align:center; color:var(--muted); margin:22px 0; letter-spacing:4px}
+  .bstatus{font-size:13.5px; margin:0 0 4px}
+  .bstatus.bad{color:var(--bad); cursor:pointer}
+  .swrow{display:flex; align-items:center; gap:10px; margin-top:14px; font-size:14px; cursor:pointer}
+  .swrow input{width:20px; height:20px; accent-color:var(--accent); flex:none}
+  #restoreSheet{position:fixed; inset:0; z-index:150; background:color-mix(in srgb, var(--bg) 70%, transparent); display:flex; align-items:flex-end; justify-content:center; padding:16px}
+  #restoreSheet[hidden]{display:none}
+  #restoreSheet .sheet{background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--radius); padding:20px 18px; max-width:520px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  #restoreSheet h2{margin:0 0 8px}
+  #restoreSheet p{margin:0 0 10px; font-size:14.5px}
   #museIntro{position:fixed; inset:0; z-index:150; background:color-mix(in srgb, var(--bg) 70%, transparent); display:flex; align-items:flex-end; justify-content:center; padding:16px}
   #museIntro .sheet{background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--radius); padding:20px 18px; max-width:520px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,.25)}
   #museIntro h2{margin:0 0 8px}
@@ -253,6 +262,18 @@
     <div class="btns">
       <button class="act" id="introDownload">Download now</button>
       <button class="ghost" id="introLater">Later</button>
+    </div>
+  </div>
+</div>
+
+<div id="restoreSheet" class="oversheet" hidden>
+  <div class="sheet">
+    <h2>Restore this backup?</h2>
+    <p id="restoreInfo"></p>
+    <p id="restoreWarn">It will replace the book on this phone. First we save a safety copy of your current book.</p>
+    <div class="btns">
+      <button class="act" id="restoreYes">Restore</button>
+      <button class="ghost" id="restoreNo">Cancel</button>
     </div>
   </div>
 </div>
@@ -395,15 +416,20 @@
     <p class="hint">Where you actually are, versus where you said you'd be.</p>
     <div id="dashBody"></div>
     <div class="card">
-      <h3>Manuscript &amp; Backup</h3>
-      <p class="hint" style="margin:0 0 10px">Your book is saved on this phone as you write, no internet needed. Export a backup now and then (to Drive, email or anywhere) so it survives a lost or broken phone.</p>
+      <h3>Back up your book</h3>
+      <p class="hint bstatus" style="margin:0" data-backup-status>No backup yet</p>
       <div class="btns">
-        <button class="act" id="exportManuscript">Export manuscript (.md)</button>
-        <button class="ghost" id="exportBackup">Export data backup (.json)</button>
-        <button class="ghost" id="importBtn">Import backup</button>
-        <button class="danger" id="resetBtn">Erase everything</button>
+        <button class="act" data-backup-now>Back up now</button>
+        <button class="ghost" data-tab-go="settings">Backup settings</button>
       </div>
-      <input type="file" id="importFile" accept="application/json" style="display:none" />
+    </div>
+    <div class="card">
+      <h3>Share your manuscript</h3>
+      <p class="hint" style="margin:0 0 10px">The manuscript is only the text of your book, chapter by chapter, to read or send to someone. It doesn't include your plan or notes.</p>
+      <p class="warnbox" id="msEmpty" hidden>There's no written text yet. Write a scene first.</p>
+      <div class="btns">
+        <button class="ghost" id="exportManuscript">Text (.md)</button>
+      </div>
     </div>
   </section>
 
@@ -435,10 +461,28 @@
         <button class="moodopt" data-mood="celestial" aria-pressed="false"><i style="background:linear-gradient(135deg,#d9b561,#0a0e20)"></i><span>Celestial</span></button>
       </div>
     </div>
-    <div class="card">
-      <h3>Saving</h3>
+    <div class="card" id="backupCard">
+      <h3>Back up your book</h3>
       <div class="saved" id="saved"><span class="dot" id="savedDot"></span><span id="savedText">starting…</span></div>
-      <p class="hint" style="margin-top:10px">Everything saves automatically on this phone. To move your book to another phone, export a backup on the Dashboard and import it there.</p>
+      <p class="hint" style="margin:10px 0">Your book is saved on this phone. Back it up so it stays safe if you lose the phone.</p>
+      <p class="hint" style="margin:0 0 10px">A backup keeps everything: your plan, characters, scenes and settings. Use it to bring your book back on a new phone or if something goes wrong.</p>
+      <p class="bstatus" data-backup-status>No backup yet</p>
+      <div class="btns">
+        <button class="act" data-backup-now>Back up now</button>
+        <button class="ghost" id="backupChooseBtn">Choose where</button>
+      </div>
+      <p class="hint" style="margin:8px 0 0" id="backupPlaceHint">Pick a folder on your phone or in your cloud, like Google Drive. MuseBook saves copies there. We never see them.</p>
+      <p class="hint" style="margin:4px 0 0" id="backupDriveHint">In Drive, open or create a folder first (like MuseBook).</p>
+      <label class="swrow"><input type="checkbox" id="backupAuto" checked> <span>Back up when I stop writing</span></label>
+      <div class="btns">
+        <button class="ghost" id="restoreBtn">Restore from a backup</button>
+        <button class="ghost" id="sendCopyBtn">Send a copy</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none" />
+      <p class="warnbox" id="eraseWarn" style="margin-top:16px" hidden>Your latest changes aren't backed up yet.</p>
+      <div class="btns" style="margin-top:16px">
+        <button class="danger" id="resetBtn">Erase everything</button>
+      </div>
     </div>
   </section>
 </main>
@@ -702,6 +746,7 @@ function setSaved(state){
 
 let saveTimer=null;
 function save(){
+  lastEditAt=Date.now();
   clearTimeout(saveTimer);
   setSaved("saving");
   saveTimer=setTimeout(async ()=>{
@@ -1487,6 +1532,8 @@ function buildManuscript(){
 }
 document.getElementById("exportManuscript").addEventListener("click", async ()=>{
   flushEditor();
+  document.getElementById("msEmpty").hidden = totalWords()>0;
+  if(!totalWords()){ toast("There's no written text yet. Write a scene first."); return; }
   const filename=(DB.contract.title||"book")+"-manuscript-"+todayStr()+".md";
   const data=buildManuscript();
   if(downloadsApi){
@@ -1494,37 +1541,124 @@ document.getElementById("exportManuscript").addEventListener("click", async ()=>
   }
   toast("Couldn't open the share screen. Try again.");
 });
-document.getElementById("exportBackup").addEventListener("click", async ()=>{
+
+/* ---------- Backup: a copy in a folder the writer picks (src/backup.ts) ---------- */
+var lastEditAt=0;
+const bookCopy=()=>JSON.parse(JSON.stringify(DB));
+function backupWhen(iso){
+  const d=new Date(iso), now=new Date(), loc=LANG==="es"?"es-MX":"en-US";
+  const time=d.toLocaleTimeString(loc,{hour:"numeric",minute:"2-digit"});
+  if(d.toDateString()===now.toDateString()) return (LANG==="es"?"hoy, ":"today, ")+time;
+  return d.toLocaleDateString(loc,{day:"numeric",month:"short"})+", "+time;
+}
+function renderBackupUI(){
+  const st=(window.MuseBackup && MuseBackup.state)||{};
+  const failed=st.failed && (!st.last || st.failed>st.last.at);
+  let line;
+  if(failed) line="The last backup didn't work. Tap to try again.";
+  else if(st.last) line="Last backup: "+backupWhen(st.last.at)+" · "+(st.last.place==="phone"?t("this phone"):st.last.place);
+  else line="No backup yet";
+  document.querySelectorAll("[data-backup-status]").forEach(el=>{ el.textContent=line; el.classList.toggle("bad",!!failed); });
+  const choose=document.getElementById("backupChooseBtn");
+  if(choose) choose.textContent = st.dir ? "Change where" : "Choose where";
+  const hint=document.getElementById("backupPlaceHint");
+  if(hint) hint.textContent = st.dir ? "Copies go to: "+(st.place==="phone"?t("this phone"):st.place) : "Pick a folder on your phone or in your cloud, like Google Drive. MuseBook saves copies there. We never see them.";
+  const dh=document.getElementById("backupDriveHint"); if(dh) dh.hidden=!!st.dir;
+  const auto=document.getElementById("backupAuto"); if(auto) auto.checked = st.auto!==false;
+  const ms=document.getElementById("msEmpty"); if(ms) ms.hidden = totalWords()>0;
+}
+async function backupNowFlow(){
   flushEditor();
-  const filename=(DB.contract.title||"book")+"-backup-"+todayStr()+".json";
-  const data=JSON.stringify(DB,null,2);
+  if(!window.MuseBackup){ return sendCopy(); }
+  if(!MuseBackup.state.dir){
+    let ok=false; try{ ok=await MuseBackup.choose(); }catch(e){}
+    if(!ok) return;
+  }
+  try{ await MuseBackup.now(bookCopy()); toast("Backup saved"); }
+  catch(e){ toast("We couldn't save the backup. Check the place you chose."); }
+}
+async function sendCopy(){
+  flushEditor();
+  const filename=(DB.contract.title||"book")+"-respaldo-"+todayStr()+".json";
+  const data=JSON.stringify(Object.assign({_musebook:{app:"MuseBook",format:1,saved:new Date().toISOString()}}, bookCopy()),null,1);
   if(downloadsApi){
     try{ await downloadsApi.save({filename, data}); return; }catch(e){}
   }
   toast("Couldn't open the share screen. Try again.");
+}
+document.querySelectorAll("[data-backup-now]").forEach(b=>b.addEventListener("click", backupNowFlow));
+document.querySelectorAll("[data-backup-status]").forEach(el=>el.addEventListener("click", ()=>{ if(el.classList.contains("bad")) backupNowFlow(); }));
+document.querySelectorAll("[data-tab-go]").forEach(b=>b.addEventListener("click", ()=>switchTab(b.dataset.tabGo)));
+document.getElementById("sendCopyBtn").addEventListener("click", sendCopy);
+document.getElementById("backupChooseBtn").addEventListener("click", async ()=>{
+  if(!window.MuseBackup){ return sendCopy(); }
+  let ok=false; try{ ok=await MuseBackup.choose(); }catch(e){}
+  if(ok) backupNowFlow();
 });
-document.getElementById("importBtn").addEventListener("click",()=>{ document.getElementById("importFile").click(); });
+document.getElementById("backupAuto").addEventListener("change", e=>{ if(window.MuseBackup) MuseBackup.setAuto(e.target.checked); });
+if(window.MuseBackup) MuseBackup.onState(renderBackupUI);
+
+// Restore: check the file, show what's in it, keep a safety copy, then replace.
+let pendingRestore=null;
+function isBackup(d){
+  return !!d && typeof d==="object" && !Array.isArray(d) &&
+    (!!d._musebook || (!!d.contract && typeof d.contract==="object" && Array.isArray(d.scenes)));
+}
+function bookIsEmpty(){
+  const c=DB.contract, p=DB.premise;
+  return !totalWords() && !c.title && !c.genre && !p.logline && !p.summary &&
+    !DB.bible.characters.length && !DB.bible.locations.length && !DB.beats.length && !DB.scenes.length;
+}
+function previewRestore(text){
+  let d=null; try{ d=JSON.parse(text); }catch(e){}
+  if(!isBackup(d)){ toast("That file isn't a MuseBook backup."); return; }
+  const meta=d._musebook; delete d._musebook;
+  const incoming=mergeDefaults(d);
+  const w=incoming.scenes.reduce((n,s)=>n+words(s.text),0);
+  const title=incoming.contract.title||t("Untitled Book");
+  document.getElementById("restoreInfo").textContent = title+" · "+fmt(w)+" words"+(meta&&meta.saved?" · saved "+backupWhen(meta.saved):"");
+  document.getElementById("restoreWarn").hidden = bookIsEmpty();
+  pendingRestore=d;
+  document.getElementById("restoreSheet").hidden=false;
+}
+document.getElementById("restoreBtn").addEventListener("click", async ()=>{
+  if(!window.MuseBackup){ document.getElementById("importFile").click(); return; }
+  let text=null;
+  try{ text=await MuseBackup.pick(); }catch(e){ toast("That file couldn't be read as a MuseBook backup."); return; }
+  if(text!=null) previewRestore(text);
+});
 document.getElementById("importFile").addEventListener("change",e=>{
   const f=e.target.files[0]; if(!f) return;
   const r=new FileReader();
-  r.onload=()=>{
-    try{
-      const d=JSON.parse(r.result);
-      edDirty=false;
-      DB=mergeDefaults(d);
-      save(); renderAll();
-    }catch(err){ toast("That file couldn't be read as a MuseBook backup."); }
-  };
+  r.onload=()=>previewRestore(String(r.result||""));
   r.readAsText(f);
+  e.target.value="";
+});
+document.getElementById("restoreNo").addEventListener("click", ()=>{ pendingRestore=null; document.getElementById("restoreSheet").hidden=true; });
+document.getElementById("restoreYes").addEventListener("click", async ()=>{
+  const d=pendingRestore; if(!d) return;
+  flushEditor();
+  if(window.MuseBackup){
+    try{ await MuseBackup.safetyCopy(bookCopy()); }
+    catch(e){ toast("We couldn't save a safety copy, so nothing was changed."); return; }
+  }
+  pendingRestore=null; document.getElementById("restoreSheet").hidden=true;
+  edDirty=false;
+  DB=mergeDefaults(d);
+  save(); renderAll();
+  toast("Book restored");
 });
 let resetArmed=false;
 document.getElementById("resetBtn").addEventListener("click",(e)=>{
   if(!resetArmed){
     resetArmed=true; e.target.textContent="Tap again to confirm erase";
-    setTimeout(()=>{ resetArmed=false; e.target.textContent="Erase everything"; },4000);
+    const st=(window.MuseBackup && MuseBackup.state)||{};
+    document.getElementById("eraseWarn").hidden = !!(st.last && Date.parse(st.last.at)>=lastEditAt) || bookIsEmpty();
+    setTimeout(()=>{ resetArmed=false; e.target.textContent="Erase everything"; document.getElementById("eraseWarn").hidden=true; },4000);
     return;
   }
   resetArmed=false; e.target.textContent="Erase everything"; edDirty=false;
+  document.getElementById("eraseWarn").hidden=true;
   try{ localStorage.removeItem("musebook_v1"); }catch(err){}
   DB=JSON.parse(JSON.stringify(DEFAULT));
   save(); renderAll();
@@ -1541,7 +1675,7 @@ function hydrateForms(){
 }
 function renderAll(){
   hydrateForms(); renderContractSummary(); renderPremiseCheck(); renderBible();
-  renderTemplateButtons(); renderBeats(); renderScenes(); renderDraft(); renderDash();
+  renderTemplateButtons(); renderBeats(); renderScenes(); renderDraft(); renderDash(); renderBackupUI();
   applyMood(DB.ui.mood || document.documentElement.getAttribute("data-mood") || "shore", false);
 }
 

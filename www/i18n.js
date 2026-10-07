@@ -81,7 +81,7 @@ const ES = {
   "Language":"Idioma","Atmosphere":"Ambiente","Pick how MuseBook feels while you write. Change it anytime.":"Elige cómo se siente MuseBook mientras escribes. Cámbialo cuando quieras.",
   "Calm Shore":"Costa tranquila","Noir":"Noir","City Vibe":"Ciudad","Celestial":"Celestial",
   "Saving":"Guardado","Everything saves automatically on this phone. To move your book to another phone, export a backup on the Dashboard and import it there.":"Todo se guarda solo en este celular. Para pasar tu libro a otro celular, exporta un respaldo en el Tablero e impórtalo allá.",
-  "saved on this phone":"guardado en este celular","saving…":"guardando…","starting…":"iniciando…","couldn't save — export a backup":"no se pudo guardar — exporta un respaldo",
+  "saved on this phone":"guardado en este celular","saving…":"guardando…","saved on this device only":"guardado solo en este dispositivo","starting…":"iniciando…","couldn't save — export a backup":"no se pudo guardar — exporta un respaldo",
   "MuseBook · your book, your voice. Muse only ever suggests; it never writes your book for you.":"MuseBook · tu libro, tu voz. Muse solo sugiere; nunca escribe tu libro por ti.",
   "Untitled Book":"Libro sin título","Fantasy / Thriller / Memoir…":"Fantasía / Suspenso / Memorias…","YA / Adult / Middle Grade…":"Juvenil / Adultos / Infantil…",
   "When a disgraced mapmaker discovers the kingdom's borders are moving, she must cross a country that no longer exists to warn a king who wants her dead.":"Cuando una cartógrafa caída en desgracia descubre que las fronteras del reino se mueven, debe cruzar un país que ya no existe para advertirle a un rey que la quiere muerta.",
@@ -106,7 +106,31 @@ const ES = {
   // toasts
   "Muse is downloading. Keep writing!":"Muse se está descargando. ¡Sigue escribiendo!","You can get Muse anytime in Settings ⚙.":"Puedes descargar Muse cuando quieras en Ajustes ⚙.",
   "Couldn't open the share screen. Try again.":"No se pudo abrir la pantalla para compartir. Intenta otra vez.",
-  "That file couldn't be read as a MuseBook backup.":"Ese archivo no se pudo leer como respaldo de MuseBook."
+  "That file couldn't be read as a MuseBook backup.":"Ese archivo no se pudo leer como respaldo de MuseBook.",
+  // backup
+  "Back up your book":"Respaldar tu libro",
+  "A backup keeps everything: your plan, characters, scenes and settings. Use it to bring your book back on a new phone or if something goes wrong.":"Un respaldo guarda todo: tu plan, personajes, escenas y ajustes. Sirve para recuperar tu libro en otro teléfono o si algo sale mal.",
+  "Your book is saved on this phone. Back it up so it stays safe if you lose the phone.":"Tu libro se guarda en este teléfono. Respáldalo para que esté a salvo si pierdes el teléfono.",
+  "No backup yet":"Todavía no hay respaldo",
+  "The last backup didn't work. Tap to try again.":"El último respaldo no funcionó. Toca para intentar de nuevo.",
+  "Back up now":"Respaldar ahora","Choose where":"Elegir dónde guardar","Change where":"Cambiar dónde guardar","Backup settings":"Ajustes de respaldo",
+  "Pick a folder on your phone or in your cloud, like Google Drive. MuseBook saves copies there. We never see them.":"Elige una carpeta en tu teléfono o en tu nube, como Google Drive. MuseBook guarda ahí las copias. Nosotros nunca las vemos.",
+  "In Drive, open or create a folder first (like MuseBook).":"En Drive, primero abre o crea una carpeta (por ejemplo, MuseBook).",
+  "Back up when I stop writing":"Respaldar al dejar de escribir",
+  "Restore from a backup":"Restaurar un respaldo","Send a copy":"Enviar una copia",
+  "Backup saved":"Respaldo guardado",
+  "We couldn't save the backup. Check the place you chose.":"No pudimos guardar el respaldo. Revisa el lugar que elegiste.",
+  "That file isn't a MuseBook backup.":"Ese archivo no es un respaldo de MuseBook.",
+  "Restore this backup?":"¿Restaurar este respaldo?",
+  "It will replace the book on this phone. First we save a safety copy of your current book.":"Reemplazará el libro de este teléfono. Antes guardamos una copia de seguridad de tu libro actual.",
+  "Restore":"Restaurar","Cancel":"Cancelar","Book restored":"Libro restaurado",
+  "We couldn't save a safety copy, so nothing was changed.":"No pudimos guardar una copia de seguridad, así que no se cambió nada.",
+  "Your latest changes aren't backed up yet.":"Tus últimos cambios todavía no tienen respaldo.",
+  "this phone":"este teléfono",
+  "Share your manuscript":"Compartir tu manuscrito",
+  "The manuscript is only the text of your book, chapter by chapter, to read or send to someone. It doesn't include your plan or notes.":"El manuscrito es solo el texto de tu libro, por capítulos, para leerlo o enviarlo. No incluye tu plan ni tus notas.",
+  "Text (.md)":"Texto (.md)",
+  "There's no written text yet. Write a scene first.":"Todavía no hay texto escrito. Escribe primero una escena."
 };
 
 // Phrases with numbers or names inside. [pattern, Spanish replacement]
@@ -126,6 +150,9 @@ const ES_RULES = [
   [/^(\d+) scenes? · (.+) words$/, (m, n, w) => n + (n==="1"?" escena · ":" escenas · ") + w + (w==="1"?" palabra":" palabras")],
   [/^(.+) words written$/, (m, w) => w + (w==="1"?" palabra escrita":" palabras escritas")],
   [/^([✓○]) (.+)$/, (m, mark, rest) => mark + " " + (ES[rest] ?? rest)],
+  [/^Last backup: (.+) · (.+)$/, "Último respaldo: $1 · $2"],
+  [/^Copies go to: (.+)$/, "Las copias van a: $1"],
+  [/^([\s\S]+) · ([\d,]+) words( · saved (.+))?$/, (m, title, w, s, when) => title + " · " + w + (w==="1"?" palabra":" palabras") + (s ? " · guardado " + when : "")],
   [/^Chapter (.+)$/, "Capítulo $1"], [/^Entry (\d+)$/, "Entrada $1"], [/^Beat (\d+)$/, "Momento $1"],
   [/^Scene (\d+)( · [\s\S]*)?$/, (m, n, rest) => "Escena " + n + (rest || "")],
   // Scene picker: "3. Untitled scene (Ch 2)" — the title in between is the writer's.
