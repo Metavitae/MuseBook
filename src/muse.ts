@@ -140,13 +140,12 @@ function path(uri: string) {
   return uri.replace(/^file:\/\//, "");
 }
 
-let loadedCtx = 2048;
-async function tryLoad(backend: "gpu" | "cpu", ctx = 2048) {
+async function tryLoad(backend: "gpu" | "cpu") {
   const engine = createLLM();
   await engine.loadModel(path(FINAL), {
     backend,
     systemPrompt: SYSTEM_PROMPT,
-    maxContextTokens: ctx,
+    maxContextTokens: 2048,
     maxOutputTokens: 320,
     temperature: 0.8,
     topK: 64,
@@ -165,7 +164,6 @@ export function load(): Promise<boolean> {
     for (const backend of ["gpu", "cpu"] as const) {
       try {
         llm = await tryLoad(backend);
-        loadedCtx = 2048;
         llm.setMemoryWarningCallback((level) => {
           // The library frees the engine on critical pressure; reload on next ask.
           if (level === "critical") {
@@ -208,49 +206,6 @@ export function ask(prompt: string, onText: (soFar: string) => void): Promise<st
       return text.trim() || null;
     }
     return text.trim();
-  };
-  const p = queue.then(run, run);
-  queue = p.catch(() => {});
-  return p;
-}
-
-/**
- * TEST ONLY (hidden Muse test screen): answers one request with a chosen
- * memory size, reloading Gemma if the size changed. Reports time and backend.
- */
-export function labAsk(prompt: string, ctx: number) {
-  const run = async () => {
-    const t0 = Date.now();
-    try {
-      if (!(await load()) || !llm) return { error: "Muse not available", ms: 0 };
-      if (loadedCtx !== ctx) {
-        await llm.unload().catch(() => {});
-        llm = null;
-        let err = "";
-        for (const backend of ["gpu", "cpu"] as const) {
-          try {
-            llm = await tryLoad(backend, ctx);
-            loadedCtx = ctx;
-            set({ state: "loaded", backend });
-            break;
-          } catch (e) {
-            err = String((e as Error)?.message ?? e);
-          }
-        }
-        if (!llm) {
-          loadPromise = null;
-          set({ state: "ready" });
-          return { error: "couldn't load with memory " + ctx + ": " + err, ms: Date.now() - t0 };
-        }
-      }
-      const t1 = Date.now();
-      llm.resetConversation();
-      let text = "";
-      await llm.sendMessageAsync(prompt, (tok) => { if (tok) text += tok; });
-      return { text: text.trim(), ms: Date.now() - t1, loadMs: t1 - t0, backend: status.backend, ctx };
-    } catch (e) {
-      return { error: String((e as Error)?.message ?? e), ms: Date.now() - t0, ctx };
-    }
   };
   const p = queue.then(run, run);
   queue = p.catch(() => {});

@@ -41,8 +41,7 @@ export function bridgeScript(book: unknown, status: MuseStatus, firstRunSeen: bo
     pause: function(){ return call("musePause"); },
     remove: function(){ return call("museDelete"); },
     markFirstRunSeen: function(){ this.firstRunSeen = true; return call("firstRunSeen"); },
-    theme: function(bg, dark){ return call("theme", [bg, !!dark]); },
-    lab: function(prompt, ctx){ return call("museLab", [prompt, ctx]); }
+    theme: function(bg, dark){ return call("theme", [bg, !!dark]); }
   };
   var doc = {
     get: function(){ return Promise.resolve({data: book}); },

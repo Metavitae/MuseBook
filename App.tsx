@@ -107,8 +107,6 @@ export default function App() {
         case "theme":
           setTheme({ bg: String(a[0]) || "#f6f2e9", dark: !!a[1] });
           return reply(id, true, null);
-        case "museLab":
-          return reply(id, true, await Muse.labAsk(String(a[0]), Number(a[1]) || 2048));
         case "museAsk": {
           const text = await Muse.ask(String(a[0]), (t) => run(`window.__mb.stream(${id}, ${JSON.stringify(t)})`));
           return reply(id, true, text);
