@@ -161,6 +161,7 @@
 
   h2{font-size:24px; margin:4px 0 4px; font-weight:700}
   .hint{color:var(--muted); font-size:13px; margin:0 0 16px; max-width:60ch}
+  .hint.term{margin:4px 0 8px}
 
   .card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; transition:background .35s,border-color .35s}
   .card h3{margin:0 0 12px; font-size:12px; text-transform:uppercase; letter-spacing:.8px; color:var(--accent-2); font-family:var(--font-body); font-weight:700}
@@ -305,6 +306,7 @@
           </select>
         </div>
       </div>
+      <p class="hint term">Point of view is whose eyes we see the story through. First person is "I"; third person is "she" or "he". Choose it before you write, because changing it later means rewriting.</p>
     </div>
     <div class="card">
       <h3>Targets</h3>
@@ -333,6 +335,7 @@
     <p class="hint">Your premise is the heart of your book in a few words: who it's about, what they want, and what stands in their way. If you can't say it in one sentence, the book doesn't know what it is yet.</p>
     <div class="card">
       <label>Logline — one sentence</label>
+      <p class="hint term">Your logline is your whole book in one sentence, the one you'd say if someone asked "what's it about?" It names the hero, what they want, and what stands in the way.</p>
       <textarea data-bind="premise.logline" rows="2" placeholder="When a disgraced mapmaker discovers the kingdom's borders are moving, she must cross a country that no longer exists to warn a king who wants her dead."></textarea>
       <label>Back-cover summary — one paragraph</label>
       <textarea data-bind="premise.summary" rows="5" placeholder="Who is the hero? What do they want? What stands in the way? What's at stake if they fail?"></textarea>
@@ -360,6 +363,7 @@
     <div class="card"><h3>Load a structure</h3><div class="btns" id="templateBtns"></div></div>
     <div class="card">
       <h3>Your beats</h3>
+      <p class="hint term">A beat is a moment where something important happens and the story turns. Put them in order and you have the skeleton of your book, before you write a single scene.</p>
       <div id="beatList"></div>
       <div class="btns">
         <button class="ghost" data-add="beats">+ Add beat</button>
