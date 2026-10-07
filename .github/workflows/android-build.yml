@@ -59,6 +59,23 @@ jobs:
         working-directory: android
         run: ./gradlew assembleRelease --no-daemon
 
+      - name: Sign with the MuseBook release key
+        # Only when the key is stored as repo secrets. Without them the APK
+        # keeps the debug signature, so update-installs on test phones still
+        # work. The key never lives in this (public) repo.
+        env:
+          KEYSTORE_B64: ${{ secrets.MUSEBOOK_KEYSTORE_B64 }}
+          KEY_PASSWORD: ${{ secrets.MUSEBOOK_KEY_PASSWORD }}
+        if: ${{ env.KEYSTORE_B64 != '' }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          APK=android/app/build/outputs/apk/release/app-release.apk
+          "$APKSIGNER" sign --ks "$RUNNER_TEMP/release.jks" --ks-key-alias musebook \
+            --ks-pass env:KEY_PASSWORD --key-pass env:KEY_PASSWORD "$APK"
+          "$APKSIGNER" verify --print-certs "$APK" | grep -i "certificate DN"
+          rm -f "$RUNNER_TEMP/release.jks"
+
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
