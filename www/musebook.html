@@ -766,6 +766,9 @@ document.addEventListener("input", e=>{
   save();
   if(path.startsWith("contract")) renderContractSummary();
   if(path.startsWith("premise")) renderPremiseCheck();
+  // Keep a Story Bible card's heading in step with its name while typing.
+  const nm=path.match(/^bible\.\w+\.(\d+)\.name$/);
+  if(nm){ const h=t.closest(".item")?.querySelector(".item-head strong"); if(h) h.textContent=val||("Entry "+(Number(nm[1])+1)); }
   if(path.startsWith("scenes")||path.startsWith("beats")||path.startsWith("bible")) renderDash();
 });
 document.addEventListener("change", e=>{

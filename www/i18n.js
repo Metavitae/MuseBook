@@ -121,7 +121,7 @@ const ES_RULES = [
   [/^From the (.+) structure:$/, (m, n) => "De la estructura " + (ES[n]||n) + ":"],
   [/^Muse needs about (.+) GB of free space on this phone\. Free some up and try again\.$/, "Muse necesita unos $1 GB libres en este celular. Libera espacio e intenta otra vez."],
   [/^of (.+) target$/, "de una meta de $1"], [/^(.+) to go$/, "faltan $1"], [/^(\d+) with words$/, "$1 con palabras"],
-  [/^(\d+)% of (.+) words$/, "$1% de $2 palabras"], [/^(\d+)% of target words$/, "$1% de la meta"],
+  [/^(\d+)% of target words$/, "$1% de la meta"], [/^(\d+)% of (.+) words$/, "$1% de $2 palabras"],
   [/^(.+) of (.+) words today$/, "$1 de $2 palabras hoy"],
   [/^(\d+) scenes? · (.+) words$/, (m, n, w) => n + (n==="1"?" escena · ":" escenas · ") + w + (w==="1"?" palabra":" palabras")],
   [/^(.+) words written$/, (m, w) => w + (w==="1"?" palabra escrita":" palabras escritas")],
