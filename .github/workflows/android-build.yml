@@ -8,6 +8,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      KEYSTORE_B64: ${{ secrets.MUSEBOOK_KEYSTORE_B64 }}
+      KEY_PASSWORD: ${{ secrets.MUSEBOOK_KEY_PASSWORD }}
     defaults:
       run:
         working-directory: .
@@ -63,9 +66,6 @@ jobs:
         # Only when the key is stored as repo secrets. Without them the APK
         # keeps the debug signature, so update-installs on test phones still
         # work. The key never lives in this (public) repo.
-        env:
-          KEYSTORE_B64: ${{ secrets.MUSEBOOK_KEYSTORE_B64 }}
-          KEY_PASSWORD: ${{ secrets.MUSEBOOK_KEY_PASSWORD }}
         if: ${{ env.KEYSTORE_B64 != '' }}
         run: |
           echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.jks"
