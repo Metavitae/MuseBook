@@ -45,7 +45,7 @@ const ES = {
   // outline
   "Stage 4 — Outline & Beats":"Etapa 4 — Esquema y momentos clave",
   "Pick a structure template, or build your own. Skipping this is allowed — but it's the #1 cause of a stuck draft.":"Elige una estructura o arma la tuya. Puedes saltarte esto, pero es la causa #1 de un borrador atorado.",
-  "Load a structure":"Carga una estructura","3-Act":"3 actos","Save the Cat":"Salva al gato","Hero's Journey":"El viaje del héroe","Romance Beats":"Romance","Clear all beats":"Borrar todos los momentos",
+  "Load a structure":"Carga una estructura","3-Act":"3 actos","Save the Cat":"Salva al gato","Hero's Journey":"El viaje del héroe","Romance Beats":"Romance","Memoir":"Memorias","Clear all beats":"Borrar todos los momentos",
   "Your beats":"Tus momentos clave","No beats yet. Load a template above, or add your own.":"Todavía no hay momentos. Carga una estructura arriba o agrega los tuyos.",
   "Title":"Título","Act":"Acto","What happens":"Qué pasa","+ Add beat":"+ Agregar momento","✦ Suggest the next beat":"✦ Sugiere el siguiente momento",
   // scenes
@@ -187,6 +187,17 @@ const TEMPLATES_ES = {
     ["El momento oscuro","2","Los dos solos, seguros de que se acabó."],
     ["El gran gesto","3","Uno de los dos demuestra que cambió."],
     ["Felices para siempre","3","Juntos, en nuevos términos."]
+  ],
+  "Memoir":[
+    ["Antes de mí","1","De dónde vienes: tus padres, tus abuelos, el mundo en el que naciste."],
+    ["La infancia","1","La casa donde creciste. Un recuerdo que muestre quién eras."],
+    ["La primera grieta","1","El momento en que entendiste que el mundo no era como creías."],
+    ["La partida","2","Cuando dejaste tu casa, tu país o a la persona que eras."],
+    ["La lucha","2","Lo que la vida te puso enfrente y cómo lo peleaste."],
+    ["El punto de quiebre","2","La decisión o la pérdida que cambió el rumbo de tu vida."],
+    ["Lo que costó","2","Lo que perdiste o dejaste en el camino."],
+    ["En quién te convertiste","3","La persona que eres ahora y lo que por fin entendiste."],
+    ["Hoy","3","Dónde estás ahora. Lo que quieres que el lector se lleve."]
   ]
 };
 
