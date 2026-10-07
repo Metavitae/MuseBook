@@ -130,6 +130,8 @@ const ES = {
   "Share your manuscript":"Compartir tu manuscrito",
   "The manuscript is only the text of your book, chapter by chapter, to read or send to someone. It doesn't include your plan or notes.":"El manuscrito es solo el texto de tu libro, por capítulos, para leerlo o enviarlo. No incluye tu plan ni tus notas.",
   "Text (.md)":"Texto (.md)",
+  // book parts
+  "What is it?":"¿Qué es?","Normal scene":"Escena normal","Prologue":"Prólogo","Epilogue":"Epílogo","Dedication":"Dedicatoria",
   "There's no written text yet. Write a scene first.":"Todavía no hay texto escrito. Escribe primero una escena."
 };
 
@@ -139,6 +141,7 @@ const ES_RULES = [
   [/^(.+) words per chapter is very long\. Most chapters land between 1,500 and 4,000\.$/, "$1 palabras por capítulo es mucho. La mayoría de los capítulos tienen entre 1,500 y 4,000."],
   [/^(\d+) scene\(s\) missing a goal, conflict, or outcome\.$/, "$1 escena(s) sin meta, conflicto o resultado."],
   [/^You need (.+) words\/day to finish on time, but your goal is (.+)\.$/, "Necesitas $1 palabras al día para terminar a tiempo, pero tu meta es $2."],
+  [/^Reading (Prologue|Epilogue|Dedication) straight through — (\d+) scenes?\.$/, (m, k, n) => "Leyendo " + ({Prologue:"el prólogo",Epilogue:"el epílogo",Dedication:"la dedicatoria"})[k] + " de corrido — " + n + (n==="1"?" escena.":" escenas.")],
   [/^Reading Chapter (.+) straight through — (\d+) scenes?\.$/, (m, c, n) => "Leyendo el capítulo " + c + " de corrido — " + n + (n==="1"?" escena.":" escenas.")],
   [/^Downloading Muse… (\d+)% \((.+) of 2\.6 GB\)\. You can keep writing\. Keep MuseBook open; if you leave, it pauses\.$/, "Descargando Muse… $1% ($2 de 2.6 GB). Puedes seguir escribiendo. Deja MuseBook abierto; si te sales, se pausa."],
   [/^Download paused at (\d+)%\. Resume continues where it left off\.$/, "Descarga en pausa al $1%. Al continuar, sigue donde se quedó."],
@@ -156,8 +159,8 @@ const ES_RULES = [
   [/^Chapter (.+)$/, "Capítulo $1"], [/^Entry (\d+)$/, "Entrada $1"], [/^Beat (\d+)$/, "Momento $1"],
   [/^Scene (\d+)( · [\s\S]*)?$/, (m, n, rest) => "Escena " + n + (rest || "")],
   // Scene picker: "3. Untitled scene (Ch 2)" — the title in between is the writer's.
-  [/^(\d+\. )(.*?)( \(Ch ([^)]*)\))?$/, (m, n, title, ch, c) =>
-    n + (title==="Untitled scene" ? "Escena sin título" : title) + (ch ? " (Cap. "+c+")" : "")]
+  [/^(\d+\. )(.*?)( \((?:Ch ([^)]*)|(Prologue|Epilogue|Dedication))\))?$/, (m, n, title, ch, c, k) =>
+    n + (title==="Untitled scene" ? "Escena sin título" : title) + (k ? " ("+ES[k]+")" : ch ? " (Cap. "+c+")" : "")]
 ];
 
 const TEMPLATES_ES = {

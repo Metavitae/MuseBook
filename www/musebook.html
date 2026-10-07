@@ -233,6 +233,7 @@
   .musebox .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--accent-2); font-weight:700; margin-bottom:6px; display:block}
   .readview{font-family:'Source Serif 4',Georgia,serif; font-size:17px; line-height:1.9}
   .readview .scenebreak{text-align:center; color:var(--muted); margin:22px 0; letter-spacing:4px}
+  h1,h2,h3,h4,label,.item-head strong,.readview h2,.readview h3{font-variant-numeric:lining-nums}
   .bstatus{font-size:13.5px; margin:0 0 4px}
   .bstatus.bad{color:var(--bad); cursor:pointer}
   .swrow{display:flex; align-items:center; gap:10px; margin-top:14px; font-size:14px; cursor:pointer}
@@ -723,13 +724,32 @@ function normalizeScenes(d){
   return d;
 }
 /*SANITIZE-END*/
+/* Book parts: a scene is a normal scene (grouped by its chapter) or a special
+   page with scene.kind = "dedication" | "prologue" | "epilogue". */
+const KIND_LABEL={dedication:"Dedication", prologue:"Prologue", epilogue:"Epilogue"};
+function partKey(s){ return KIND_LABEL[s.kind] ? "#"+s.kind : (s.chapter||"—"); }
+function partLabel(k){ return k[0]==="#" ? KIND_LABEL[k.slice(1)] : "Chapter "+k; }
+function partOrder(keys){
+  const rank=k=>k==="#dedication"?0 : k==="#prologue"?1 : k==="#epilogue"?3 : 2;
+  return keys.sort((a,b)=>{
+    const r=rank(a)-rank(b); if(r) return r;
+    const na=parseFloat(a), nb=parseFloat(b); if(!isNaN(na)&&!isNaN(nb)) return na-nb; return a.localeCompare(b);
+  });
+}
+// Before parts existed, a prologue was a scene in chapter "0" titled "Prólogo".
+function migrateKinds(d){
+  (d.scenes||[]).forEach(sc=>{
+    if(sc.kind===undefined && String(sc.chapter||"").trim()==="0" && /pr[oó]logo|prologue/i.test(sc.title||"")) sc.kind="prologue";
+  });
+  return d;
+}
 function mergeDefaults(d){
-  return normalizeScenes(Object.assign(JSON.parse(JSON.stringify(DEFAULT)), d,
+  return migrateKinds(normalizeScenes(Object.assign(JSON.parse(JSON.stringify(DEFAULT)), d,
     {contract:Object.assign({},DEFAULT.contract,d.contract||{}),
      premise:Object.assign({},DEFAULT.premise,d.premise||{}),
      bible:Object.assign({},DEFAULT.bible,d.bible||{}),
      stats:Object.assign({},DEFAULT.stats,d.stats||{}),
-     ui:Object.assign({},DEFAULT.ui,d.ui||{})}));
+     ui:Object.assign({},DEFAULT.ui,d.ui||{})})));
 }
 
 function setSaved(state){
@@ -1031,6 +1051,9 @@ function renderScenes(){
         </div>
       </div>
       <div class="row">
+        <div style="flex:0 1 140px"><label>What is it?</label><select data-bind="scenes.${i}.kind">
+          ${[["","Normal scene"],["prologue","Prologue"],["epilogue","Epilogue"],["dedication","Dedication"]].map(([v,l])=>`<option value="${v}" ${(s.kind||"")===v?"selected":""}>${l}</option>`).join("")}
+        </select></div>
         <div style="flex:0 1 100px"><label>Chapter</label><input data-bind="scenes.${i}.chapter" value="${esc(s.chapter||"")}" /></div>
         <div style="flex:3 1 180px"><label>Scene title</label><input data-bind="scenes.${i}.title" value="${esc(s.title||"")}" /></div>
       </div>
@@ -1060,7 +1083,7 @@ function renderDraft(){
     wrap.innerHTML='<div class="card"><div class="empty">You need at least one scene before you can draft. Go to <b>5 · Scenes</b> and add one.</div><button class="act" id="quickScene" style="margin-top:12px">+ Quick add a scene</button></div>';
     const qs=document.getElementById("quickScene");
     if(qs) qs.addEventListener("click",()=>{
-      DB.scenes.push({chapter:"",title:"Scene 1",pov:"",goal:"",conflict:"",outcome:"",text:"",html:""});
+      DB.scenes.push({chapter:"",kind:"",title:"Scene 1",pov:"",goal:"",conflict:"",outcome:"",text:"",html:""});
       DB.ui.scene=DB.scenes.length-1; save(); renderScenes(); renderDraft();
     });
     return;
@@ -1100,11 +1123,11 @@ function renderDraft(){
       <div id="museContinueOut"></div>
     </div>`;
   } else {
-    const chap = s.chapter || "—";
-    const chapScenes = DB.scenes.filter(sc=>(sc.chapter||"—")===chap);
+    const chap = partKey(s);
+    const chapScenes = DB.scenes.filter(sc=>partKey(sc)===chap);
     const body = chapScenes.map(sc=>sc.html||"").filter(t=>t.replace(/<[^>]*>/g,"").trim()).join('<div class="scenebreak">◆ ◆ ◆</div>');
     modeBody = `<div class="card">
-      <div class="hint" style="margin-bottom:12px">Reading Chapter ${esc(chap)} straight through — ${chapScenes.length} scene${chapScenes.length===1?"":"s"}.</div>
+      <div class="hint" style="margin-bottom:12px">Reading ${esc(partLabel(chap))} straight through — ${chapScenes.length} scene${chapScenes.length===1?"":"s"}.</div>
       <div class="readview">${body || '<div class="empty">Nothing written in this chapter yet.</div>'}</div>
     </div>`;
   }
@@ -1113,7 +1136,7 @@ function renderDraft(){
     <div class="card">
       <label>Writing now</label>
       <select id="sceneSelect">
-        ${DB.scenes.map((sc,i)=>`<option value="${i}" ${i===idx?"selected":""}>${i+1}. ${esc(sc.title||"Untitled scene")}${sc.chapter?" (Ch "+esc(sc.chapter)+")":""}</option>`).join("")}
+        ${DB.scenes.map((sc,i)=>`<option value="${i}" ${i===idx?"selected":""}>${i+1}. ${esc(sc.title||"Untitled scene")}${KIND_LABEL[sc.kind]?" ("+KIND_LABEL[sc.kind]+")":sc.chapter?" (Ch "+esc(sc.chapter)+")":""}</option>`).join("")}
       </select>
       <div style="margin-top:10px;font-size:13px;color:var(--muted)">
         ${s.pov?`<div><b style="color:var(--accent-2)">POV:</b> ${esc(s.pov)}</div>`:""}
@@ -1284,10 +1307,10 @@ function renderDash(){
 function renderChapterBreakdown(){
   if(!DB.scenes.length) return '<div class="empty">No scenes yet.</div>';
   const map={};
-  DB.scenes.forEach((s)=>{ const k=s.chapter||"—"; if(!map[k]) map[k]={scenes:0,words:0}; map[k].scenes++; map[k].words+=words(s.text); });
-  const keys=Object.keys(map).sort((a,b)=>{ const na=parseFloat(a), nb=parseFloat(b); if(!isNaN(na)&&!isNaN(nb)) return na-nb; return a.localeCompare(b); });
+  DB.scenes.forEach((s)=>{ const k=partKey(s); if(!map[k]) map[k]={scenes:0,words:0}; map[k].scenes++; map[k].words+=words(s.text); });
+  const keys=partOrder(Object.keys(map));
   return keys.map(k=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">
-    <span>Chapter ${esc(k)}</span><span style="color:var(--muted)">${map[k].scenes} scene${map[k].scenes===1?"":"s"} · ${fmt(map[k].words)} words</span>
+    <span>${esc(partLabel(k))}</span><span style="color:var(--muted)">${map[k].scenes} scene${map[k].scenes===1?"":"s"} · ${fmt(map[k].words)} words</span>
   </div>`).join("");
 }
 
@@ -1480,7 +1503,7 @@ function handleAdd(key){
   if(key==="locations") DB.bible.locations.push({name:"",desc:""});
   if(key==="rules") DB.bible.rules.push({name:"",desc:""});
   if(key==="beats") DB.beats.push({title:"",act:"",desc:""});
-  if(key==="scenes") DB.scenes.push({chapter:"",title:"",pov:"",goal:"",conflict:"",outcome:"",text:"",html:""});
+  if(key==="scenes") DB.scenes.push({chapter:"",kind:"",title:"",pov:"",goal:"",conflict:"",outcome:"",text:"",html:""});
   save(); renderBible(); renderBeats(); renderScenes(); renderDash(); renderDraft();
 }
 function handleDelete(path){
@@ -1516,13 +1539,13 @@ function handleTemplate(name){
 function buildManuscript(){
   const c=DB.contract;
   const byChapter={};
-  DB.scenes.forEach(s=>{ const k=s.chapter||"—"; (byChapter[k]=byChapter[k]||[]).push(s); });
-  const keys=Object.keys(byChapter).sort((a,b)=>{ const na=parseFloat(a), nb=parseFloat(b); if(!isNaN(na)&&!isNaN(nb)) return na-nb; return a.localeCompare(b); });
+  DB.scenes.forEach(s=>{ const k=partKey(s); (byChapter[k]=byChapter[k]||[]).push(s); });
+  const keys=partOrder(Object.keys(byChapter));
   let out = `# ${c.title||"Untitled Book"}\n\n`;
   if(c.genre) out += `*${c.genre}*\n\n`;
   out += `---\n\n`;
   keys.forEach(k=>{
-    out += `## ${t("Chapter "+k)}\n\n`;
+    out += `## ${t(partLabel(k))}\n\n`;
     byChapter[k].forEach(s=>{ const md=htmlToMarkdown(s.html||""); if(md.trim()) out += md.trim()+"\n\n"; });
     out += `\n`;
   });
