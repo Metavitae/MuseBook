@@ -1,0 +1,214 @@
+/* ============================================================
+   NOIR: the writing desk at night.
+   Real materials (CC0 textures in www/tex, inlined at build):
+   leather walls, brass plates, black typewriter keys with brass
+   rims, paper in the platen, a lamp pool, a red ribbon.
+   Spec: Chat's looks page (Noir row + Noir kit), 2026-10-07.
+   No color-mix() anywhere: some phones drop it silently.
+   ============================================================ */
+:root[data-mood="noir"]{
+  --bg:#17120e; --surface:#1f1710; --surface-2:#0f0b08;
+  --text:#ece2cb; --muted:#b8a888; --border:#4a3a26;
+  --accent:#e6c87c; --accent-2:#d9a35c;
+  --good:#e6c87c; --warn:#e6c87c; --bad:#e0685a;
+  --font-display:'Special Elite','Courier New',monospace; --font-body:'Source Serif 4',Georgia,serif;
+  --tint-focus:rgba(230,200,124,.25); --tint-warn:rgba(196,56,43,.16); --tint-warn-b:rgba(196,56,43,.55);
+  --tint-muse:rgba(230,200,124,.08); --tint-muse-b:rgba(230,200,124,.35); --scrim:rgba(8,5,3,.72);
+  --nr-leather:url(tex/noir-leather.webp); --nr-brass:url(tex/noir-brass.webp);
+  --nr-paper:url(tex/noir-paper.webp); --nr-wood:url(tex/noir-wood.webp);
+  --nr-key-bg:radial-gradient(circle at 35% 26%,#4b443b,#1b1713 55%,#0b0907 100%);
+  --nr-key-rim:0 0 0 2px #b8893d,0 0 0 3.5px #4a3210,0 4px 0 3px #2a1c08,0 8px 10px 2px rgba(0,0,0,.55);
+  --nr-key-rim-down:0 0 0 2px #b8893d,0 0 0 3.5px #4a3210,0 1px 0 3px #2a1c08,0 2px 4px 1px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+
+/* ---- the room: leather, lamplight, vignette ---- */
+:root[data-mood="noir"] body{
+  background-color:#17120e;
+  background-image:
+    radial-gradient(ellipse 120% 70% at 50% 115%, rgba(5,3,2,.85), rgba(5,3,2,0) 70%),
+    var(--nr-leather);
+  background-size:auto, 360px 360px;
+  background-attachment:fixed, fixed;
+}
+:root[data-mood="noir"] #atmos{display:block; position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
+:root[data-mood="noir"] main, :root[data-mood="noir"] footer{position:relative; z-index:1}
+:root[data-mood="noir"] .nr-lamp{position:absolute; top:-140px; right:-140px; width:460px; height:460px; border-radius:50%;
+  background:radial-gradient(circle, rgba(240,190,95,.30), rgba(240,190,95,0) 65%); animation:nrbreathe 6s ease-in-out infinite}
+@keyframes nrbreathe{0%,100%{opacity:.75; transform:scale(1)} 50%{opacity:1; transform:scale(1.06)}}
+:root[data-mood="noir"] .nr-stitch{position:absolute; inset:8px; border:1.5px dashed rgba(200,160,100,.28); border-radius:22px}
+
+/* writing scene: the lamp pools on the page, the room falls into shadow */
+:root[data-mood="noir"] .nr-pool{position:absolute; inset:0; opacity:0; transition:opacity .8s ease;
+  background:radial-gradient(ellipse 95% 62% at 50% 52%, rgba(244,196,110,.20), rgba(244,196,110,0) 70%)}
+:root[data-mood="noir"] .nr-shade{position:absolute; inset:0; opacity:0; transition:opacity .8s ease;
+  background:radial-gradient(ellipse 85% 60% at 50% 52%, rgba(0,0,0,0) 45%, rgba(5,3,2,.78) 100%)}
+:root[data-mood="noir"][data-tab="draft"] .nr-pool, :root[data-mood="noir"][data-tab="draft"] .nr-shade{opacity:1}
+:root[data-mood="noir"][data-tab="draft"] .nr-shade{animation:nrshade 7s ease-in-out infinite}
+@keyframes nrshade{0%,100%{opacity:.9} 50%{opacity:1}}
+:root[data-mood="noir"] .nr-motes{position:absolute; inset:0; opacity:0; transition:opacity 1s}
+:root[data-mood="noir"][data-tab="draft"] .nr-motes{opacity:1}
+:root[data-mood="noir"] .nr-motes i{position:absolute; border-radius:50%; background:rgba(255,214,140,.9); opacity:0; animation:nrmote 10s ease-in-out infinite}
+@keyframes nrmote{0%{transform:translate(0,0); opacity:0} 20%{opacity:.85} 100%{transform:translate(16px,-110px); opacity:0}}
+
+/* ---- header: brass nameplate on a wood rail ---- */
+:root[data-mood="noir"] header{
+  background-color:#140f0b;
+  background-image:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.55)), var(--nr-wood);
+  background-size:auto, 300px 300px;
+  border-bottom:0; box-shadow:0 2px 0 #8a6322, 0 3px 0 #2a1c08, 0 8px 18px rgba(0,0,0,.6);
+}
+:root[data-mood="noir"] .wordmark{
+  position:relative; padding:6px 22px 5px; border-radius:8px;
+  font-family:'Special Elite',monospace; font-weight:400; font-size:16px; letter-spacing:.2em; color:#2a1c08;
+  background:linear-gradient(180deg, rgba(255,240,200,.25), rgba(90,63,20,.15)), var(--nr-brass);
+  background-size:auto, 220px 110px;
+  box-shadow:0 1px 0 #f6e3a8 inset, 0 -2px 0 #5a3f14 inset, 0 4px 10px rgba(0,0,0,.55);
+  text-transform:uppercase; text-shadow:0 1px 0 rgba(255,236,190,.45);
+}
+:root[data-mood="noir"] .wordmark em{color:#2a1c08}
+:root[data-mood="noir"] .wordmark::before, :root[data-mood="noir"] .wordmark::after{
+  content:""; position:absolute; top:50%; width:7px; height:7px; margin-top:-3.5px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, #f3e2b0, #7a561b); box-shadow:0 1px 1px rgba(0,0,0,.6)}
+:root[data-mood="noir"] .wordmark::before{left:7px}
+:root[data-mood="noir"] .wordmark::after{right:7px}
+
+/* ---- keys: black typewriter keys, brass rim, cream letters ---- */
+:root[data-mood="noir"] .iconbtn, :root[data-mood="noir"] .gearbtn,
+:root[data-mood="noir"] nav button, :root[data-mood="noir"] button.act,
+:root[data-mood="noir"] button.mini, :root[data-mood="noir"] button.muse,
+:root[data-mood="noir"] .edtools button, :root[data-mood="noir"] .segmented button{
+  background:var(--nr-key-bg); color:#f1e7d0; border:0; box-shadow:var(--nr-key-rim);
+  font-family:'Special Elite',monospace; font-weight:400; letter-spacing:.08em;
+  transition:transform .08s ease, box-shadow .08s ease;
+}
+:root[data-mood="noir"] .iconbtn:active, :root[data-mood="noir"] .gearbtn:active,
+:root[data-mood="noir"] nav button:active, :root[data-mood="noir"] button.act:active,
+:root[data-mood="noir"] button.mini:active, :root[data-mood="noir"] button.muse:active,
+:root[data-mood="noir"] .edtools button:active, :root[data-mood="noir"] .segmented button:active{
+  transform:translateY(3px); box-shadow:var(--nr-key-rim-down)}
+:root[data-mood="noir"] .gearbtn{border-radius:50%; width:40px; height:40px; color:#f1e7d0}
+:root[data-mood="noir"] .iconbtn{border-radius:12px; min-height:38px}
+:root[data-mood="noir"] button.act{border-radius:14px; min-height:46px; padding:10px 18px; font-size:14px; text-transform:uppercase; letter-spacing:.12em}
+:root[data-mood="noir"] button.muse{border-radius:12px; min-height:40px; color:#e6c87c}
+:root[data-mood="noir"] nav{padding-inline:4px}
+:root[data-mood="noir"] nav.open{max-height:70px; padding-block:6px 14px}
+:root[data-mood="noir"] nav button{border-radius:12px; margin:0 3px; color:#d8c9a6}
+/* the stage you are on is a brass key */
+:root[data-mood="noir"] nav button.active, :root[data-mood="noir"] .segmented button.active, :root[data-mood="noir"] .edtools button.on{
+  background:linear-gradient(180deg, rgba(255,240,200,.25), rgba(90,63,20,.2)), var(--nr-brass); background-size:auto, 220px 110px;
+  color:#2a1c08; text-shadow:0 1px 0 rgba(255,236,190,.4)}
+:root[data-mood="noir"] .segmented{border:0; gap:10px; overflow:visible; padding:4px}
+:root[data-mood="noir"] .segmented button{border-radius:10px}
+
+/* ---- brass buttons: the second choice ---- */
+:root[data-mood="noir"] button.ghost{
+  border:0; border-radius:12px; min-height:42px; padding:9px 16px; color:#2a1c08;
+  font-family:'Special Elite',monospace; font-weight:400; letter-spacing:.05em;
+  background:linear-gradient(180deg, rgba(255,240,200,.22), rgba(90,63,20,.18)), var(--nr-brass); background-size:auto, 220px 110px;
+  box-shadow:0 1px 0 #f6e3a8 inset, 0 -2px 0 #5a3f14 inset, 0 5px 10px rgba(0,0,0,.5);
+  text-shadow:0 1px 0 rgba(255,236,190,.4);
+}
+:root[data-mood="noir"] button.ghost:active{transform:translateY(2px); box-shadow:0 1px 0 #f6e3a8 inset, 0 -1px 0 #5a3f14 inset, 0 2px 4px rgba(0,0,0,.5)}
+:root[data-mood="noir"] button.danger{border:1.5px solid #a02b21; color:#e0685a; background:transparent; font-family:'Special Elite',monospace; border-radius:10px}
+
+/* ---- cards: stitched leather panels ---- */
+:root[data-mood="noir"] .card{
+  position:relative; border:0; border-radius:18px; padding:18px 18px 16px;
+  background-color:#241a12;
+  background-image:radial-gradient(ellipse 100% 60% at 50% 0%, rgba(214,160,70,.12), rgba(214,160,70,0) 70%), var(--nr-leather);
+  background-size:auto, 300px 300px;
+  box-shadow:0 1px 0 rgba(255,220,170,.10) inset, 0 10px 24px rgba(0,0,0,.55);
+}
+:root[data-mood="noir"] .card::before{content:""; position:absolute; inset:7px; border:1.5px dashed rgba(200,160,100,.30); border-radius:13px; pointer-events:none}
+:root[data-mood="noir"] .card h3{font-family:'Special Elite',monospace; font-weight:400; font-size:12px; letter-spacing:.22em; color:#c8a56a; text-shadow:0 1px 0 rgba(0,0,0,.7)}
+:root[data-mood="noir"] h2{font-family:'Special Elite',monospace; font-weight:400; letter-spacing:.04em; color:#f1e7d0; text-shadow:0 2px 6px rgba(0,0,0,.6)}
+:root[data-mood="noir"] label{font-family:'Special Elite',monospace; font-weight:400; letter-spacing:.12em; text-transform:uppercase; font-size:11px; color:#c8a56a}
+
+/* ---- text boxes: a slot cut into the leather, brass ring ---- */
+:root[data-mood="noir"] input, :root[data-mood="noir"] textarea, :root[data-mood="noir"] select{
+  background:#0f0b08; color:#f1e7d0; border:0; border-radius:8px;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.85), 0 0 0 1.5px #8a6322, 0 1px 0 1.5px #4a3210;
+}
+:root[data-mood="noir"] input::placeholder, :root[data-mood="noir"] textarea::placeholder{color:#7a6a50}
+:root[data-mood="noir"] input:focus, :root[data-mood="noir"] textarea:focus, :root[data-mood="noir"] select:focus{
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.85), 0 0 0 2px #e6c87c, 0 0 14px rgba(230,200,124,.25)}
+:root[data-mood="noir"] .swrow input{box-shadow:none; accent-color:#c4382b}
+
+/* ---- case files: scenes, characters, beats are manila folders ---- */
+:root[data-mood="noir"] .item{
+  --text:#1d1914; --muted:#5a4528; --surface-2:#f3e9cf; --border:#a88f5c; --accent:#8a1f17;
+  position:relative; margin-top:20px; border:0; border-radius:3px 14px 6px 6px; color:#1d1914;
+  background:linear-gradient(180deg, rgba(255,250,235,.25), rgba(150,120,60,.15)), var(--nr-paper);
+  background-size:auto, 320px 320px; background-color:#d9c79a;
+  box-shadow:0 1px 0 #f0e3bc inset, 0 10px 18px rgba(0,0,0,.55);
+}
+:root[data-mood="noir"] .item .item-head strong{
+  position:absolute; top:-15px; left:16px; padding:2px 12px; border-radius:7px 7px 0 0; background:#d4c08f;
+  font-family:'Special Elite',monospace; font-weight:400; letter-spacing:.14em; color:#4a3210; font-size:11px}
+:root[data-mood="noir"] .item input, :root[data-mood="noir"] .item textarea, :root[data-mood="noir"] .item select{
+  background:rgba(255,252,240,.7); color:#1d1914; box-shadow:inset 0 1px 3px rgba(60,40,10,.35), 0 0 0 1px #a88f5c}
+:root[data-mood="noir"] .item label{color:#5a4528}
+:root[data-mood="noir"] .item .hint{color:#5a4528}
+:root[data-mood="noir"] .stat{border:0; border-radius:10px; background:#0f0b08; box-shadow:inset 0 2px 6px rgba(0,0,0,.8), 0 0 0 1.5px #8a6322}
+:root[data-mood="noir"] .stat .k{font-family:'Special Elite',monospace; font-weight:400; letter-spacing:.14em; color:#c8a56a}
+:root[data-mood="noir"] .stat .v{font-family:'Special Elite',monospace; font-weight:400; color:#f1e7d0}
+:root[data-mood="noir"] .beat .num{background:#1f1710; color:#e6c87c; box-shadow:0 0 0 2px #8a6322 inset; border-radius:50%; font-family:'Special Elite',monospace}
+:root[data-mood="noir"] .pill{border:1px solid #8a6322; background:#0f0b08; color:#c8a56a; font-family:'Special Elite',monospace}
+
+/* ---- progress: a red ribbon ---- */
+:root[data-mood="noir"] .bar{height:10px; border:0; border-radius:5px; background:#0f0b08; box-shadow:inset 0 1px 3px #000}
+:root[data-mood="noir"] .bar > i{background:linear-gradient(90deg, #8a1f17, #c4382b)}
+
+/* ---- the writing page: paper in the typewriter ---- */
+:root[data-mood="noir"] .platen{position:relative; margin:30px 4px 6px}
+:root[data-mood="noir"] .platen::before{content:""; position:absolute; left:-12px; right:-12px; top:-18px; height:28px; border-radius:14px; z-index:2;
+  background:linear-gradient(180deg, #4b4339 0%, #16120f 45%, #050403 100%); box-shadow:0 8px 14px rgba(0,0,0,.7), 0 1px 0 #6e6254 inset}
+:root[data-mood="noir"] .platen::after{content:""; position:absolute; left:0; top:-11px; width:60px; height:9px; z-index:3; pointer-events:none;
+  background:linear-gradient(90deg, rgba(255,240,200,0), rgba(255,240,200,.55), rgba(255,240,200,0)); animation:nrglint 8s linear infinite}
+@keyframes nrglint{0%{transform:translateX(0); opacity:0} 10%{opacity:1} 60%,100%{transform:translateX(300px); opacity:0}}
+:root[data-mood="noir"] .editor{
+  border:0; border-radius:3px 3px 6px 6px; padding:30px 22px 26px; color:#231d15;
+  background-color:#ece0c2; background-image:linear-gradient(180deg, rgba(255,250,235,.2), rgba(150,120,60,.08)), var(--nr-paper);
+  background-size:auto, 360px 360px;
+  font-family:'Special Elite','Courier New',monospace; font-size:16.5px; line-height:1.75; caret-color:#a02b21;
+  box-shadow:0 0 50px rgba(244,196,110,.20), 0 18px 30px rgba(0,0,0,.6);
+}
+:root[data-mood="noir"] .editor:focus{border:0}
+:root[data-mood="noir"] .editor:empty::before{color:#8a7a5a}
+:root[data-mood="noir"] .editor blockquote{border-left-color:#a02b21; color:#5a4528}
+:root[data-mood="noir"] .readview{color:#ece2cb}
+:root[data-mood="noir"] .draftbar .wc{font-family:'Special Elite',monospace; letter-spacing:.08em; color:#c8a56a}
+:root[data-mood="noir"] .draftbar .wc b{color:#f1e7d0}
+/* the formatting row: keys on a strip of wood */
+:root[data-mood="noir"] .edtools{
+  border:0; border-radius:12px; padding:9px 8px;
+  background-color:#140f0b; background-image:linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.5)), var(--nr-wood); background-size:auto, 300px 300px;
+  box-shadow:0 1px 0 rgba(255,220,170,.08) inset, 0 6px 14px rgba(0,0,0,.6)}
+:root[data-mood="noir"] .edrow{gap:9px}
+:root[data-mood="noir"] .edtools button{border-radius:9px; min-width:40px; height:38px}
+:root[data-mood="noir"] .edtools .sep{background:#5a4430}
+:root[data-mood="noir"] .edpop{border-top-color:#5a4430}
+
+/* ---- pop-up sheets: leather, stitched ---- */
+:root[data-mood="noir"] .oversheet .sheet, :root[data-mood="noir"] #museIntro .sheet, :root[data-mood="noir"] .tipsheet .sheet{
+  position:relative; border:0; border-radius:26px; color:#ece2cb;
+  background-color:#241a12; background-image:radial-gradient(ellipse 100% 60% at 50% 0%, rgba(214,160,70,.14), rgba(214,160,70,0) 70%), var(--nr-leather);
+  background-size:auto, 300px 300px; box-shadow:0 -12px 30px rgba(0,0,0,.7), 0 1px 0 #5a4430 inset}
+:root[data-mood="noir"] .oversheet .sheet::before, :root[data-mood="noir"] #museIntro .sheet::before, :root[data-mood="noir"] .tipsheet .sheet::before{
+  content:""; position:absolute; inset:8px; border:1.5px dashed rgba(200,160,100,.32); border-radius:20px; pointer-events:none}
+
+/* ---- notes, Muse box, toast ---- */
+:root[data-mood="noir"] .warnbox{border-radius:8px}
+:root[data-mood="noir"] .musebox{border-radius:6px; color:#231d15; background:#ece0c2 var(--nr-paper); background-size:360px; border:0; box-shadow:0 8px 16px rgba(0,0,0,.5)}
+:root[data-mood="noir"] .musebox .lbl{font-family:'Special Elite',monospace; letter-spacing:.14em; color:#8a1f17}
+:root[data-mood="noir"] .musebox .note{color:#5a4528}
+:root[data-mood="noir"] #toast{background:#ece0c2; color:#231d15; font-family:'Special Elite',monospace; font-weight:400; box-shadow:0 10px 22px rgba(0,0,0,.7), 0 0 0 2px #b8893d}
+:root[data-mood="noir"] #splash{background:#17120e var(--nr-leather); background-size:360px}
+:root[data-mood="noir"] #splash h1{font-family:'Special Elite',monospace; font-weight:400; letter-spacing:.14em; color:#e6c87c}
+:root[data-mood="noir"] #splash h1 em{color:#e6c87c}
+:root[data-mood="noir"] footer{font-family:'Special Elite',monospace; color:#8a7a5a}
+:root[data-mood="noir"] .hint{color:#b8a888}
+:root[data-mood="noir"] .item button.danger{color:#8a1f17; border-color:#8a1f17}
+:root[data-mood="noir"] .item .pill{background:#1f1710; color:#e6c87c}
+:root[data-mood="noir"] label.swrow{font-family:'Source Serif 4',Georgia,serif; text-transform:none; letter-spacing:0; font-size:14px; color:#ece2cb}

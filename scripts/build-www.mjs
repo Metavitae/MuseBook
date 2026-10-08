@@ -9,6 +9,14 @@ css = css.replace(/url\((f\d+\.woff2)\)/g, (_, f) =>
 let html = fs.readFileSync(new URL("www/musebook.html", root), "utf8");
 if (!html.includes("/*FONTS*/")) throw new Error("font placeholder missing");
 html = html.replace("/*FONTS*/", () => css);
+// The looks: one stylesheet per look in www/looks, inlined in a fixed order.
+if (!html.includes("/*LOOKS*/")) throw new Error("looks placeholder missing");
+const looks = ["noir"].map((n) => fs.readFileSync(new URL(`www/looks/${n}.css`, root), "utf8")).join("\n");
+html = html.replace("/*LOOKS*/", () => looks);
+// Textures (CC0, shrunk to small webp in www/tex) go inside the page so the
+// looks work offline. Each one is written once as a CSS variable or class.
+html = html.replace(/url\(tex\/([\w-]+\.webp)\)/g, (_, f) =>
+  `url(data:image/webp;base64,${fs.readFileSync(new URL(`www/tex/${f}`, root)).toString("base64")})`);
 if (!html.includes("<script>/*I18N*/</script>")) throw new Error("i18n placeholder missing");
 const i18n = fs.readFileSync(new URL("www/i18n.js", root), "utf8");
 html = html.replace("<script>/*I18N*/</script>", () => "<script>" + i18n + "</script>");

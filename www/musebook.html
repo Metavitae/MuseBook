@@ -10,6 +10,8 @@
     --accent:#2f8f7a; --accent-2:#cf7b46;
     --good:#2f8f7a; --warn:#a97324; --bad:#b85644;
     --radius:16px; --font-display:'Cormorant Garamond',Georgia,serif; --font-body:'Jost',system-ui,sans-serif;
+    --tint-focus:rgba(47,143,122,.2); --tint-warn:rgba(169,115,36,.14); --tint-warn-b:rgba(169,115,36,.4);
+    --tint-muse:rgba(207,123,70,.1); --tint-muse-b:rgba(207,123,70,.35); --scrim:rgba(246,242,233,.7);
     color-scheme:light;
   }
   :root[data-mood="noir"]{
@@ -21,75 +23,7 @@
     --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     color-scheme:dark;
   }
-  /* ---- Noir material pass: brushed brass, leather, lamp-lit paper — not flat color ---- */
-  :root[data-mood="noir"] body{
-    background-color:var(--bg);
-    background-image:
-      radial-gradient(ellipse 900px 560px at 20% -10%, rgba(201,160,78,.22), transparent 62%),
-      radial-gradient(ellipse 800px 600px at 105% 115%, rgba(0,0,0,.55), transparent 60%),
-      var(--noise);
-    background-repeat:no-repeat,no-repeat,repeat;
-    background-attachment:fixed,fixed,fixed;
-  }
-  :root[data-mood="noir"] header{
-    background-color:var(--bg);
-    background-image:radial-gradient(ellipse 900px 320px at 20% -45%, rgba(201,160,78,.20), transparent 60%), var(--noise);
-    background-repeat:no-repeat,repeat;
-    border-bottom:2px solid #8a6a2f;
-    box-shadow:0 2px 6px rgba(0,0,0,.55);
-  }
-  :root[data-mood="noir"] .brand h1 em{
-    background:linear-gradient(180deg, #f0d79a 0%, #c9a04e 45%, #8a6a2f 100%);
-    -webkit-background-clip:text; background-clip:text; color:transparent;
-  }
-  :root[data-mood="noir"] .card{
-    background-color:#1d1a17;
-    background-image:
-      repeating-linear-gradient(112deg, rgba(0,0,0,.20) 0 3px, rgba(255,255,255,.02) 3px 6px, transparent 6px 10px),
-      linear-gradient(165deg, #141210 0%, #1d1a17 55%);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), inset 0 -2px 0 rgba(0,0,0,.6), 0 3px 10px rgba(0,0,0,.5);
-    border:1px solid #4a3f2e;
-  }
-  :root[data-mood="noir"] .card h3{ text-shadow:0 1px 0 rgba(0,0,0,.7); }
-  :root[data-mood="noir"] .item{
-    background-color:#292420;
-    background-image:linear-gradient(165deg, #1c1815 0%, #292420 60%);
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.05), inset 0 -2px 0 rgba(0,0,0,.55);
-    border:1px solid #3e3527;
-  }
-  :root[data-mood="noir"] input, :root[data-mood="noir"] textarea, :root[data-mood="noir"] select{
-    box-shadow:inset 0 2px 6px rgba(0,0,0,.6);
-    border:1px solid #4a3f2e;
-  }
-  :root[data-mood="noir"] .editor{
-    background-image:repeating-linear-gradient(0deg, transparent 0 31px, rgba(0,0,0,.14) 31px 32px);
-    box-shadow:inset 0 2px 6px rgba(0,0,0,.6); border-color:#4a3f2e;
-  }
-  :root[data-mood="noir"] .edtools{background:linear-gradient(180deg,#2b251f,#1f1b17); border-color:#4a3f2e; box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 4px 10px rgba(0,0,0,.5)}
-  :root[data-mood="noir"] button.act{
-    background:linear-gradient(180deg, #f0d79a 0%, #c9a04e 48%, #8a6a2f 100%);
-    color:#231705; text-shadow:0 1px 0 rgba(255,255,255,.35);
-    border:1px solid #6b5220;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.6), inset 0 -3px 3px rgba(0,0,0,.4), 0 3px 8px rgba(0,0,0,.5);
-  }
-  :root[data-mood="noir"] button.ghost{ border:1px solid #5a4a30; color:#d9b561; }
-  :root[data-mood="noir"] nav button{ border:1px solid #3e3527; }
-  :root[data-mood="noir"] nav button.active{
-    background:linear-gradient(180deg, #ecd28f 0%, #c9a04e 55%, #8a6a2f 100%);
-    color:#231705; text-shadow:0 1px 0 rgba(255,255,255,.3);
-    border:1px solid #6b5220;
-    box-shadow:inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 2px rgba(0,0,0,.4);
-  }
-  :root[data-mood="noir"] .moodbtn[aria-pressed="true"]{ outline-color:#c9a04e; }
-  :root[data-mood="noir"] .bar{ box-shadow:inset 0 2px 5px rgba(0,0,0,.6); border-color:#3e3527; }
-  :root[data-mood="noir"] .bar > i{ background:linear-gradient(90deg, #8a6a2f, #c9a04e, #f0d79a); }
-  :root[data-mood="noir"] .stat{
-    background-color:#292420;
-    background-image:linear-gradient(165deg, #1c1815 0%, #292420 60%);
-    border:1px solid #3e3527;
-  }
-  :root[data-mood="noir"] .pill{ border:1px solid #4a3f2e; }
-  :root[data-mood="noir"] .grid, :root[data-mood="noir"] .beat .num{ box-shadow:inset 0 1px 0 rgba(255,255,255,.06); }
+/*LOOKS*/
   :root[data-mood="shore"]{
     --bg:#f6f2e9; --surface:#ffffff; --surface-2:#ece5d4;
     --text:#26352f; --muted:#6d8078; --border:#dcd3bd;
@@ -104,6 +38,7 @@
     --accent:#ff3d80; --accent-2:#ffb84a;
     --good:#3ddc9a; --warn:#ffb84a; --bad:#ff3d80;
     --font-display:'Archivo',system-ui,sans-serif; --font-body:'Work Sans',system-ui,sans-serif;
+    --tint-focus:rgba(255,61,128,.2); --tint-warn:rgba(255,184,74,.14); --tint-warn-b:rgba(255,184,74,.4); --tint-muse:rgba(255,184,74,.1); --tint-muse-b:rgba(255,184,74,.35); --scrim:rgba(12,14,26,.7);
     color-scheme:dark;
   }
   :root[data-mood="celestial"]{
@@ -112,6 +47,7 @@
     --accent:#d9b561; --accent-2:#82b9e2;
     --good:#7edba9; --warn:#d9b561; --bad:#e2917f;
     --font-display:'Cinzel',Georgia,serif; --font-body:'Spectral',Georgia,serif;
+    --tint-focus:rgba(217,181,97,.2); --tint-warn:rgba(217,181,97,.14); --tint-warn-b:rgba(217,181,97,.4); --tint-muse:rgba(130,185,226,.1); --tint-muse-b:rgba(130,185,226,.35); --scrim:rgba(10,14,32,.7);
     color-scheme:dark;
   }
   *{box-sizing:border-box}
@@ -168,7 +104,7 @@
 
   label{display:block; font-size:12px; color:var(--muted); margin:10px 0 4px; font-weight:600}
   input, textarea, select{width:100%; background:var(--surface-2); color:var(--text); border:1px solid var(--border); border-radius:9px; padding:9px 11px; font-size:14px; font-family:var(--font-body); outline:none}
-  input:focus, textarea:focus, select:focus, button:focus-visible{border-color:var(--accent); box-shadow:0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent)}
+  input:focus, textarea:focus, select:focus, button:focus-visible{border-color:var(--accent); box-shadow:0 0 0 3px var(--tint-focus)}
   textarea{resize:vertical; min-height:80px; line-height:1.6}
   .row{display:flex; gap:10px; flex-wrap:wrap}
   .row > div{flex:1 1 150px; min-width:0}
@@ -177,7 +113,7 @@
   button{font-family:var(--font-body)}
   button.act{background:var(--accent); color:var(--bg); border:none; border-radius:9px; padding:10px 16px; font-size:13px; font-weight:700; cursor:pointer}
   button.ghost{background:transparent; color:var(--accent); border:1px solid var(--border); border-radius:9px; padding:9px 14px; font-size:13px; font-weight:600; cursor:pointer}
-  button.muse{background:color-mix(in srgb, var(--accent-2) 14%, var(--surface)); color:var(--accent-2); border:1px solid color-mix(in srgb, var(--accent-2) 40%, var(--border)); border-radius:9px; padding:8px 13px; font-size:12px; font-weight:700; cursor:pointer}
+  button.muse{background:var(--tint-muse); color:var(--accent-2); border:1px solid var(--tint-muse-b); border-radius:9px; padding:8px 13px; font-size:12px; font-weight:700; cursor:pointer}
   button.danger{background:transparent; color:var(--bad); border:1px solid var(--border); border-radius:9px; padding:7px 12px; font-size:12px; cursor:pointer}
   button.mini{background:var(--surface-2); color:var(--muted); border:1px solid var(--border); border-radius:7px; padding:4px 9px; font-size:12px; cursor:pointer}
   button:disabled{opacity:.5; cursor:default}
@@ -228,8 +164,8 @@
   .empty{color:var(--muted); font-size:14px; font-style:italic; padding:10px 0}
   .pill{display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; background:var(--surface-2); color:var(--muted); border:1px solid var(--border)}
   footer{max-width:720px; margin:0 auto; padding:0 0 30px; color:var(--muted); font-size:11px; text-align:center}
-  .warnbox{background:color-mix(in srgb, var(--warn) 16%, var(--surface)); border:1px solid color-mix(in srgb, var(--warn) 40%, var(--border)); color:var(--text); padding:10px 12px; border-radius:10px; font-size:13px; margin-bottom:8px}
-  .musebox{background:color-mix(in srgb, var(--accent-2) 10%, var(--surface)); border:1px solid color-mix(in srgb, var(--accent-2) 35%, var(--border)); border-radius:10px; padding:12px; margin-top:10px; font-size:13.5px; line-height:1.6; white-space:pre-wrap}
+  .warnbox{background:var(--tint-warn); border:1px solid var(--tint-warn-b); color:var(--text); padding:10px 12px; border-radius:10px; font-size:13px; margin-bottom:8px}
+  .musebox{background:var(--tint-muse); border:1px solid var(--tint-muse-b); border-radius:10px; padding:12px; margin-top:10px; font-size:13.5px; line-height:1.6; white-space:pre-wrap}
   .musebox .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--accent-2); font-weight:700; margin-bottom:6px; display:block}
   .readview{font-family:'Source Serif 4',Georgia,serif; font-size:17px; line-height:1.9}
   .readview .scenebreak{text-align:center; color:var(--muted); margin:22px 0; letter-spacing:4px}
@@ -238,21 +174,60 @@
   .bstatus.bad{color:var(--bad); cursor:pointer}
   .swrow{display:flex; align-items:center; gap:10px; margin-top:14px; font-size:14px; cursor:pointer}
   .swrow input{width:20px; height:20px; accent-color:var(--accent); flex:none}
-  #restoreSheet{position:fixed; inset:0; z-index:150; background:color-mix(in srgb, var(--bg) 70%, transparent); display:flex; align-items:flex-end; justify-content:center; padding:16px}
+  #restoreSheet{position:fixed; inset:0; z-index:150; background:var(--scrim); display:flex; align-items:flex-end; justify-content:center; padding:16px}
   #restoreSheet[hidden]{display:none}
   #restoreSheet .sheet{background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--radius); padding:20px 18px; max-width:520px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,.25)}
   #restoreSheet h2{margin:0 0 8px}
   #restoreSheet p{margin:0 0 10px; font-size:14.5px}
-  #museIntro{position:fixed; inset:0; z-index:150; background:color-mix(in srgb, var(--bg) 70%, transparent); display:flex; align-items:flex-end; justify-content:center; padding:16px}
+  #museIntro{position:fixed; inset:0; z-index:150; background:var(--scrim); display:flex; align-items:flex-end; justify-content:center; padding:16px}
   #museIntro .sheet{background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--radius); padding:20px 18px; max-width:520px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,.25)}
   #museIntro h2{margin:0 0 8px}
   #museIntro p{margin:0 0 10px; font-size:14.5px}
   .musebox .note{display:block; margin-top:8px; font-size:12px; color:var(--muted); white-space:normal}
   @media (max-width:420px){ .row > div{flex:1 1 100%} }
   @media (prefers-reduced-motion: reduce){ #splash, #nav{ transition:none !important } }
+  /* Calm: every look keeps its materials, but nothing moves or tilts */
+  :root[data-calm="1"] *, :root[data-calm="1"] *::before, :root[data-calm="1"] *::after{animation:none !important; transition:none !important}
+  :root[data-calm="1"] #atmos .motion{display:none}
+  @media (prefers-reduced-motion: reduce){ #atmos .motion{display:none} #atmos *, .platen::after{animation:none !important} }
+  #atmos{display:none}
+  /* Floating label: hold (or hover) any icon key to see its name and what it does */
+  #tip{position:fixed; z-index:400; max-width:230px; padding:9px 13px 10px; border-radius:10px; background:var(--surface); color:var(--text);
+    border:1px solid var(--border); box-shadow:0 10px 22px rgba(0,0,0,.45); font-size:13px; line-height:1.35; pointer-events:none; opacity:0; transform:translateY(6px); transition:opacity .15s, transform .15s}
+  #tip.show{opacity:1; transform:translateY(0)}
+  #tip b{display:block; font-family:var(--font-display); font-weight:400; letter-spacing:.1em; text-transform:uppercase; font-size:13px; color:var(--accent-2); margin-bottom:2px}
+  :root[data-mood="noir"] #tip{background:#ece0c2; color:#231d15; border:0; box-shadow:0 10px 22px rgba(0,0,0,.7), 0 0 0 2px #b8893d}
+  :root[data-mood="noir"] #tip b{color:#8a1f17}
+  .tipsheet{position:fixed; inset:0; z-index:160; background:var(--scrim); display:flex; align-items:flex-end; justify-content:center; padding:16px}
+  .tipsheet[hidden]{display:none}
+  .tipsheet .sheet{background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--radius); padding:22px 20px; max-width:520px; width:100%; max-height:82vh; overflow:auto}
+  .tipsheet h2{margin:0 0 12px}
+  .tiprow{display:flex; gap:12px; align-items:flex-start; padding:9px 0; border-bottom:1px solid var(--border); position:relative}
+  .tiprow .k{flex:none; min-width:46px; text-align:center; font-weight:700}
+  .tiprow p{margin:0; font-size:14px}
+  .tiprow p b{display:block}
+  /* Look plates (replace the flat circles) */
+  .plates{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px}
+  .plate{position:relative; height:92px; border-radius:14px; border:0; padding:0; overflow:hidden; cursor:pointer; text-align:left; box-shadow:0 4px 12px rgba(0,0,0,.3)}
+  .plate span{position:absolute; left:12px; bottom:10px; right:10px; font-size:17px; line-height:1.1}
+  .plate small{display:block; font-size:11px; opacity:.8; margin-top:3px; font-family:system-ui,sans-serif; letter-spacing:0}
+  .plate[aria-pressed="true"]{outline:3px solid var(--accent); outline-offset:3px}
+  .plate:disabled{cursor:default; opacity:.75}
+  .plate.moodopt{width:auto; display:block; padding:0; background-clip:padding-box}
+  .plate.moodopt span, .plate span{font-size:17px; color:inherit; text-align:left; font-weight:inherit}
+  .plate.moodopt[aria-pressed="true"] span{color:inherit}
+  .plate-noir{background:#17120e url(tex/noir-leather.webp) center/200px; color:#e6c87c; font-family:'Special Elite',monospace; letter-spacing:.12em}
+  .plate-noir::before{content:""; position:absolute; right:14px; top:14px; width:34px; height:34px; border-radius:50%; background:radial-gradient(circle at 35% 26%,#4b443b,#1b1713 55%,#0b0907); box-shadow:0 0 0 2px #b8893d,0 0 0 3.5px #4a3210,0 4px 0 3px #2a1c08}
+  .plate-shore{background:linear-gradient(180deg,#bfe0e3 0%,#f2e6cf 60%,#e4cfa6 100%); color:#1f4a4f; font-family:'Cormorant Garamond',serif; font-weight:700}
+  .plate-city{background:linear-gradient(180deg,#123a2e,#0b231c); color:#f1e6c8; font-family:'Archivo',sans-serif; font-weight:700; letter-spacing:.06em}
+  .plate-celestial{background:linear-gradient(180deg,#0a0e20 0%,#1b2550 70%,#3a3a5e 100%); color:#e9d9a6; font-family:'Cinzel',serif; font-weight:700}
+  .plate-room{background:linear-gradient(180deg,#efe6d4,#dcc9a8); color:#4a3424; font-family:'Cormorant Garamond',serif; font-weight:700}
 </style>
 
 <style>/*FONTS*/</style>
+
+<div id="atmos" aria-hidden="true"></div>
+<div id="tip" role="tooltip"></div>
 
 <div id="museIntro" hidden>
   <div class="sheet">
@@ -264,6 +239,15 @@
       <button class="act" id="introDownload">Download now</button>
       <button class="ghost" id="introLater">Later</button>
     </div>
+  </div>
+</div>
+
+<div id="keysHelp" class="tipsheet" hidden>
+  <div class="sheet">
+    <h2>What do these keys do?</h2>
+    <p class="hint">Hold any key for a second to see its name. Here they all are.</p>
+    <div id="keysHelpList"></div>
+    <div class="btns"><button class="act" id="keysHelpClose">Close</button></div>
   </div>
 </div>
 
@@ -455,12 +439,15 @@
     <div class="card">
       <h3>Atmosphere</h3>
       <p class="hint" style="margin:0 0 12px">Pick how MuseBook feels while you write. Change it anytime.</p>
-      <div class="moodrow" id="moodRow" role="group" aria-label="Atmosphere">
-        <button class="moodopt" data-mood="shore" aria-pressed="false"><i style="background:linear-gradient(135deg,#2f8f7a,#cf7b46)"></i><span>Calm Shore</span></button>
-        <button class="moodopt" data-mood="noir" aria-pressed="false"><i style="background:linear-gradient(135deg,#c9a04e,#141210)"></i><span>Noir</span></button>
-        <button class="moodopt" data-mood="city" aria-pressed="false"><i style="background:linear-gradient(135deg,#ff3d80,#ffb84a)"></i><span>City Vibe</span></button>
-        <button class="moodopt" data-mood="celestial" aria-pressed="false"><i style="background:linear-gradient(135deg,#d9b561,#0a0e20)"></i><span>Celestial</span></button>
+      <div class="plates" id="moodRow" role="group" aria-label="Atmosphere">
+        <button class="plate plate-noir moodopt" data-mood="noir" aria-pressed="false"><span>Noir<small>Typewriter, brass and lamplight</small></span></button>
+        <button class="plate plate-shore moodopt" data-mood="shore" aria-pressed="false"><span>Calm Shore<small>Sand, sea glass and driftwood</small></span></button>
+        <button class="plate plate-city moodopt" data-mood="city" aria-pressed="false"><span>City Vibe<small>Lamplight, brass and stained glass</small></span></button>
+        <button class="plate plate-celestial moodopt" data-mood="celestial" aria-pressed="false"><span>Celestial<small>Star charts and brass</small></span></button>
+        <button class="plate plate-room" disabled aria-disabled="true"><span>The Writing Room<small>Coming in a next update</small></span></button>
       </div>
+      <label class="swrow"><input type="checkbox" id="calmToggle"> <span>Calm: no movement, no tilt. Same look, quieter.</span></label>
+      <div class="btns"><button class="ghost" id="keysHelpBtn">What do these keys do?</button></div>
     </div>
     <div class="card" id="backupCard">
       <h3>Back up your book</h3>
@@ -871,8 +858,21 @@ function trackWords(){
 /* ============================================================
    MOOD (atmosphere)
    ============================================================ */
+/* Each look can put living light behind the page (#atmos). Everything in a
+   .motion element stops in Calm and under reduced motion. */
+const ATMOS={
+  noir:()=>{
+    let motes="";
+    for(let i=0;i<14;i++){
+      const sz=2+(i*7%3), x=8+(i*37%84), y=48+(i*23%40), d=7+(i*13%6), dl=(i*1.7%9).toFixed(1);
+      motes+=`<i style="left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;animation-duration:${d}s;animation-delay:${dl}s"></i>`;
+    }
+    return `<div class="nr-lamp motion"></div><div class="nr-pool"></div><div class="nr-shade"></div><div class="nr-motes motion">${motes}</div><div class="nr-stitch"></div>`;
+  }
+};
 function applyMood(m, persist){
   document.documentElement.setAttribute("data-mood", m);
+  const at=document.getElementById("atmos"); if(at) at.innerHTML = ATMOS[m] ? ATMOS[m]() : "";
   document.querySelectorAll(".moodopt").forEach(b=>b.setAttribute("aria-pressed", b.dataset.mood===m?"true":"false"));
   if(window.MuseNative && MuseNative.theme){ const cs=getComputedStyle(document.documentElement); MuseNative.theme(cs.getPropertyValue("--bg").trim(), cs.colorScheme==="dark"); }
   if(persist){ DB.ui.mood=m; try{ localStorage.setItem("musebook_mood", m); }catch(e){} save(); }
@@ -881,11 +881,74 @@ document.getElementById("moodRow").addEventListener("click", e=>{
   const b=e.target.closest(".moodopt"); if(!b) return;
   applyMood(b.dataset.mood, true);
 });
+/* Calm: same look, nothing moves. Kept with the book like the look itself. */
+function applyCalm(on, persist){
+  if(on) document.documentElement.setAttribute("data-calm","1"); else document.documentElement.removeAttribute("data-calm");
+  const t=document.getElementById("calmToggle"); if(t) t.checked=!!on;
+  if(persist){ DB.ui.calm=!!on; save(); }
+}
+document.getElementById("calmToggle").addEventListener("change", e=>applyCalm(e.target.checked, true));
+
+/* Floating labels: hold any icon key (or hover with a mouse) to see its name
+   and one plain line about what it does. Same words in every look. */
+const KEY_TIPS=[
+  ["#stagesToggle","Stages","Opens the list of stages: your plan, characters, scenes and writing."],
+  ["#settingsToggle","Settings","Language, Muse, how MuseBook looks, and backups."],
+  ['[data-cmd="bold"]',"Bold","Makes the selected words bold."],
+  ['[data-cmd="italic"]',"Italic","Makes the selected words italic."],
+  ['[data-cmd="underline"]',"Underline","Draws a line under the selected words."],
+  ['[data-pop="font"]',"Font","Changes the letters of the selected words."],
+  ['[data-pop="size"]',"Size","Makes the selected words bigger or smaller."],
+  ['[data-pop="color"]',"Color","Colors the selected words."],
+  ['[data-pop="more"]',"More","Headings, quotes, alignment and clearing a style."],
+  ['[data-cmd="undo"]',"Undo","Takes back your last change."],
+  ['[data-cmd="redo"]',"Redo","Puts back what you just undid."],
+  ["#museContinue","Muse","Ask for an idea when you're stuck. Only when you ask."]
+];
+const KEY_SEL=KEY_TIPS.map(k=>k[0]).join(",");
+function tipFor(el){ const k=KEY_TIPS.find(k=>el.matches(k[0])); return k?[t(k[1]),t(k[2])]:null; }
+(function(){
+  const tip=document.getElementById("tip"); let timer=0, hideT=0, shownFor=null, sx=0, sy=0;
+  function show(el){
+    const d=tipFor(el); if(!d) return;
+    tip.innerHTML="<b>"+esc(d[0])+"</b>"+esc(d[1]);
+    const r=el.getBoundingClientRect(); tip.classList.add("show");
+    const w=tip.offsetWidth, h=tip.offsetHeight;
+    let x=Math.min(Math.max(8, r.left+r.width/2-w/2), innerWidth-w-8);
+    let y=r.top-h-12; if(y<8) y=r.bottom+12;
+    tip.style.left=x+"px"; tip.style.top=y+"px"; shownFor=el;
+    if(navigator.vibrate) try{ navigator.vibrate(12); }catch(e){}
+  }
+  function hide(){ tip.classList.remove("show"); }
+  document.addEventListener("pointerdown",e=>{
+    const el=e.target.closest(KEY_SEL); clearTimeout(timer); shownFor=null; if(!el) return;
+    sx=e.clientX; sy=e.clientY; timer=setTimeout(()=>show(el),550);
+  },true);
+  document.addEventListener("pointermove",e=>{ if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>12) clearTimeout(timer); },true);
+  ["pointerup","pointercancel"].forEach(ev=>document.addEventListener(ev,()=>{ clearTimeout(timer); if(shownFor){ clearTimeout(hideT); hideT=setTimeout(hide,1800); } },true));
+  // A long press only shows the label; it doesn't press the key.
+  document.addEventListener("click",e=>{ if(shownFor && e.target.closest(KEY_SEL)===shownFor){ e.preventDefault(); e.stopPropagation(); shownFor=null; } },true);
+  document.addEventListener("contextmenu",e=>{ if(e.target.closest(KEY_SEL)) e.preventDefault(); },true);
+  if(matchMedia("(hover:hover)").matches){
+    document.addEventListener("mouseover",e=>{ const el=e.target.closest(KEY_SEL); if(el){ clearTimeout(timer); timer=setTimeout(()=>{ show(el); shownFor=null; },400); } });
+    document.addEventListener("mouseout",e=>{ if(e.target.closest(KEY_SEL)){ clearTimeout(timer); hide(); } });
+  }
+  document.addEventListener("scroll",hide,true);
+})();
+const ICON_FACE={"#stagesToggle":"☰","#settingsToggle":"⚙",'[data-cmd="bold"]':"<b>B</b>",'[data-cmd="italic"]':"<i>I</i>",'[data-cmd="underline"]':"<u>U</u>",'[data-pop="font"]':"Aa",'[data-pop="size"]':"Size",'[data-pop="color"]':"Color",'[data-pop="more"]':"¶",'[data-cmd="undo"]':"↶",'[data-cmd="redo"]':"↷","#museContinue":"✦"};
+document.getElementById("keysHelpBtn").addEventListener("click",()=>{
+  document.getElementById("keysHelpList").innerHTML=KEY_TIPS.map(k=>`<div class="tiprow"><span class="k">${ICON_FACE[k[0]]||""}</span><p><b>${esc(t(k[1]))}</b>${esc(t(k[2]))}</p></div>`).join("");
+  document.getElementById("keysHelp").hidden=false;
+});
+document.getElementById("keysHelpClose").addEventListener("click",()=>{ document.getElementById("keysHelp").hidden=true; });
+document.getElementById("keysHelp").addEventListener("click",e=>{ if(e.target.id==="keysHelp") e.currentTarget.hidden=true; });
+
 function initMood(){
   let m = DB.ui.mood;
   if(!m){ try{ m = localStorage.getItem("musebook_mood"); }catch(e){} }
   if(!m) m = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "celestial" : "shore";
   applyMood(m, false);
+  applyCalm(!!DB.ui.calm, false);
 }
 
 /* ============================================================
@@ -919,6 +982,7 @@ function switchTab(name){
   window.scrollTo({top:0,behavior:"instant"});
   if(name==="draft") renderDraft();
   if(name==="dash") renderDash();
+  document.documentElement.dataset.tab=name;
   DB.ui.tab=name; save();
 }
 stagesBtn.addEventListener("click", toggleNav);
@@ -1118,7 +1182,7 @@ function renderDraft(){
         </div>
         <div class="edpop" id="edpop" hidden></div>
       </div>
-      <div id="draftArea" class="editor" contenteditable="true" spellcheck="true" autocapitalize="sentences" data-ph="Write here. Don't edit. Just go."></div>
+      <div class="platen"><div id="draftArea" class="editor" contenteditable="true" spellcheck="true" autocapitalize="sentences" data-ph="Write here. Don't edit. Just go."></div></div>
       <div class="btns"><button class="muse" id="museContinue" ${sampleApi?'':'hidden'}>✦ Suggest how this could continue</button></div>
       <div id="museContinueOut"></div>
     </div>`;
