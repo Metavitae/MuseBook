@@ -33,6 +33,13 @@ export function bridgeScript(book: unknown, status: MuseStatus, firstRunSeen: bo
     safetyCopy: function(d){ return call("backupSafety", [d]); },
     pick: function(){ return call("backupPick"); }
   };
+  // Files made from the book (Word, eBook, PDF, text). See src/files.ts.
+  window.MuseFiles = {
+    make: function(o){ return call("fileMake", [o]); },
+    pdf: function(o){ return call("filePdf", [o]); },
+    share: function(f){ return call("fileShare", [f]); },
+    save: function(f){ return call("fileSave", [f]); }
+  };
   window.MuseNative = {
     firstRunSeen: ${firstRunSeen ? "true" : "false"},
     get status(){ return status; },

@@ -83,7 +83,7 @@ const ES = {
   "Linen, walnut and a warm lamp":"Lino, nogal y una lámpara tibia","Calm: no movement, no tilt. Same look, quieter.":"Calma: sin movimiento ni inclinación. El mismo ambiente, más tranquilo.",
   "What do these keys do?":"¿Qué hace cada tecla?","Hold any key for a second to see its name. Here they all are.":"Mantén el dedo sobre una tecla un segundo para ver su nombre. Aquí están todas.",
   "Stages":"Etapas","Opens the list of stages: your plan, characters, scenes and writing.":"Abre la lista de etapas: tu plan, personajes, escenas y escritura.",
-  "Language, Muse, how MuseBook looks, and backups.":"Idioma, Musa, cómo se ve MuseBook y respaldos.",
+  "Language, Muse, how MuseBook looks, and backups.":"Idioma, Muse, cómo se ve MuseBook y respaldos.",
   "Makes the selected words bold.":"Pone en negritas las palabras elegidas.","Makes the selected words italic.":"Pone en cursiva las palabras elegidas.",
   "Draws a line under the selected words.":"Subraya las palabras elegidas.","Changes the letters of the selected words.":"Cambia el tipo de letra de las palabras elegidas.",
   "Makes the selected words bigger or smaller.":"Hace más grandes o más chicas las palabras elegidas.","Colors the selected words.":"Da color a las palabras elegidas.",
@@ -91,6 +91,11 @@ const ES = {
   "Puts back what you just undid.":"Vuelve a poner lo que acabas de deshacer.","Ask for an idea when you're stuck. Only when you ask.":"Pide una idea cuando te atores. Solo cuando tú la pides.",
   "Close":"Cerrar",
   "The keyboard you type with belongs to Google (or your phone's maker), not to MuseBook. It may learn your words to suggest them; MuseBook never sees that.":"El teclado con el que escribes es de Google (o de quien hizo tu teléfono), no de MuseBook. Puede aprender tus palabras para sugerirlas; MuseBook nunca ve eso.",
+  "‹ Back to my book":"‹ Volver a mi libro","How you write":"Cómo escribes","Guided":"Guiada","Full view":"Vista completa",
+  "Guided shows one step at a time: your page, your chapters, and what comes next. Full view shows all six stages of planning. Your book stays the same in both.":"La guiada te muestra un paso a la vez: tu página, tus capítulos y lo que sigue. La vista completa muestra las seis etapas de planeación. Tu libro es el mismo en las dos.",
+  "Sounds and vibration":"Sonidos y vibración",
+  "Typewriter keys while you type (Noir)":"Teclas de máquina de escribir al escribir (Noir)",
+  "Background sound on the writing page":"Sonido de fondo en la página de escritura",
   "Language":"Idioma","Atmosphere":"Ambiente","Pick how MuseBook feels while you write. Change it anytime.":"Elige cómo se siente MuseBook mientras escribes. Cámbialo cuando quieras.",
   "Calm Shore":"Costa tranquila","Noir":"Noir","City Vibe":"Ciudad","Celestial":"Celestial",
   "Saving":"Guardado","Everything saves automatically on this phone. To move your book to another phone, export a backup on the Dashboard and import it there.":"Todo se guarda solo en este celular. Para pasar tu libro a otro celular, exporta un respaldo en el Tablero e impórtalo allá.",
@@ -293,7 +298,7 @@ function trText(s){
   }
   return null;
 }
-const I18N_SKIP = ".editor, .readview, .musebox, script, style";
+const I18N_SKIP = ".editor, .readview, .musebox, .g-own, script, style";
 const I18N_ATTRS = ["placeholder","title","aria-label","data-ph"];
 function i18nNode(root){
   if(root.nodeType===3){ i18nText(root); return; }

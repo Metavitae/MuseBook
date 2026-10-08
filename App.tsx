@@ -7,6 +7,7 @@ import { WWW_HTML } from "./src/www.generated";
 import { bridgeScript } from "./src/bridge";
 import * as Muse from "./src/muse";
 import * as Backup from "./src/backup";
+import * as Files from "./src/files";
 import { loadBook, saveBook, loadPrefs, savePrefs, shareFile, type Prefs } from "./src/storage";
 
 interface Boot {
@@ -91,6 +92,15 @@ export default function App() {
           await shareFile(o.filename, o.data);
           return reply(id, true, null);
         }
+        case "fileMake":
+          return reply(id, true, await Files.make(a[0] as Parameters<typeof Files.make>[0]));
+        case "filePdf":
+          return reply(id, true, await Files.pdf(a[0] as { filename: string; html: string }));
+        case "fileShare":
+          await Files.share(a[0] as Files.FileOut);
+          return reply(id, true, null);
+        case "fileSave":
+          return reply(id, true, await Files.saveToFolder(a[0] as Files.FileOut));
         case "museDownload":
           reply(id, true, null);
           return Muse.download();
@@ -139,6 +149,7 @@ export default function App() {
         injectedJavaScriptBeforeContentLoaded={injected}
         onMessage={onMessage}
         domStorageEnabled
+        mediaPlaybackRequiresUserAction={false}
         javaScriptEnabled
         allowFileAccess={false}
         setSupportMultipleWindows={false}

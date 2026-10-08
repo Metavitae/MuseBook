@@ -226,12 +226,14 @@
   :root[data-mood] .edtools .edrow{gap:6px}
   :root[data-mood] .edtools button{min-width:36px; padding:0 7px; letter-spacing:0}
   :root[data-mood] .edtools .sep{margin:0}
+/*GUIDEDCSS*/
 </style>
 
 <style>/*FONTS*/</style>
 
 <div id="atmos" aria-hidden="true"></div>
 <div id="tip" role="tooltip"></div>
+<div id="guided"></div>
 
 <div id="museIntro" hidden>
   <div class="sheet">
@@ -425,7 +427,16 @@
   <!-- SETTINGS -->
   <section id="tab-settings">
     <h2>Settings</h2>
+    <div class="btns" style="margin:0 0 12px"><button class="ghost" id="gBackFromSettings" hidden>‹ Back to my book</button></div>
     <p class="hint">Muse, how MuseBook looks, and where your book is saved.</p>
+    <div class="card">
+      <h3>How you write</h3>
+      <p class="hint" style="margin:0 0 10px">Guided shows one step at a time: your page, your chapters, and what comes next. Full view shows all six stages of planning. Your book stays the same in both.</p>
+      <div class="segmented" id="modeRow" style="margin:0">
+        <button data-setmode="guided">Guided</button>
+        <button data-setmode="full">Full view</button>
+      </div>
+    </div>
     <div class="card">
       <h3>Language</h3>
       <div class="segmented" id="langRow" style="margin:0">
@@ -452,6 +463,9 @@
         <button class="plate plate-room moodopt" data-mood="room" aria-pressed="false"><span>The Writing Room<small>Linen, walnut and a warm lamp</small></span></button>
       </div>
       <label class="swrow"><input type="checkbox" id="calmToggle"> <span>Calm: no movement, no tilt. Same look, quieter.</span></label>
+      <label class="swrow"><input type="checkbox" id="soundToggle" checked> <span>Sounds and vibration</span></label>
+      <label class="swrow"><input type="checkbox" id="typingToggle" checked> <span>Typewriter keys while you type (Noir)</span></label>
+      <label class="swrow"><input type="checkbox" id="ambToggle" checked> <span>Background sound on the writing page</span></label>
       <div class="btns"><button class="ghost" id="keysHelpBtn">What do these keys do?</button></div>
     </div>
     <div class="card" id="backupCard">
@@ -482,16 +496,20 @@
 <footer>MuseBook · your book, your voice. Muse only ever suggests; it never writes your book for you.</footer>
 
 <script>/*I18N*/</script>
+<script>/*SOUND*/</script>
+<script>/*EXPORT*/</script>
+<script>/*GUIDED*/</script>
 <script>
 /* ============================================================
    DATA
    ============================================================ */
 const DEFAULT = {
-  contract:{title:"",genre:"",audience:"",pov:"",tense:"",targetWords:"",chapters:"",deadline:"",dailyGoal:"",style:""},
+  contract:{title:"",subtitle:"",author:"",genre:"",audience:"",pov:"",tense:"",targetWords:"",chapters:"",deadline:"",dailyGoal:"",style:""},
   premise:{logline:"",summary:"",theme:""},
   bible:{characters:[],locations:[],rules:[]},
   beats:[],
   scenes:[],
+  ideas:[],
   stats:{date:"",wordsToday:0,lastTotal:0,streak:0,lastWrite:""},
   ui:{scene:0,draftMode:"write",mood:""}
 };
@@ -741,7 +759,8 @@ function mergeDefaults(d){
      premise:Object.assign({},DEFAULT.premise,d.premise||{}),
      bible:Object.assign({},DEFAULT.bible,d.bible||{}),
      stats:Object.assign({},DEFAULT.stats,d.stats||{}),
-     ui:Object.assign({},DEFAULT.ui,d.ui||{})})));
+     ui:Object.assign({},DEFAULT.ui,d.ui||{}),
+     ideas:Array.isArray(d.ideas)?d.ideas:[]})));
 }
 
 function setSaved(state){
@@ -850,7 +869,13 @@ function trackWords(){
   const total=totalWords(); const today=todayStr();
   if(DB.stats.date!==today){ DB.stats.date=today; DB.stats.wordsToday=0; DB.stats.lastTotal=total; }
   const delta=total-DB.stats.lastTotal;
+  const before=DB.stats.wordsToday;
   DB.stats.wordsToday+=delta; DB.stats.lastTotal=total;
+  if(delta>0 && window.SND){
+    const goal=Number(DB.contract.dailyGoal||0), now=DB.stats.wordsToday;
+    if(goal && before<goal && now>=goal){ SND.play("goal"); SND.vibrate([20,50,20]); }
+    else if(Math.floor(now/100)>Math.floor(before/100)) SND.play("words");
+  }
   if(delta>0 && DB.stats.lastWrite!==today){
     const y=new Date(); y.setDate(y.getDate()-1);
     const yStr=y.getFullYear()+"-"+String(y.getMonth()+1).padStart(2,"0")+"-"+String(y.getDate()).padStart(2,"0");
@@ -920,6 +945,9 @@ function applyCalm(on, persist){
   if(persist){ DB.ui.calm=!!on; save(); }
 }
 document.getElementById("calmToggle").addEventListener("change", e=>applyCalm(e.target.checked, true));
+document.getElementById("soundToggle").addEventListener("change", e=>{ DB.ui.sound=e.target.checked; save(); if(window.SND){ SND.sync(); if(e.target.checked) SND.play("chapterDone"); } });
+document.getElementById("typingToggle").addEventListener("change", e=>{ DB.ui.typingSound=e.target.checked; save(); });
+document.getElementById("ambToggle").addEventListener("change", e=>{ DB.ui.ambience=e.target.checked; save(); if(window.SND) SND.sync(); });
 
 /* Floating labels: hold any icon key (or hover with a mouse) to see its name
    and one plain line about what it does. Same words in every look. */
@@ -981,6 +1009,9 @@ function initMood(){
   if(!m) m = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "celestial" : "shore";
   applyMood(m, false);
   applyCalm(!!DB.ui.calm, false);
+  const st=document.getElementById("soundToggle"); if(st) st.checked = DB.ui.sound!==false;
+  const tt=document.getElementById("typingToggle"); if(tt) tt.checked = DB.ui.typingSound!==false;
+  const am=document.getElementById("ambToggle"); if(am) am.checked = DB.ui.ambience!==false;
 }
 
 /* ============================================================
@@ -1013,6 +1044,7 @@ function switchTab(name){
   document.getElementById("stageLabel").textContent = TAB_LABELS[name]||name;
   window.scrollTo({top:0,behavior:"instant"});
   if(name==="draft") renderDraft();
+  if(window.SND && name==="scenes" && DB.ui.tab!=="scenes") SND.play("chapters");
   if(name==="dash") renderDash();
   document.documentElement.dataset.tab=name;
   DB.ui.tab=name; save();
@@ -1299,6 +1331,7 @@ function initEditor(idx){
   function liveCount(){
     const wc=document.getElementById("liveWC");
     if(wc) wc.innerHTML="Scene: <b>"+fmt(words(ed.innerText))+"</b> words";
+    if(window.G) G.onType(words(ed.innerText));
   }
   function exec(cmd,val){ restore(); try{ document.execCommand(cmd,false,val); }catch(e){} remember(); mark(); refreshState(); }
   function refreshState(){
@@ -1426,6 +1459,7 @@ async function askMuse(prompt, targetEl, label, kind){
     }, modelTier:"quick" });
     if(res && res.lite) return showLite(targetEl, kind);
     targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(label)}</span>${esc(res.text)}</div>`;
+    if(window.SND) SND.play("muse");
   }catch(e){
     showLite(targetEl, kind);
   }
@@ -1536,7 +1570,7 @@ function initMuseUI(){
   if(!window.MuseNative) { document.getElementById("museCard").hidden=true; return; }
   MuseNative.onStatus(renderMuseCard);
   const intro=document.getElementById("museIntro");
-  if(!MuseNative.firstRunSeen && MuseNative.status.state==="none"){
+  if(!MuseNative.firstRunSeen && MuseNative.status.state==="none" && !(window.G && G.holdMuseIntro())){
     setTimeout(()=>{ intro.hidden=false; }, 2600);
   }
   const close=()=>{ intro.hidden=true; MuseNative.markFirstRunSeen(); };
@@ -1600,6 +1634,7 @@ function handleAdd(key){
   if(key==="rules") DB.bible.rules.push({name:"",desc:""});
   if(key==="beats") DB.beats.push({title:"",act:"",desc:""});
   if(key==="scenes") DB.scenes.push({chapter:"",kind:"",title:"",pov:"",goal:"",conflict:"",outcome:"",text:"",html:""});
+  if(key==="scenes" && window.SND) SND.play("newChapter");
   save(); renderBible(); renderBeats(); renderScenes(); renderDash(); renderDraft();
 }
 function handleDelete(path){
@@ -1693,7 +1728,7 @@ async function backupNowFlow(){
     let ok=false; try{ ok=await MuseBackup.choose(); }catch(e){}
     if(!ok) return;
   }
-  try{ await MuseBackup.now(bookCopy()); toast("Backup saved"); }
+  try{ await MuseBackup.now(bookCopy()); if(window.SND) SND.play("saved"); toast("Backup saved"); }
   catch(e){ toast("We couldn't save the backup. Check the place you chose."); }
 }
 async function sendCopy(){
@@ -1764,7 +1799,7 @@ document.getElementById("restoreYes").addEventListener("click", async ()=>{
   pendingRestore=null; document.getElementById("restoreSheet").hidden=true;
   edDirty=false;
   DB=mergeDefaults(d);
-  save(); renderAll();
+  save(); renderAll(); G.init(); G.renderModeCard();
   toast("Book restored");
 });
 let resetArmed=false;
@@ -1780,7 +1815,7 @@ document.getElementById("resetBtn").addEventListener("click",(e)=>{
   document.getElementById("eraseWarn").hidden=true;
   try{ localStorage.removeItem("musebook_v1"); }catch(err){}
   DB=JSON.parse(JSON.stringify(DEFAULT));
-  save(); renderAll();
+  save(); renderAll(); G.init(); G.renderModeCard();
 });
 
 /* ============================================================
@@ -1813,6 +1848,8 @@ function renderAll(){
   initI18n();
   renderLangCard();
   initMuseUI();
+  G.init(); G.renderModeCard();
+  if(window.SND) SND.boot();
 })();
 document.getElementById("langRow").addEventListener("click", e=>{
   const b=e.target.closest("[data-lang]"); if(b) setLang(b.dataset.lang);

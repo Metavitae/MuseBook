@@ -1,0 +1,118 @@
+/* ============================================================
+   GUIDED MODE layout. The pieces reuse each look's own kit
+   (button.act = the main key, button.ghost = the second choice,
+   .card, .item = case files / cards, .iconbtn/.gearbtn = keys),
+   so all five looks dress these screens without extra rules.
+   Only the "chapter finished" moment gets a few per-look touches.
+   ============================================================ */
+#guided{display:none}
+:root[data-guided="1"] #guided{display:block; position:relative; z-index:2; min-height:100dvh}
+:root[data-guided="1"] header, :root[data-guided="1"] main, :root[data-guided="1"] footer{display:none}
+:root[data-mode="guided"] #stagesToggle{visibility:hidden}
+.g-screen{max-width:620px; margin:0 auto; padding:16px 2px 120px; box-sizing:border-box}
+.g-own{color:var(--text)}
+.g-top{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0 14px}
+.g-top .g-plate{flex:1; min-width:0; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-family:var(--font-display); font-size:17px; color:var(--accent)}
+:root[data-mood="noir"] .g-plate{position:relative; padding:7px 14px; border-radius:8px; color:#2a1c08; font-family:'Special Elite',monospace; letter-spacing:.12em; text-transform:uppercase; font-size:13px; background:linear-gradient(180deg,rgba(255,240,200,.25),rgba(90,63,20,.15)),var(--nr-brass); background-size:auto,220px 110px; box-shadow:0 1px 0 #f6e3a8 inset,0 -2px 0 #5a3f14 inset,0 4px 10px rgba(0,0,0,.55)}
+:root[data-mood="celestial"] .g-plate{padding:7px 14px; border-radius:30px; color:#2a1d08; font-family:'Cinzel',serif; font-weight:700; font-size:13px; letter-spacing:.1em; text-transform:uppercase; background:linear-gradient(180deg,#f0dc9a,#c79a42 55%,#8a6322); box-shadow:0 0 0 2px #5a3f14,0 6px 12px rgba(0,0,0,.5)}
+.g-key{min-height:44px}
+.gearbtn.g-key{width:44px; height:44px; flex:none}
+.g-center{min-height:calc(100dvh - 60px); display:flex; flex-direction:column; justify-content:center; gap:16px; padding:0 14px}
+.g-brand{font-family:var(--font-display); font-size:13px; letter-spacing:.3em; text-transform:uppercase; color:var(--accent)}
+.g-h1{margin:0; font-family:var(--font-display); font-size:clamp(32px,9vw,46px); line-height:1.08; color:var(--text)}
+.g-h1.g-left{font-size:clamp(28px,8vw,38px); margin:6px 0 10px}
+.g-h3{font-family:var(--font-display); font-size:18px; margin:26px 0 10px; color:var(--text)}
+.g-lead{margin:0; font-size:17px; line-height:1.55; color:var(--muted)}
+.g-sub{margin:4px 0 0; font-size:14px; line-height:1.45; color:var(--muted)}
+.g-hint{margin:0; font-size:14px; color:var(--muted); text-align:center}
+.g-note{margin:12px 0 0; font-size:14px; color:var(--text)}
+.g-stack{display:flex; flex-direction:column; gap:10px; margin-top:12px}
+.g-stack .g-sub{margin:-4px 0 6px; text-align:center}
+.g-end{margin-top:28px}
+.g-big{min-height:54px !important; font-size:16px !important; width:100%}
+.g-wide{width:100%}
+.g-link{background:none; border:0; padding:12px 6px; color:var(--accent); font-family:var(--font-body); font-size:15px; text-decoration:underline; text-underline-offset:4px; cursor:pointer}
+.g-field{width:100%; box-sizing:border-box; font-size:17px !important; line-height:1.45; padding:12px 14px !important}
+.g-titlefield{font-family:var(--font-display) !important; font-size:20px !important}
+.g-lbl{margin:8px 0 6px}
+.g-logline{font-style:italic; color:var(--muted); margin:10px 0 0}
+/* the page */
+.g-page{padding-bottom:110px}
+.g-head{padding:0 4px 8px}
+.g-lab{font-family:var(--font-display); font-size:12px; letter-spacing:.24em; text-transform:uppercase; color:var(--accent)}
+.g-ctitle{display:block; width:100%; margin:4px 0 6px; background:transparent !important; border:0 !important; box-shadow:none !important; padding:2px 0 !important; font-family:var(--font-display) !important; font-size:24px !important; color:var(--text) !important}
+.g-ctitle::placeholder{color:var(--muted); opacity:.7}
+.g-status{display:flex; align-items:center; flex-wrap:wrap; gap:4px 8px; font-size:13px; color:var(--muted)}
+.g-chip{margin-left:auto; min-height:36px; padding:0 14px; border-radius:18px; border:1px solid var(--accent); background:transparent; color:var(--accent); font-family:var(--font-body); font-weight:600; font-size:13px; cursor:pointer}
+.g-prompt{margin:10px 0 0; font-style:italic; color:var(--accent); font-size:15px}
+:root[data-guided="1"] #draftWrap > .card:first-child, :root[data-guided="1"] .draftbar, :root[data-guided="1"] #museContinue, :root[data-guided="1"] #museContinueOut{display:none}
+:root[data-guided="1"] #draftWrap > .card{background:none !important; border:0 !important; box-shadow:none !important; padding:0 !important}
+:root[data-guided="1"] #draftWrap > .card::before{display:none}
+:root[data-guided="1"] .editor{min-height:52vh}
+.g-bottom{position:fixed; left:0; right:0; bottom:0; z-index:30; padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px)); background:linear-gradient(180deg, rgba(0,0,0,0), var(--bg) 38%)}
+:root[data-kb="1"] .g-bottom{display:none}
+/* chapter rows (case files in Noir, star cards in Celestial…) */
+.g-rowsbox{display:flex; flex-direction:column; gap:4px; margin-top:16px}
+.g-row{display:flex !important; align-items:center; gap:14px; width:100%; text-align:left; cursor:pointer; font:inherit; color:inherit; min-height:64px; position:relative}
+.g-row .item-head{margin:0}
+.g-row .item-head strong{font-size:10px}
+:root:not([data-mood="noir"]) .g-row .item-head{display:none}
+.g-num{flex:none; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:19px; background:var(--surface); color:var(--accent); box-shadow:0 0 0 2px var(--accent) inset}
+.g-rowtxt{display:flex; flex-direction:column; min-width:0}
+.g-rowt{font-size:17px; font-family:var(--font-display); overflow:hidden; text-overflow:ellipsis}
+.g-rows{font-size:12.5px; opacity:.8}
+.g-row.is-empty{opacity:.75}
+.g-row.is-cur{outline:2px solid var(--accent); outline-offset:2px}
+.g-stamp-mini{position:absolute; right:14px; top:50%; margin-top:-14px; transform:rotate(-9deg); border:2.5px solid #a02b21; color:#a02b21; padding:1px 9px; font-family:'Special Elite',monospace; font-size:13px; letter-spacing:.2em; border-radius:4px; opacity:.88}
+:root:not([data-mood="noir"]) .g-stamp-mini{border:0; transform:none; color:var(--accent); font-family:var(--font-body); font-size:11px; letter-spacing:.14em; opacity:1}
+:root[data-mood="noir"] .g-row{margin-top:22px}
+:root[data-mood="noir"] .g-num{background:#1f1710; color:#e6c87c; box-shadow:0 0 0 2px #8a6322 inset}
+:root[data-mood="noir"] .g-row.is-cur{outline:0; box-shadow:0 0 0 2px #c4382b,0 0 28px rgba(244,196,110,.4),0 8px 14px rgba(0,0,0,.55)}
+:root[data-mood="city"] .g-num{background:none; box-shadow:none; font-family:'Limelight',serif; font-size:30px; color:#d9b567; width:auto}
+.g-spec{margin-top:18px}
+.g-idea .g-ideat{margin:0; font-size:16px}
+/* chapter finished */
+.g-done .g-moment{text-align:center; padding:26px 10px 22px; position:relative}
+.g-bell{display:block; margin:0 auto; color:var(--accent); transform-origin:50% 8%; animation:gring 1.4s ease-in-out .5s 2 both}
+@keyframes gring{0%,100%{transform:rotate(0)} 15%{transform:rotate(16deg)} 35%{transform:rotate(-14deg)} 55%{transform:rotate(9deg)} 75%{transform:rotate(-5deg)}}
+.g-stamp{display:inline-block; margin:12px auto 16px; padding:0 18px; border:5px solid var(--accent); border-radius:10px; color:var(--accent); font-family:var(--font-display); font-size:50px; letter-spacing:.14em; line-height:1.15; transform:rotate(-8deg); animation:gslam .55s cubic-bezier(.2,1.5,.35,1) both}
+@keyframes gslam{0%{transform:rotate(-8deg) scale(3); opacity:0} 70%{opacity:1} 100%{transform:rotate(-8deg) scale(1); opacity:1}}
+:root[data-mood="noir"] .g-stamp{border-color:#c4382b; color:#c4382b; font-family:'Special Elite',monospace; text-shadow:0 0 18px rgba(196,56,43,.45)}
+:root[data-mood="celestial"] .g-stamp{border:0; transform:none; font-family:'Cinzel',serif; color:#fdf4d6; text-shadow:0 0 24px rgba(240,213,138,.8); animation:grise 1.2s ease-out both}
+:root[data-mood="city"] .g-stamp{border:0; transform:none; font-family:'Limelight',serif; font-size:56px; color:#e6c887; text-shadow:0 0 22px rgba(240,200,120,.55)}
+:root[data-mood="shore"] .g-stamp{border:0; transform:none; font-family:'Cormorant Garamond',serif; font-style:italic; color:#2f8a85; animation:grise 1.2s ease-out both}
+:root[data-mood="room"] .g-stamp{border:0; transform:none; font-family:'Newsreader',serif; color:#a5482e; letter-spacing:.04em; animation:grise 1s ease-out both}
+@keyframes grise{0%{transform:translateY(24px); opacity:0} 100%{transform:translateY(0); opacity:1}}
+.g-well{font-family:var(--font-display); font-size:24px; line-height:1.25; color:var(--text); margin:8px 18px 0}
+.g-donesheet{margin-top:6px}
+.g-cap{font-family:var(--font-display); font-size:11px; letter-spacing:.2em; color:var(--accent); margin:14px 0 8px}
+.g-choice{display:flex !important; flex-direction:column; align-items:flex-start; gap:2px; width:100%; text-align:left; padding:12px 16px !important; min-height:60px; text-transform:none !important; letter-spacing:.02em !important}
+.g-choice span{font-size:16px}
+.g-choice small{font-size:12.5px; opacity:.8; font-family:var(--font-body); letter-spacing:0; text-transform:none}
+.g-quote{font-style:italic; font-size:18px; line-height:1.6}
+/* sheets */
+.g-scrim{position:fixed; inset:0; z-index:60; background:var(--scrim)}
+.g-sheet{position:fixed; left:8px; right:8px; bottom:8px; z-index:61; max-height:86vh; overflow:auto; padding:20px 18px 18px; border-radius:24px; background:var(--surface); box-shadow:0 -10px 30px rgba(0,0,0,.4); max-width:560px; margin:0 auto}
+.g-sheet h2{margin:0 0 6px; font-family:var(--font-display)}
+:root[data-mood="noir"] .g-sheet{background-color:#241a12; background-image:radial-gradient(ellipse 100% 60% at 50% 0%,rgba(214,160,70,.14),rgba(214,160,70,0) 70%),var(--nr-leather); background-size:auto,300px 300px}
+/* paste */
+.g-pastebox{min-height:42vh}
+.g-partrow{display:flex; gap:10px; align-items:center}
+.g-partrow .g-sub{flex:none; margin:0}
+.g-partname{font-family:var(--font-display) !important}
+.g-parttitle{margin-top:8px; font-style:italic}
+.g-partfull{margin-top:10px; max-height:260px; overflow:auto; white-space:pre-wrap; font-size:15px; line-height:1.55; padding:10px; border-radius:10px; background:var(--surface-2); color:var(--text)}
+/* reading view */
+.g-read{position:fixed; inset:0; z-index:80; display:flex; flex-direction:column; background:#f7f1e3; color:#221c15}
+.g-readbar{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 14px; border-bottom:1px solid #e4dac4; font-family:Georgia,serif; font-style:italic; color:#6f665a}
+.g-readbody{flex:1; overflow:auto; padding:28px 26px 60px; font-family:'Source Serif 4',Georgia,serif; font-size:18px; line-height:1.75; color:#221c15; max-width:640px; margin:0 auto; width:100%; box-sizing:border-box}
+.g-readbody p{margin:0; text-indent:1.4em; text-align:justify; hyphens:auto}
+.g-readbody h2+p, .g-readct+p, .g-readbody .scenebreak+p{text-indent:0}
+.g-readtitle{text-align:center; font-family:'Cormorant Garamond',serif; font-size:38px; font-weight:600; margin:30px 0 4px}
+.g-readsub{text-align:center !important; text-indent:0 !important; font-style:italic; color:#6f665a}
+.g-readch h2{text-align:center; font-family:'Cormorant Garamond',serif; font-weight:600; font-size:28px; margin:60px 0 4px; color:#7a5a2a}
+.g-readct{text-align:center !important; text-indent:0 !important; font-style:italic; margin:0 0 24px !important}
+.g-readbody .scenebreak{text-align:center; color:#9a8a6a; margin:16px 0; letter-spacing:4px}
+@media (prefers-reduced-motion: reduce){ .g-bell, .g-stamp{animation:none} }
+/* Messages never cover the main step at the bottom */
+:root[data-guided="1"] #toast{bottom:104px}
