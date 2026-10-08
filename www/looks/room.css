@@ -1,0 +1,125 @@
+/* ============================================================
+   THE WRITING ROOM: a warm, quiet room in the afternoon.
+   Linen walls, a walnut shelf, a lamp beam from the corner,
+   window light drifting across, dust in the light. Cream keys,
+   one terracotta key for the main step, Newsreader + Figtree.
+   Spec: Chat's looks page (The Writing Room row + kit), 2026-10-07.
+   ============================================================ */
+:root[data-mood="room"]{
+  --bg:#f2e9d8; --surface:#fbf7ee; --surface-2:#fffaf0;
+  --text:#2a211a; --muted:#6f5f50; --border:#d9c9a8;
+  --accent:#a5482e; --accent-2:#a5482e;
+  --good:#5d7a4e; --warn:#a97324; --bad:#a5482e;
+  --font-display:'Newsreader',Georgia,serif; --font-body:'Figtree',system-ui,sans-serif;
+  --tint-focus:rgba(181,87,59,.2); --tint-warn:rgba(181,87,59,.1); --tint-warn-b:rgba(181,87,59,.4);
+  --tint-muse:rgba(181,87,59,.07); --tint-muse-b:rgba(181,87,59,.3); --scrim:rgba(242,233,216,.75);
+  --rm-linen:url(tex/room-linen.webp); --rm-walnut:url(tex/room-walnut.webp);
+  color-scheme:light;
+}
+
+/* ---- the room ---- */
+:root[data-mood="room"] body{
+  background-color:#f2e9d8;
+  background-image:radial-gradient(ellipse 70% 40% at 92% 0%, rgba(255,214,140,.55), rgba(255,214,140,0) 70%), var(--rm-linen);
+  background-size:auto, 320px 320px; background-attachment:fixed, fixed;
+}
+:root[data-mood="room"] #atmos{display:block; position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
+:root[data-mood="room"] main, :root[data-mood="room"] footer{position:relative; z-index:1}
+:root[data-mood="room"] .rm-lamp{position:absolute; top:-130px; right:-100px; width:380px; height:380px; border-radius:50%; background:radial-gradient(circle, rgba(255,214,140,.55), rgba(255,214,140,0) 65%); animation:rmglow 6s ease-in-out infinite}
+@keyframes rmglow{0%,100%{opacity:.8} 50%{opacity:1}}
+:root[data-mood="room"] .rm-beam{position:absolute; right:0; top:0; width:85%; height:62%; animation:rmflick 7s ease-in-out infinite;
+  background:linear-gradient(225deg, rgba(255,226,160,.45), rgba(255,226,160,0) 60%); clip-path:polygon(100% 0, 100% 100%, 3% 100%)}
+@keyframes rmflick{0%,100%{opacity:.75} 40%{opacity:1} 70%{opacity:.85}}
+:root[data-mood="room"] .rm-window{position:absolute; left:-30px; top:140px; width:90px; height:420px; background:linear-gradient(180deg, rgba(255,236,190,.5), rgba(255,236,190,0)); animation:rmdrift 16s ease-in-out infinite}
+@keyframes rmdrift{0%,100%{transform:translateX(0) skewX(-22deg); opacity:.35} 50%{transform:translateX(40px) skewX(-22deg); opacity:.6}}
+:root[data-mood="room"] .rm-motes i{position:absolute; border-radius:50%; background:rgba(255,226,160,.9); opacity:0; animation:rmmote 10s ease-in-out infinite}
+@keyframes rmmote{0%{transform:translate(0,0); opacity:0} 20%{opacity:.85} 100%{transform:translate(16px,-110px); opacity:0}}
+
+/* ---- header: a walnut shelf ---- */
+:root[data-mood="room"] header{
+  background-color:#3a2618; background-image:linear-gradient(180deg, rgba(255,230,190,.08), rgba(0,0,0,.18)), var(--rm-walnut); background-size:auto, 360px 180px;
+  border-bottom:0; box-shadow:0 2px 0 #24170e, 0 8px 18px rgba(90,60,30,.3)}
+:root[data-mood="room"] .wordmark{font-family:'Newsreader',serif; font-weight:600; font-size:20px; color:#fbf1de; letter-spacing:.02em; text-shadow:0 1px 2px rgba(0,0,0,.5)}
+:root[data-mood="room"] .wordmark em{color:#f3c9a0; font-style:italic}
+
+/* ---- keys: cream, soft, round ---- */
+:root[data-mood="room"] .iconbtn, :root[data-mood="room"] .gearbtn,
+:root[data-mood="room"] nav button, :root[data-mood="room"] button.mini,
+:root[data-mood="room"] .edtools button, :root[data-mood="room"] .segmented button,
+:root[data-mood="room"] button.ghost, :root[data-mood="room"] button.muse{
+  border:0; color:#3a2a20; font-family:'Figtree',sans-serif; font-weight:600;
+  background:linear-gradient(180deg, #fbf6ea, #eadfc7); box-shadow:0 1px 0 #fff inset, 0 0 0 1px #d4c3a2, 0 6px 12px rgba(90,60,30,.22); transition:transform .08s ease}
+:root[data-mood="room"] .gearbtn{border-radius:50%; width:40px; height:40px}
+:root[data-mood="room"] .iconbtn, :root[data-mood="room"] nav button, :root[data-mood="room"] .segmented button, :root[data-mood="room"] button.ghost, :root[data-mood="room"] button.muse{border-radius:14px}
+:root[data-mood="room"] button.ghost, :root[data-mood="room"] button.muse{min-height:42px; padding:9px 16px}
+:root[data-mood="room"] button.muse{color:#a5482e}
+:root[data-mood="room"] .edtools button{border-radius:50%; min-width:40px; height:40px}
+:root[data-mood="room"] .edtools button[data-pop]{border-radius:16px}
+/* the one main step: terracotta */
+:root[data-mood="room"] button.act{
+  border:0; border-radius:16px; min-height:48px; padding:10px 20px; color:#fff7ee; font-family:'Figtree',sans-serif; font-weight:600; letter-spacing:.03em; font-size:15px;
+  background:linear-gradient(180deg, #c9694a, #a5482e); box-shadow:0 1px 0 rgba(255,255,255,.35) inset, 0 8px 16px rgba(120,50,25,.35)}
+:root[data-mood="room"] .iconbtn:active, :root[data-mood="room"] .gearbtn:active, :root[data-mood="room"] nav button:active, :root[data-mood="room"] button.act:active,
+:root[data-mood="room"] button.mini:active, :root[data-mood="room"] .edtools button:active, :root[data-mood="room"] .segmented button:active,
+:root[data-mood="room"] button.ghost:active, :root[data-mood="room"] button.muse:active{transform:translateY(2px)}
+:root[data-mood="room"] nav.open{max-height:70px; padding-block:6px 14px}
+:root[data-mood="room"] nav button{margin:0 3px}
+:root[data-mood="room"] nav button.active, :root[data-mood="room"] .segmented button.active, :root[data-mood="room"] .edtools button.on{
+  background:#efe2c8; color:#6f3b27; box-shadow:inset 0 2px 4px rgba(90,60,30,.25), 0 0 0 1.5px #b5573b}
+:root[data-mood="room"] .segmented{border:0; gap:10px; overflow:visible; padding:4px}
+:root[data-mood="room"] button.danger{border:1px solid #b5573b; color:#a5482e; background:transparent; border-radius:12px}
+
+/* ---- cards: cream cards on linen ---- */
+:root[data-mood="room"] .card{border:0; border-radius:14px; background:#fbf7ee; box-shadow:0 1px 0 #fff inset, 0 0 0 1px #e1d4b8, 0 12px 22px rgba(90,60,30,.16)}
+:root[data-mood="room"] .card h3{font-family:'Figtree',sans-serif; font-weight:600; font-size:11px; letter-spacing:.18em; color:#6f5f50}
+:root[data-mood="room"] h2{font-family:'Newsreader',serif; font-weight:500; font-size:32px; letter-spacing:-.01em; color:#2a211a}
+:root[data-mood="room"] label{font-family:'Figtree',sans-serif; font-weight:600; font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:#6f5f50}
+:root[data-mood="room"] label.swrow{text-transform:none; letter-spacing:0; font-size:14px; font-weight:400; color:#2a211a}
+
+/* ---- text boxes ---- */
+:root[data-mood="room"] input, :root[data-mood="room"] textarea, :root[data-mood="room"] select{
+  background:#fffaf0; color:#2a211a; border:0; border-radius:10px; box-shadow:inset 0 1px 3px rgba(90,60,30,.25), 0 0 0 1px #cdbb97}
+:root[data-mood="room"] input:focus, :root[data-mood="room"] textarea:focus, :root[data-mood="room"] select:focus{box-shadow:inset 0 1px 3px rgba(90,60,30,.25), 0 0 0 2px #b5573b}
+:root[data-mood="room"] .swrow input{box-shadow:none; accent-color:#b5573b}
+
+/* ---- scene cards: index cards ---- */
+:root[data-mood="room"] .item{border:0; border-radius:12px; background:#fffaf0; box-shadow:0 0 0 1px #e1d4b8, 0 6px 12px rgba(90,60,30,.14);
+  background-image:repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 27px, rgba(160,130,90,.14) 27px 28px)}
+:root[data-mood="room"] .item .item-head strong{font-family:'Newsreader',serif; font-weight:600; letter-spacing:.04em; text-transform:none; font-size:15px; color:#6f3b27}
+:root[data-mood="room"] .stat{border:0; border-radius:12px; background:#fffaf0; box-shadow:0 0 0 1px #e1d4b8}
+:root[data-mood="room"] .stat .v{font-family:'Newsreader',serif; color:#6f3b27}
+:root[data-mood="room"] .beat .num{background:#efe2c8; color:#6f3b27; border-radius:50%; font-family:'Newsreader',serif}
+:root[data-mood="room"] .pill{background:#efe2c8; color:#6f3b27; border:0}
+
+/* ---- progress: a thin terracotta thread ---- */
+:root[data-mood="room"] .bar{height:6px; border:0; border-radius:3px; background:#e0d3b6}
+:root[data-mood="room"] .bar > i{background:#b5573b}
+
+/* ---- the writing page: lamplit paper with a margin thread ---- */
+:root[data-mood="room"] .platen{position:relative; margin:6px 0}
+:root[data-mood="room"] .platen::before{content:""; position:absolute; left:14px; top:30px; bottom:28px; width:3px; border-radius:2px; background:#eadfc7; z-index:1; pointer-events:none}
+:root[data-mood="room"] .editor{
+  border:0; border-radius:6px; padding:30px 26px 24px 34px; color:#2a211a; background:#fffaf0;
+  font-family:'Newsreader',Georgia,serif; font-size:20px; line-height:1.8; caret-color:#b5573b;
+  box-shadow:0 0 40px rgba(255,214,140,.45), 0 14px 28px rgba(90,60,30,.22)}
+:root[data-mood="room"] .editor:focus{border:0}
+:root[data-mood="room"] .editor blockquote{border-left-color:#b5573b}
+:root[data-mood="room"] .draftbar .wc{color:#6f5f50}
+:root[data-mood="room"] .draftbar .wc b{color:#a5482e}
+:root[data-mood="room"] .edtools{border:0; border-radius:18px; padding:9px 8px; background:#fbf7ee; box-shadow:0 0 0 1px #e1d4b8, 0 8px 16px rgba(90,60,30,.15)}
+:root[data-mood="room"] .edrow{gap:9px}
+
+/* ---- pop-up sheets ---- */
+:root[data-mood="room"] .oversheet .sheet, :root[data-mood="room"] #museIntro .sheet, :root[data-mood="room"] .tipsheet .sheet{
+  border:0; border-radius:24px; background:#fbf7ee; box-shadow:0 -12px 30px rgba(90,60,30,.25)}
+
+/* ---- notes, Muse box, toast, labels ---- */
+:root[data-mood="room"] .musebox{border:0; border-radius:12px; background:#fffaf0; box-shadow:0 0 0 1px #cdbb97}
+:root[data-mood="room"] .musebox .lbl{color:#a5482e}
+:root[data-mood="room"] #toast{background:#2a211a; color:#fbf7ee}
+:root[data-mood="room"] #tip{background:#fff8e8; color:#2a211a; border:0; box-shadow:0 10px 22px rgba(90,60,30,.3), 0 0 0 1.5px #b5573b}
+:root[data-mood="room"] #tip b{color:#a5482e; font-family:'Figtree',sans-serif; font-weight:700}
+:root[data-mood="room"] #splash{background:#f2e9d8 var(--rm-linen); background-size:320px}
+:root[data-mood="room"] #splash h1{font-family:'Newsreader',serif; font-weight:500; color:#2a211a}
+:root[data-mood="room"] #splash h1 em{color:#a5482e; font-style:italic}
+:root[data-mood="room"] .hint{color:#6f5f50}

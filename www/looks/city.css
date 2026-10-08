@@ -1,0 +1,148 @@
+/* ============================================================
+   CITY VIBE: Metropolis and Art Nouveau at night, no neon.
+   Deep bottle green, ivory enamel arch keys with gold rims,
+   verdigris iron frames, slender curved towers with warm arched
+   windows, soft rain, a moonbeam, a Metro glass canopy with lamps.
+   Spec: Chat's looks page (City Vibe row, rebuilt twice), 2026-10-07.
+   ============================================================ */
+:root[data-mood="city"]{
+  --bg:#101a19; --surface:#16221e; --surface-2:#0b1211;
+  --text:#efe6cf; --muted:#b9b39c; --border:#3d564d;
+  --accent:#e6c887; --accent-2:#d2b878;
+  --good:#e6c887; --warn:#e6c887; --bad:#e8957f;
+  --font-display:'Poiret One','Work Sans',sans-serif; --font-body:'Work Sans',system-ui,sans-serif;
+  --tint-focus:rgba(230,200,135,.25); --tint-warn:rgba(232,149,127,.14); --tint-warn-b:rgba(232,149,127,.5);
+  --tint-muse:rgba(230,200,135,.08); --tint-muse-b:rgba(230,200,135,.35); --scrim:rgba(11,18,17,.74);
+  --ct-iron:url(tex/city-verdigris.webp);
+  --ct-enamel:radial-gradient(circle at 36% 24%, #fbf3de, #e9dcbb 60%, #cdb98c);
+  --ct-rim:0 0 0 2px #8a6a2e, 0 0 0 3.5px #c8a35a, 0 0 0 4.5px #3d2e10, 0 6px 12px rgba(0,0,0,.5), inset 0 -3px 0 rgba(120,90,40,.25);
+  color-scheme:dark;
+}
+
+/* ---- the city at night ---- */
+:root[data-mood="city"] body{
+  background-color:#101a19;
+  background-image:radial-gradient(ellipse 80% 30% at 50% 0%, rgba(240,200,120,.2), rgba(240,200,120,0) 70%), linear-gradient(180deg, #16211f 0%, #101a19 55%, #0b1211 100%);
+  background-attachment:fixed;
+}
+:root[data-mood="city"] #atmos{display:block; position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
+:root[data-mood="city"] main, :root[data-mood="city"] footer{position:relative; z-index:1}
+:root[data-mood="city"] .ct-towers{position:absolute; left:0; right:0; bottom:0; height:230px; display:flex; justify-content:space-between; align-items:flex-end; padding:0 6px; opacity:.5}
+:root[data-mood="city"] .ct-win{animation:ctwin 4s ease-in-out infinite}
+@keyframes ctwin{0%,100%{opacity:.55} 50%{opacity:1}}
+:root[data-mood="city"] .ct-beam{position:absolute; left:50%; top:-40px; width:140px; height:620px; margin-left:-70px; transform-origin:50% 0;
+  background:linear-gradient(180deg, rgba(240,230,200,.16), rgba(240,230,200,0)); animation:ctsweep 18s ease-in-out infinite}
+@keyframes ctsweep{0%,100%{transform:rotate(14deg)} 50%{transform:rotate(48deg)}}
+:root[data-mood="city"] .ct-rain i{position:absolute; top:0; width:1px; height:46px; background:linear-gradient(180deg, rgba(220,230,225,0), rgba(220,230,225,.45)); animation:ctrain 1.6s linear infinite}
+@keyframes ctrain{0%{transform:translateY(-60px) rotate(12deg)} 100%{transform:translateY(110vh) rotate(12deg)}}
+
+/* ---- header: the Metro glass canopy with warm lamps ---- */
+:root[data-mood="city"] header{
+  background:linear-gradient(180deg, rgba(12,20,18,.95), rgba(22,34,30,.92)), var(--ct-iron); border-bottom:0;
+  box-shadow:0 2px 0 #7fa595, 0 4px 0 #16221e, 0 5px 0 #c8a35a, 0 10px 20px rgba(0,0,0,.5)}
+:root[data-mood="city"] header::after{content:""; position:absolute; left:18%; right:18%; bottom:-7px; height:6px; pointer-events:none;
+  background:radial-gradient(circle at 10% 50%, #f0c878 0 2.5px, rgba(240,200,120,0) 3.5px), radial-gradient(circle at 50% 50%, #f0c878 0 2.5px, rgba(240,200,120,0) 3.5px), radial-gradient(circle at 90% 50%, #f0c878 0 2.5px, rgba(240,200,120,0) 3.5px);
+  filter:drop-shadow(0 0 4px rgba(240,200,120,.9))}
+:root[data-mood="city"] .wordmark{
+  padding:6px 22px 7px; border-radius:6px 6px 30px 30px/6px 6px 22px 22px; color:#f1e6c8; font-family:'Limelight',serif; font-weight:400; font-size:17px; letter-spacing:.12em;
+  background:linear-gradient(180deg, #24352f, #16221e); box-shadow:0 0 0 2px #7fa595, 0 0 0 4px #16221e, 0 0 0 5px #c8a35a, 0 8px 14px rgba(0,0,0,.5)}
+:root[data-mood="city"] .wordmark em{color:#e6c887}
+
+/* ---- keys: ivory enamel arches with a gold rim ---- */
+:root[data-mood="city"] .iconbtn, :root[data-mood="city"] .gearbtn,
+:root[data-mood="city"] nav button, :root[data-mood="city"] button.mini,
+:root[data-mood="city"] .edtools button, :root[data-mood="city"] .segmented button{
+  border:0; color:#3a2a1a; font-family:'Work Sans',sans-serif; font-weight:600; letter-spacing:.06em;
+  background:var(--ct-enamel); box-shadow:var(--ct-rim); transition:transform .08s ease}
+:root[data-mood="city"] .gearbtn{width:42px; height:42px; border-radius:50% 50% 12px 12px/62% 62% 12px 12px}
+:root[data-mood="city"] .iconbtn, :root[data-mood="city"] nav button, :root[data-mood="city"] .segmented button, :root[data-mood="city"] .edtools button[data-pop]{border-radius:22px 22px 8px 8px/26px 26px 8px 8px}
+:root[data-mood="city"] .edtools button{min-width:40px; height:40px; border-radius:50% 50% 10px 10px/62% 62% 10px 10px}
+:root[data-mood="city"] button.mini{border-radius:14px 14px 6px 6px}
+/* the main key: a green enamel arch */
+:root[data-mood="city"] button.act{
+  border:0; border-radius:34px 34px 12px 12px/40px 40px 12px 12px; min-height:48px; padding:10px 20px; color:#f6ecd0; text-shadow:0 1px 2px #000;
+  font-family:'Work Sans',sans-serif; font-weight:600; letter-spacing:.14em; text-transform:uppercase; font-size:13px;
+  background:radial-gradient(ellipse 80% 120% at 50% 0%, #2f5a4f, #1c3a32 60%, #13271f); box-shadow:var(--ct-rim)}
+:root[data-mood="city"] .iconbtn:active, :root[data-mood="city"] .gearbtn:active, :root[data-mood="city"] nav button:active, :root[data-mood="city"] button.act:active,
+:root[data-mood="city"] button.mini:active, :root[data-mood="city"] .edtools button:active, :root[data-mood="city"] .segmented button:active{transform:translateY(3px)}
+:root[data-mood="city"] nav.open{max-height:72px; padding-block:8px 14px}
+:root[data-mood="city"] nav button{margin:0 4px}
+/* where you are: a lit window */
+:root[data-mood="city"] nav button.active, :root[data-mood="city"] .segmented button.active, :root[data-mood="city"] .edtools button.on{
+  background:radial-gradient(circle at 40% 25%, #fff6d8, #f0c878 65%, #c8963e); color:#2a1f0e; box-shadow:0 0 0 2px #8a6a2e, 0 0 16px rgba(240,200,120,.55)}
+:root[data-mood="city"] .segmented{border:0; gap:10px; overflow:visible; padding:5px}
+/* the second choice: a stained-glass frame, muted */
+:root[data-mood="city"] button.ghost, :root[data-mood="city"] button.muse{
+  border:0; border-radius:16px 16px 8px 8px; min-height:42px; padding:9px 16px; color:#f1e6c8; font-family:'Work Sans',sans-serif; font-weight:600;
+  background:linear-gradient(135deg, rgba(122,150,120,.35), rgba(196,150,80,.28) 50%, rgba(160,110,110,.3)), #16221e;
+  box-shadow:0 0 0 1.5px #7fa595, 0 0 0 3px #16221e, 0 0 0 4px #c8a35a, 0 6px 12px rgba(0,0,0,.4)}
+:root[data-mood="city"] button.ghost:active, :root[data-mood="city"] button.muse:active{transform:translateY(2px)}
+:root[data-mood="city"] button.danger{border:1.5px solid #e8957f; color:#e8957f; background:transparent; border-radius:12px 12px 6px 6px}
+
+/* ---- cards: iron frames with a gold line ---- */
+:root[data-mood="city"] .card{
+  position:relative; border:0; border-radius:16px; background:#101a19; color:#efe6cf;
+  box-shadow:0 0 0 3px #24352f, 0 0 0 5px #7fa595, 0 12px 22px rgba(0,0,0,.55)}
+:root[data-mood="city"] .card h3{font-family:'Work Sans',sans-serif; font-weight:600; font-size:11px; letter-spacing:.22em; color:#d2b878}
+/* a thin gold vine under each card title */
+:root[data-mood="city"] .card h3::after{content:""; display:block; width:120px; height:8px; margin-top:6px;
+  background:radial-gradient(circle at 50% 50%, #c8a35a 0 2px, rgba(0,0,0,0) 2.5px), linear-gradient(90deg, rgba(200,163,90,0), #c8a35a 30%, #c8a35a 70%, rgba(200,163,90,0)) center/100% 1px no-repeat}
+:root[data-mood="city"] h2{font-family:'Poiret One',sans-serif; font-weight:400; font-size:30px; letter-spacing:.06em; color:#f6ecd0}
+:root[data-mood="city"] label{font-family:'Work Sans',sans-serif; font-weight:600; font-size:11px; letter-spacing:.18em; text-transform:uppercase; color:#d2b878}
+:root[data-mood="city"] label.swrow{text-transform:none; letter-spacing:0; font-size:14px; font-weight:400; color:#efe6cf}
+
+/* ---- text boxes: a dark slot ringed in gold ---- */
+:root[data-mood="city"] input, :root[data-mood="city"] textarea, :root[data-mood="city"] select{
+  background:#0b1211; color:#f6ecd0; border:0; border-radius:10px; box-shadow:inset 0 2px 6px #000, 0 0 0 1.5px #c8a35a}
+:root[data-mood="city"] input::placeholder, :root[data-mood="city"] textarea::placeholder{color:#7d8a80}
+:root[data-mood="city"] input:focus, :root[data-mood="city"] textarea:focus, :root[data-mood="city"] select:focus{box-shadow:inset 0 2px 6px #000, 0 0 0 2px #f0c878, 0 0 14px rgba(240,200,120,.3)}
+:root[data-mood="city"] .swrow input{box-shadow:none; accent-color:#c8a35a}
+
+/* ---- scene cards: arched windows of a tower ---- */
+:root[data-mood="city"] .item{
+  position:relative; border:0; border-radius:40px 40px 10px 10px/30px 30px 10px 10px; padding-top:18px; color:#efe6cf;
+  background:linear-gradient(180deg, #1a2825, #121c1a); box-shadow:0 0 0 2px #7fa595, 0 0 0 4px #101a19, 0 0 0 5px #c8a35a, 0 10px 18px rgba(0,0,0,.5)}
+:root[data-mood="city"] .item .item-head strong{font-family:'Limelight',serif; font-weight:400; letter-spacing:.08em; color:#d9b567; font-size:13px}
+:root[data-mood="city"] .stat{border:0; border-radius:12px; background:#0b1211; box-shadow:inset 0 2px 6px #000, 0 0 0 1.5px #7fa595}
+:root[data-mood="city"] .stat .k{color:#d2b878; letter-spacing:.16em}
+:root[data-mood="city"] .stat .v{font-family:'Limelight',serif; font-weight:400; color:#e6c887}
+:root[data-mood="city"] .beat .num{background:none; box-shadow:none; color:#d9b567; font-family:'Limelight',serif; font-size:20px}
+:root[data-mood="city"] .pill{background:#0b1211; color:#d2b878; border:1px solid #7fa595}
+
+/* ---- progress: a brass rail ---- */
+:root[data-mood="city"] .bar{height:8px; border:0; border-radius:4px; background:#0b1211; box-shadow:inset 0 1px 3px #000, 0 0 0 1px #7fa595}
+:root[data-mood="city"] .bar > i{background:linear-gradient(90deg, #a98440, #e6c887)}
+
+/* ---- the writing page: a lit window in an iron frame ---- */
+:root[data-mood="city"] .platen{position:relative; margin:10px 8px}
+:root[data-mood="city"] .editor{
+  border:0; border-radius:8px; padding:26px 22px 24px; color:#efe6cf; background:#172321;
+  font-family:'Work Sans',sans-serif; font-size:17px; line-height:1.75; caret-color:#f0c878;
+  box-shadow:0 0 0 3px #24352f, 0 0 0 5px #7fa595, 0 0 0 7px #0b1211, 0 0 0 8px #c8a35a, 0 0 30px rgba(240,200,120,.15);
+  animation:ctglow 7s ease-in-out infinite}
+@keyframes ctglow{0%,100%{box-shadow:0 0 0 3px #24352f, 0 0 0 5px #7fa595, 0 0 0 7px #0b1211, 0 0 0 8px #c8a35a, 0 0 20px rgba(240,200,120,.1)} 50%{box-shadow:0 0 0 3px #24352f, 0 0 0 5px #7fa595, 0 0 0 7px #0b1211, 0 0 0 8px #c8a35a, 0 0 44px rgba(240,200,120,.3)}}
+:root[data-mood="city"] .editor:focus{border:0}
+:root[data-mood="city"] .editor:empty::before{color:#7d8a80}
+:root[data-mood="city"] .editor blockquote{border-left-color:#c8a35a; color:#b9b39c}
+:root[data-mood="city"] .draftbar .wc{color:#d2b878; letter-spacing:.08em}
+:root[data-mood="city"] .draftbar .wc b{color:#f0c878}
+:root[data-mood="city"] .edtools{border:0; border-radius:16px; padding:10px 9px; background:linear-gradient(180deg, rgba(12,20,18,.95), rgba(22,34,30,.95)); box-shadow:0 0 0 1.5px #7fa595, 0 0 0 3px #101a19, 0 0 0 4px #c8a35a, 0 6px 14px rgba(0,0,0,.5)}
+:root[data-mood="city"] .edrow{gap:10px}
+:root[data-mood="city"] .edtools .sep{background:#3d564d}
+:root[data-mood="city"] .edpop{border-top-color:#3d564d}
+
+/* ---- pop-up sheets ---- */
+:root[data-mood="city"] .oversheet .sheet, :root[data-mood="city"] #museIntro .sheet, :root[data-mood="city"] .tipsheet .sheet{
+  border:0; border-radius:26px 26px 18px 18px; color:#efe6cf; background:linear-gradient(180deg, #1a2825, #0f1817); box-shadow:0 -10px 30px rgba(0,0,0,.7), 0 -2px 0 #c8a35a}
+
+/* ---- notes, Muse box, toast, labels ---- */
+:root[data-mood="city"] .musebox{border:0; border-radius:12px; background:#172321; box-shadow:0 0 0 1.5px #7fa595, 0 0 0 3px #101a19, 0 0 0 4px #c8a35a}
+:root[data-mood="city"] .musebox .lbl{color:#d9b567; letter-spacing:.16em}
+:root[data-mood="city"] #toast{background:#fbf3de; color:#2a1f0e; box-shadow:0 10px 22px rgba(0,0,0,.5), 0 0 0 2px #c8a35a}
+:root[data-mood="city"] #tip{background:#fbf3de; color:#2a1f0e; border:0; box-shadow:0 10px 22px rgba(0,0,0,.5), 0 0 0 2px #c8a35a}
+:root[data-mood="city"] #tip b{color:#7a3a1c; font-family:'Limelight',serif; font-weight:400}
+:root[data-mood="city"] #splash{background:linear-gradient(180deg, #16211f 0%, #101a19 55%, #0b1211 100%)}
+:root[data-mood="city"] #splash h1{font-family:'Limelight',serif; font-weight:400; letter-spacing:.08em; color:#f6ecd0; text-shadow:0 0 20px rgba(240,200,120,.35)}
+:root[data-mood="city"] #splash h1 em{color:#e6c887}
+:root[data-mood="city"] footer{color:#7d8a80}
+:root[data-mood="city"] .hint{color:#b9b39c}

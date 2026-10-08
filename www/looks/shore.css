@@ -1,0 +1,140 @@
+/* ============================================================
+   CALM SHORE: a quiet beach in the morning.
+   Sky to sand, sunbeams, a gull, sparkles on the water, the tide
+   line; shell keys, driftwood plates, sea-glass cards, wet sand
+   creeping up the page as you write.
+   Spec: Chat's looks page (Calm Shore row + kit), 2026-10-07.
+   Sea glass is drawn without backdrop blur: blur is slow on older
+   phones, and a soft white glass reads the same.
+   ============================================================ */
+:root[data-mood="shore"]{
+  --bg:#e6f1ea; --surface:#fdf8ec; --surface-2:#f6ecd4;
+  --text:#2b3a3c; --muted:#4e6668; --border:#c9b184;
+  --accent:#2f8a85; --accent-2:#c4553f;
+  --good:#2f8a85; --warn:#a97324; --bad:#b8452f;
+  --font-display:'Cormorant Garamond',Georgia,serif; --font-body:'Jost',system-ui,sans-serif;
+  --tint-focus:rgba(63,167,161,.25); --tint-warn:rgba(217,100,77,.12); --tint-warn-b:rgba(217,100,77,.45);
+  --tint-muse:rgba(63,167,161,.1); --tint-muse-b:rgba(63,167,161,.4); --scrim:rgba(230,241,234,.72);
+  --sh-sand:url(tex/shore-sand.webp); --sh-drift:url(tex/shore-drift.webp);
+  --sh-shell:repeating-conic-gradient(from -30deg at 50% 100%, rgba(176,120,96,.16) 0 7deg, rgba(255,255,255,0) 7deg 14deg), radial-gradient(circle at 40% 25%, #fffaf2, #f3dcc6 70%, #e2bfa3);
+  --sh-shell-sh:0 1px 0 #fff inset, 0 -3px 0 rgba(176,120,96,.38) inset, 0 7px 12px rgba(70,90,80,.3);
+  color-scheme:light;
+}
+
+/* ---- the beach ---- */
+:root[data-mood="shore"] body{
+  background-color:#e6f1ea;
+  background-image:linear-gradient(180deg, #bfe3e1 0%, #e6f1ea 34%, #f1e6cc 62%, #d6bd8c 100%);
+  background-attachment:fixed;
+}
+:root[data-mood="shore"] #atmos{display:block; position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
+:root[data-mood="shore"] main, :root[data-mood="shore"] footer{position:relative; z-index:1}
+:root[data-mood="shore"] .sh-sun{position:absolute; top:-110px; left:-60px; width:300px; height:300px; border-radius:50%; background:radial-gradient(circle, rgba(255,238,190,.75), rgba(255,238,190,0) 65%)}
+:root[data-mood="shore"] .sh-ray{position:absolute; top:-40px; height:520px; background:linear-gradient(180deg, rgba(255,244,205,.65), rgba(255,244,205,0)); transform:skewX(-18deg); animation:shrays 10s ease-in-out infinite}
+@keyframes shrays{0%,100%{opacity:.3; transform:translateX(0) skewX(-18deg)} 50%{opacity:.75; transform:translateX(30px) skewX(-18deg)}}
+:root[data-mood="shore"] .sh-gull{position:absolute; top:120px; left:0; width:30px; animation:shgull 26s linear infinite}
+@keyframes shgull{0%{transform:translateX(-60px)} 100%{transform:translateX(110vw)}}
+:root[data-mood="shore"] .sh-spark{position:absolute; width:5px; height:5px; border-radius:50%; background:#fff; box-shadow:0 0 6px 2px rgba(255,255,255,.9); animation:shspark 3.4s ease-in-out infinite}
+@keyframes shspark{0%,100%{opacity:0; transform:scale(.4)} 50%{opacity:1; transform:scale(1)}}
+:root[data-mood="shore"] .sh-tide{position:absolute; left:0; right:0; bottom:0; height:160px}
+:root[data-mood="shore"] .sh-tide svg{width:100%; height:100%; display:block}
+:root[data-mood="shore"] .sh-wave{animation:shtide 6s ease-in-out infinite}
+@keyframes shtide{0%,100%{transform:translateX(0)} 50%{transform:translateX(-24px)}}
+
+/* ---- header: a driftwood plank with the name burnt in ---- */
+:root[data-mood="shore"] header{background:rgba(230,241,234,.86); border-bottom:0; box-shadow:0 6px 16px rgba(60,90,90,.18)}
+:root[data-mood="shore"] .wordmark{
+  padding:6px 22px; border-radius:8px; color:#fbf3e4; font-family:'Cormorant Garamond',serif; font-weight:700; font-size:20px; letter-spacing:.1em;
+  background:radial-gradient(ellipse 11px 6px at 20% 50%, rgba(60,40,20,.38), rgba(0,0,0,0) 70%), radial-gradient(ellipse 15px 8px at 76% 38%, rgba(60,40,20,.32), rgba(0,0,0,0) 70%), var(--sh-drift);
+  background-size:auto, auto, 260px 130px; box-shadow:0 8px 14px rgba(70,60,40,.35), 0 1px 0 rgba(255,255,255,.3) inset; text-shadow:0 1px 2px rgba(40,30,20,.6)}
+:root[data-mood="shore"] .wordmark em{color:#fbf3e4}
+
+/* ---- keys: shells ---- */
+:root[data-mood="shore"] .iconbtn, :root[data-mood="shore"] .gearbtn,
+:root[data-mood="shore"] nav button, :root[data-mood="shore"] button.act,
+:root[data-mood="shore"] button.mini, :root[data-mood="shore"] .edtools button,
+:root[data-mood="shore"] .segmented button{
+  border:0; color:#5a3a2c; font-family:'Jost',sans-serif; font-weight:600; letter-spacing:.04em;
+  background:var(--sh-shell); box-shadow:var(--sh-shell-sh); transition:transform .08s ease}
+:root[data-mood="shore"] .gearbtn{width:42px; height:42px; border-radius:50% 50% 32% 32%/62% 62% 38% 38%}
+:root[data-mood="shore"] .edtools button{min-width:40px; height:40px; border-radius:50% 50% 32% 32%/62% 62% 38% 38%}
+:root[data-mood="shore"] .edtools button[data-pop]{border-radius:22px 22px 12px 12px/26px 26px 12px 12px}
+:root[data-mood="shore"] .iconbtn, :root[data-mood="shore"] nav button, :root[data-mood="shore"] .segmented button{border-radius:22px 22px 12px 12px/26px 26px 12px 12px}
+:root[data-mood="shore"] button.act{border-radius:30px 30px 16px 16px/40px 40px 16px 16px; min-height:48px; padding:10px 20px; text-transform:uppercase; letter-spacing:.12em; font-size:13px}
+:root[data-mood="shore"] button.mini{border-radius:16px 16px 9px 9px}
+:root[data-mood="shore"] .iconbtn:active, :root[data-mood="shore"] .gearbtn:active, :root[data-mood="shore"] nav button:active, :root[data-mood="shore"] button.act:active,
+:root[data-mood="shore"] button.mini:active, :root[data-mood="shore"] .edtools button:active, :root[data-mood="shore"] .segmented button:active{transform:translateY(3px)}
+:root[data-mood="shore"] nav.open{max-height:72px; padding-block:6px 14px}
+:root[data-mood="shore"] nav button{margin:0 3px}
+/* where you are: a sea-glass shell */
+:root[data-mood="shore"] nav button.active, :root[data-mood="shore"] .segmented button.active, :root[data-mood="shore"] .edtools button.on{
+  background:radial-gradient(circle at 40% 25%, #e9fbf8, #8ad6cf 70%, #3fa7a1); color:#13423f; box-shadow:0 1px 0 #fff inset, 0 -3px 0 rgba(30,110,105,.35) inset, 0 7px 12px rgba(40,110,105,.3)}
+:root[data-mood="shore"] .segmented{border:0; gap:10px; overflow:visible; padding:4px}
+/* sea glass: the second choice */
+:root[data-mood="shore"] button.ghost, :root[data-mood="shore"] button.muse{
+  border:1px solid rgba(255,255,255,.9); border-radius:16px; min-height:42px; padding:9px 16px; color:#1f5a57; font-family:'Jost',sans-serif; font-weight:600;
+  background:linear-gradient(160deg, rgba(220,245,240,.9), rgba(160,215,208,.55)); box-shadow:0 0 0 1.5px #7bbab5 inset, 0 6px 12px rgba(60,90,90,.22)}
+:root[data-mood="shore"] button.ghost:active, :root[data-mood="shore"] button.muse:active{transform:translateY(2px)}
+:root[data-mood="shore"] button.danger{border:1.5px solid #c4553f; color:#b8452f; background:rgba(255,255,255,.5); border-radius:14px}
+
+/* ---- cards: frosted sea glass ---- */
+:root[data-mood="shore"] .card{
+  position:relative; border-radius:20px; border:1px solid rgba(255,255,255,.9);
+  background:linear-gradient(160deg, rgba(255,255,255,.82), rgba(255,255,255,.55)); box-shadow:0 12px 24px rgba(60,90,90,.2)}
+:root[data-mood="shore"] .card h3{font-family:'Jost',sans-serif; font-weight:600; font-size:11px; letter-spacing:.2em; color:#46686a}
+:root[data-mood="shore"] h2{font-family:'Cormorant Garamond',serif; font-weight:600; font-size:30px; color:#24393b}
+:root[data-mood="shore"] label{font-family:'Jost',sans-serif; font-weight:600; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#46686a}
+:root[data-mood="shore"] label.swrow{text-transform:none; letter-spacing:0; font-size:14px; font-weight:400; color:#2b3a3c}
+
+/* ---- text boxes: smoothed sand with a tan rim ---- */
+:root[data-mood="shore"] input, :root[data-mood="shore"] textarea, :root[data-mood="shore"] select{
+  background:#f6ecd4; color:#2b3a3c; border:0; border-radius:10px; box-shadow:inset 0 2px 5px rgba(120,100,60,.38), 0 0 0 1.5px #c9b184}
+:root[data-mood="shore"] input:focus, :root[data-mood="shore"] textarea:focus, :root[data-mood="shore"] select:focus{box-shadow:inset 0 2px 5px rgba(120,100,60,.38), 0 0 0 2px #3fa7a1}
+:root[data-mood="shore"] .swrow input{box-shadow:none; accent-color:#3fa7a1}
+
+/* ---- scene cards: on the sand ---- */
+:root[data-mood="shore"] .item{
+  position:relative; border:0; border-radius:16px; color:#2b3a3c;
+  background:linear-gradient(180deg, rgba(255,255,255,.35), rgba(255,255,255,.1)), var(--sh-sand); background-size:auto, 300px 300px; background-color:#efe0bf;
+  box-shadow:0 0 0 1px rgba(255,255,255,.7) inset, 0 10px 18px rgba(90,80,50,.22)}
+:root[data-mood="shore"] .item .item-head strong{font-family:'Jost',sans-serif; font-weight:600; letter-spacing:.14em; color:#46686a}
+:root[data-mood="shore"] .item input, :root[data-mood="shore"] .item textarea, :root[data-mood="shore"] .item select{background:rgba(255,252,242,.85)}
+:root[data-mood="shore"] .stat{border:0; border-radius:14px; background:rgba(255,255,255,.7); box-shadow:0 0 0 1px rgba(255,255,255,.9) inset, 0 6px 12px rgba(60,90,90,.15)}
+:root[data-mood="shore"] .stat .k{color:#46686a; letter-spacing:.14em}
+:root[data-mood="shore"] .stat .v{color:#2f8a85; font-family:'Cormorant Garamond',serif}
+:root[data-mood="shore"] .beat .num{background:#3fa7a1; color:#fff; border-radius:50%}
+:root[data-mood="shore"] .pill{background:rgba(255,255,255,.7); border:1px solid #c9b184; color:#46686a}
+
+/* ---- progress: the tide coming in ---- */
+:root[data-mood="shore"] .bar{height:9px; border:0; border-radius:5px; background:#cdb98f; box-shadow:inset 0 1px 2px rgba(90,70,30,.4)}
+:root[data-mood="shore"] .bar > i{background:linear-gradient(90deg, #3fa7a1, #8ad6cf)}
+
+/* ---- the writing page: paper on the sand, the wet line creeps up ---- */
+:root[data-mood="shore"] .platen{position:relative; margin:6px 2px; border-radius:6px; overflow:hidden; box-shadow:0 14px 28px rgba(70,90,80,.3)}
+:root[data-mood="shore"] .platen::after{content:""; position:absolute; left:0; right:0; bottom:0; height:40px; z-index:2; pointer-events:none;
+  background:linear-gradient(0deg, rgba(185,159,115,.55), rgba(201,177,132,.18)); border-top:2px solid rgba(255,255,255,.7); animation:shwet 14s ease-in-out infinite}
+@keyframes shwet{0%,100%{height:28px} 50%{height:80px}}
+:root[data-mood="shore"] .editor{
+  border:0; border-radius:6px; padding:26px 22px 60px; color:#33403f; background:#fdf8ec;
+  font-family:'Cormorant Garamond',serif; font-size:20px; line-height:1.65; caret-color:#d9644d}
+:root[data-mood="shore"] .editor:focus{border:0}
+:root[data-mood="shore"] .editor blockquote{border-left-color:#3fa7a1}
+:root[data-mood="shore"] .draftbar .wc{color:#46686a; letter-spacing:.06em}
+:root[data-mood="shore"] .draftbar .wc b{color:#2f8a85}
+:root[data-mood="shore"] .edtools{border:1px solid rgba(255,255,255,.9); border-radius:22px; padding:9px 8px; background:linear-gradient(160deg, rgba(255,255,255,.85), rgba(255,255,255,.6)); box-shadow:0 8px 16px rgba(60,90,90,.18)}
+:root[data-mood="shore"] .edrow{gap:9px}
+
+/* ---- pop-up sheets: a wave of sea glass ---- */
+:root[data-mood="shore"] .oversheet .sheet, :root[data-mood="shore"] #museIntro .sheet, :root[data-mood="shore"] .tipsheet .sheet{
+  border:1px solid rgba(255,255,255,.95); border-radius:26px; background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(236,246,242,.98)); box-shadow:0 -10px 30px rgba(50,80,80,.3)}
+
+/* ---- notes, Muse box, toast, labels ---- */
+:root[data-mood="shore"] .musebox{border-radius:14px; background:#fdf8ec; border:0; box-shadow:0 0 0 1.5px #7bbab5, 0 6px 12px rgba(60,90,90,.15)}
+:root[data-mood="shore"] .musebox .lbl{color:#c4553f; letter-spacing:.14em}
+:root[data-mood="shore"] #toast{background:#fff8e8; color:#2a211a; box-shadow:0 10px 22px rgba(60,90,90,.3), 0 0 0 2px #d9644d}
+:root[data-mood="shore"] #tip{background:#fff8e8; color:#2a211a; border:0; box-shadow:0 10px 22px rgba(60,90,90,.35), 0 0 0 2px #d9644d}
+:root[data-mood="shore"] #tip b{color:#b8452f; font-family:'Jost',sans-serif; font-weight:700}
+:root[data-mood="shore"] #splash{background:linear-gradient(180deg, #bfe3e1 0%, #e6f1ea 50%, #f1e6cc 100%)}
+:root[data-mood="shore"] #splash h1{color:#24393b}
+:root[data-mood="shore"] #splash h1 em{color:#2f8a85}
+:root[data-mood="shore"] .hint{color:#4e6668}

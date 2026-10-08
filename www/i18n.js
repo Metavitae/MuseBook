@@ -80,7 +80,7 @@ const ES = {
   "Muse, how MuseBook looks, and where your book is saved.":"Muse, cómo se ve MuseBook y dónde se guarda tu libro.",
   "Typewriter, brass and lamplight":"Máquina de escribir, latón y luz de lámpara","Sand, sea glass and driftwood":"Arena, vidrio de mar y madera de playa",
   "Lamplight, brass and stained glass":"Faroles, latón y vitrales","Star charts and brass":"Cartas de estrellas y latón","The Writing Room":"El Cuarto de Escribir",
-  "Coming in a next update":"Llega en una próxima actualización","Calm: no movement, no tilt. Same look, quieter.":"Calma: sin movimiento ni inclinación. El mismo ambiente, más tranquilo.",
+  "Linen, walnut and a warm lamp":"Lino, nogal y una lámpara tibia","Calm: no movement, no tilt. Same look, quieter.":"Calma: sin movimiento ni inclinación. El mismo ambiente, más tranquilo.",
   "What do these keys do?":"¿Qué hace cada tecla?","Hold any key for a second to see its name. Here they all are.":"Mantén el dedo sobre una tecla un segundo para ver su nombre. Aquí están todas.",
   "Stages":"Etapas","Opens the list of stages: your plan, characters, scenes and writing.":"Abre la lista de etapas: tu plan, personajes, escenas y escritura.",
   "Language, Muse, how MuseBook looks, and backups.":"Idioma, Musa, cómo se ve MuseBook y respaldos.",

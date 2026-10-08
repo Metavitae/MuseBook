@@ -11,7 +11,7 @@ if (!html.includes("/*FONTS*/")) throw new Error("font placeholder missing");
 html = html.replace("/*FONTS*/", () => css);
 // The looks: one stylesheet per look in www/looks, inlined in a fixed order.
 if (!html.includes("/*LOOKS*/")) throw new Error("looks placeholder missing");
-const looks = ["noir", "celestial"].map((n) => fs.readFileSync(new URL(`www/looks/${n}.css`, root), "utf8")).join("\n");
+const looks = ["noir", "shore", "city", "celestial", "room"].map((n) => fs.readFileSync(new URL(`www/looks/${n}.css`, root), "utf8")).join("\n");
 html = html.replace("/*LOOKS*/", () => looks);
 // Textures (CC0, shrunk to small webp in www/tex) go inside the page so the
 // looks work offline. Each one is written once as a CSS variable or class.
