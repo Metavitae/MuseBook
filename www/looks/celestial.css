@@ -36,12 +36,12 @@
 @keyframes clspin{to{transform:rotate(360deg)}}
 :root[data-mood="celestial"] .cl-shoot{position:absolute; left:30px; top:20px; width:110px; height:2px; border-radius:1px; background:linear-gradient(90deg,rgba(255,255,255,0),#fff); opacity:0; animation:clshoot 11s linear infinite}
 @keyframes clshoot{0%,68%{transform:translate(-30px,60px) rotate(28deg); opacity:0} 70%{opacity:1} 100%{transform:translate(330px,250px) rotate(28deg); opacity:0}}
-:root[data-mood="celestial"] .cl-moon{position:absolute; left:14px; bottom:18px; width:40px; height:40px; opacity:.85}
+:root[data-mood="celestial"] .cl-moon{position:absolute; left:12px; top:96px; width:34px; height:34px; opacity:.8}
 :root[data-mood="celestial"] .cl-moon .shadow{animation:clphase 40s ease-in-out infinite alternate}
 @keyframes clphase{0%{transform:translateX(-20px)} 100%{transform:translateX(20px)}}
 
 /* ---- header: a brass pill plate on midnight ---- */
-:root[data-mood="celestial"] header{background:rgba(5,7,26,.88); border-bottom:0; box-shadow:0 1px 0 #c79a42, 0 8px 18px rgba(0,0,0,.5)}
+:root[data-mood="celestial"] header{background:#070a22; border-bottom:0; box-shadow:0 1px 0 #c79a42, 0 8px 18px rgba(0,0,0,.5)}
 :root[data-mood="celestial"] .wordmark{
   padding:6px 22px 5px; border-radius:30px; color:#2a1d08; font-family:'Cinzel',serif; font-weight:700; font-size:15px; letter-spacing:.16em; text-transform:uppercase;
   background:linear-gradient(180deg, rgba(255,245,210,.25), rgba(90,63,20,.15)), var(--cl-brass); background-size:auto, 220px 110px;
@@ -67,8 +67,11 @@
 :root[data-mood="celestial"] button.act:active, :root[data-mood="celestial"] button.mini:active, :root[data-mood="celestial"] .edtools button:active,
 :root[data-mood="celestial"] .segmented button:active{transform:translateY(3px); box-shadow:var(--cl-rim-down)}
 /* the stage you're on glows like a lit dial */
-:root[data-mood="celestial"] nav button.active, :root[data-mood="celestial"] .segmented button.active, :root[data-mood="celestial"] .edtools button.on{
+:root[data-mood="celestial"] nav button.active, :root[data-mood="celestial"] .edtools button.on{
   background:#0e1745; color:#f0d58a; box-shadow:0 0 0 2px #c79a42, 0 0 14px rgba(240,213,138,.45)}
+/* two-way choices (language, write/read): the chosen one is the lit brass, the other a quiet dark dial */
+:root[data-mood="celestial"] .segmented button{background:#0a0f2e; color:#b9bfdc; box-shadow:0 0 0 1.5px #3a4478}
+:root[data-mood="celestial"] .segmented button.active{background:linear-gradient(180deg, #f6e3a6, #c79a42 55%, #8a6322); color:#2a1d08; box-shadow:var(--cl-rim), 0 0 14px rgba(240,213,138,.35)}
 :root[data-mood="celestial"] .segmented{border:0; gap:10px; overflow:visible; padding:4px}
 :root[data-mood="celestial"] button.ghost{
   border:0; border-radius:14px; min-height:42px; padding:9px 16px; color:#f0d58a; background:rgba(10,15,46,.7);

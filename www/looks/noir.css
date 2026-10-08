@@ -185,8 +185,9 @@
   border:0; border-radius:12px; padding:9px 8px;
   background-color:#140f0b; background-image:linear-gradient(180deg, rgba(0,0,0,.2), rgba(0,0,0,.5)), var(--nr-wood); background-size:auto, 300px 300px;
   box-shadow:0 1px 0 rgba(255,220,170,.08) inset, 0 6px 14px rgba(0,0,0,.6)}
-:root[data-mood="noir"] .edrow{gap:9px}
-:root[data-mood="noir"] .edtools button{border-radius:9px; min-width:40px; height:38px}
+:root[data-mood="noir"] .edrow{gap:8px}
+:root[data-mood="noir"] .edtools button{letter-spacing:0; padding:0 8px}
+:root[data-mood="noir"] .edtools button{border-radius:9px; min-width:38px; height:38px}
 :root[data-mood="noir"] .edtools .sep{background:#5a4430}
 :root[data-mood="noir"] .edpop{border-top-color:#5a4430}
 

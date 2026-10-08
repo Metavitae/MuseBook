@@ -42,7 +42,7 @@
 @keyframes shtide{0%,100%{transform:translateX(0)} 50%{transform:translateX(-24px)}}
 
 /* ---- header: a driftwood plank with the name burnt in ---- */
-:root[data-mood="shore"] header{background:rgba(230,241,234,.86); border-bottom:0; box-shadow:0 6px 16px rgba(60,90,90,.18)}
+:root[data-mood="shore"] header{background:#e3f0ea; border-bottom:0; box-shadow:0 6px 16px rgba(60,90,90,.18)}
 :root[data-mood="shore"] .wordmark{
   padding:6px 22px; border-radius:8px; color:#fbf3e4; font-family:'Cormorant Garamond',serif; font-weight:700; font-size:20px; letter-spacing:.1em;
   background:radial-gradient(ellipse 11px 6px at 20% 50%, rgba(60,40,20,.38), rgba(0,0,0,0) 70%), radial-gradient(ellipse 15px 8px at 76% 38%, rgba(60,40,20,.32), rgba(0,0,0,0) 70%), var(--sh-drift);
