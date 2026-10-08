@@ -23,7 +23,6 @@
     --noise:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.14 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     color-scheme:dark;
   }
-/*LOOKS*/
   :root[data-mood="shore"]{
     --bg:#f6f2e9; --surface:#ffffff; --surface-2:#ece5d4;
     --text:#26352f; --muted:#6d8078; --border:#dcd3bd;
@@ -222,6 +221,7 @@
   .plate-city{background:linear-gradient(180deg,#123a2e,#0b231c); color:#f1e6c8; font-family:'Archivo',sans-serif; font-weight:700; letter-spacing:.06em}
   .plate-celestial{background:linear-gradient(180deg,#0a0e20 0%,#1b2550 70%,#3a3a5e 100%); color:#e9d9a6; font-family:'Cinzel',serif; font-weight:700}
   .plate-room{background:linear-gradient(180deg,#efe6d4,#dcc9a8); color:#4a3424; font-family:'Cormorant Garamond',serif; font-weight:700}
+/*LOOKS*/
 </style>
 
 <style>/*FONTS*/</style>
@@ -868,6 +868,14 @@ const ATMOS={
       motes+=`<i style="left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;animation-duration:${d}s;animation-delay:${dl}s"></i>`;
     }
     return `<div class="nr-lamp motion"></div><div class="nr-pool"></div><div class="nr-shade"></div><div class="nr-motes motion">${motes}</div><div class="nr-stitch"></div>`;
+  },
+  celestial:()=>{
+    const tw=[[30,60,3,0],[84,40,2,1],[250,70,3,2],[330,120,2,.5],[180,30,2,1.5],[360,40,3,2.5],[60,170,2,.8],[310,200,2,1.8]]
+      .map(([x,y,r,d])=>`<i class="cl-tw" style="left:${(x/390*100).toFixed(1)}%;top:${y}px;width:${r}px;height:${r}px;animation-delay:${d}s"></i>`).join("");
+    return `<div class="cl-stars"></div><div class="motion">${tw}</div>
+      <svg class="cl-ring motion" viewBox="0 0 260 260"><g fill="none" stroke="#d8c27a" stroke-width="1.2"><circle cx="130" cy="130" r="120"/><ellipse cx="130" cy="130" rx="120" ry="44"/><ellipse cx="130" cy="130" rx="44" ry="120"/></g></svg>
+      <div class="cl-shoot motion"></div>
+      <svg class="cl-moon" viewBox="0 0 46 46"><defs><clipPath id="clmc"><circle cx="23" cy="23" r="17"/></clipPath></defs><circle cx="23" cy="23" r="17" fill="#f3e7bd"/><g clip-path="url(#clmc)"><circle class="shadow" cx="23" cy="23" r="17" fill="#141c4f"/></g><circle cx="23" cy="23" r="17" fill="none" stroke="#d8c27a" stroke-width="1"/></svg>`;
   }
 };
 function applyMood(m, persist){

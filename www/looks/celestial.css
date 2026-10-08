@@ -1,0 +1,154 @@
+/* ============================================================
+   CELESTIAL: an observatory at night.
+   Earth-to-sky gradient with stars, brass instrument knobs,
+   star-chart parchment, a moon that changes phase, a shooting star.
+   Spec: Chat's looks page (Celestial row + kit), 2026-10-07.
+   ============================================================ */
+:root[data-mood="celestial"]{
+  --bg:#0a0f2e; --surface:#141c4f; --surface-2:#0a0f2e;
+  --text:#eef0ff; --muted:#b9bfdc; --border:#3a4478;
+  --accent:#f0d58a; --accent-2:#d8c27a;
+  --good:#f0d58a; --warn:#f0d58a; --bad:#f09a8a;
+  --font-display:'Cinzel',Georgia,serif; --font-body:'Spectral',Georgia,serif;
+  --tint-focus:rgba(240,213,138,.25); --tint-warn:rgba(240,154,138,.14); --tint-warn-b:rgba(240,154,138,.5);
+  --tint-muse:rgba(240,213,138,.08); --tint-muse-b:rgba(240,213,138,.35); --scrim:rgba(5,7,26,.72);
+  --cl-parch:url(tex/cel-parchment.webp); --cl-brass:url(tex/cel-brass.webp);
+  --cl-knob:repeating-conic-gradient(from 0deg, rgba(60,40,10,.35) 0 4deg, rgba(255,255,255,0) 4deg 8deg), radial-gradient(circle at 36% 28%, #f6e3a6, #c79a42 60%, #8a6322);
+  --cl-rim:0 0 0 2px #5a3f14, 0 4px 0 2px #3a2a0c, 0 8px 12px rgba(0,0,0,.55);
+  --cl-rim-down:0 0 0 2px #5a3f14, 0 1px 0 2px #3a2a0c, 0 2px 4px rgba(0,0,0,.55);
+  color-scheme:dark;
+}
+
+/* ---- the sky ---- */
+:root[data-mood="celestial"] body{
+  background-color:#05071a;
+  background-image:linear-gradient(180deg, #05071a 0%, #0e1745 36%, #27306a 62%, #5b3d52 84%, #1c1411 100%);
+  background-attachment:fixed;
+}
+:root[data-mood="celestial"] #atmos{display:block; position:fixed; inset:0; pointer-events:none; z-index:0; overflow:hidden}
+:root[data-mood="celestial"] main, :root[data-mood="celestial"] footer{position:relative; z-index:1}
+:root[data-mood="celestial"] .cl-stars{position:absolute; inset:0;
+  background-image:radial-gradient(1.5px 1.5px at 20px 30px,#fff,rgba(255,255,255,0)),radial-gradient(1px 1px at 90px 80px,#dfe6ff,rgba(255,255,255,0)),radial-gradient(1.5px 1.5px at 160px 40px,#fff,rgba(255,255,255,0)),radial-gradient(1px 1px at 240px 110px,#fff,rgba(255,255,255,0)),radial-gradient(1.5px 1.5px at 320px 60px,#ffeebb,rgba(255,255,255,0)),radial-gradient(1px 1px at 60px 150px,#fff,rgba(255,255,255,0)),radial-gradient(1px 1px at 300px 190px,#dfe6ff,rgba(255,255,255,0));
+  background-size:340px 220px; -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 55%,rgba(0,0,0,0) 85%); mask-image:linear-gradient(180deg,#000 0%,#000 55%,rgba(0,0,0,0) 85%)}
+:root[data-mood="celestial"] .cl-tw{position:absolute; border-radius:50%; background:#fff; box-shadow:0 0 6px 1px rgba(255,255,255,.8); animation:cltwk 3s ease-in-out infinite}
+@keyframes cltwk{0%,100%{opacity:.4} 50%{opacity:1}}
+:root[data-mood="celestial"] .cl-ring{position:absolute; right:-70px; top:-60px; width:220px; height:220px; opacity:.35; animation:clspin 60s linear infinite}
+@keyframes clspin{to{transform:rotate(360deg)}}
+:root[data-mood="celestial"] .cl-shoot{position:absolute; left:30px; top:20px; width:110px; height:2px; border-radius:1px; background:linear-gradient(90deg,rgba(255,255,255,0),#fff); opacity:0; animation:clshoot 11s linear infinite}
+@keyframes clshoot{0%,68%{transform:translate(-30px,60px) rotate(28deg); opacity:0} 70%{opacity:1} 100%{transform:translate(330px,250px) rotate(28deg); opacity:0}}
+:root[data-mood="celestial"] .cl-moon{position:absolute; left:14px; bottom:18px; width:40px; height:40px; opacity:.85}
+:root[data-mood="celestial"] .cl-moon .shadow{animation:clphase 40s ease-in-out infinite alternate}
+@keyframes clphase{0%{transform:translateX(-20px)} 100%{transform:translateX(20px)}}
+
+/* ---- header: a brass pill plate on midnight ---- */
+:root[data-mood="celestial"] header{background:rgba(5,7,26,.88); border-bottom:0; box-shadow:0 1px 0 #c79a42, 0 8px 18px rgba(0,0,0,.5)}
+:root[data-mood="celestial"] .wordmark{
+  padding:6px 22px 5px; border-radius:30px; color:#2a1d08; font-family:'Cinzel',serif; font-weight:700; font-size:15px; letter-spacing:.16em; text-transform:uppercase;
+  background:linear-gradient(180deg, rgba(255,245,210,.25), rgba(90,63,20,.15)), var(--cl-brass); background-size:auto, 220px 110px;
+  box-shadow:0 0 0 2px #5a3f14, 0 6px 12px rgba(0,0,0,.55), 0 1px 0 #fff2c0 inset}
+:root[data-mood="celestial"] .wordmark em{color:#2a1d08}
+
+/* ---- keys: knurled brass instrument knobs ---- */
+:root[data-mood="celestial"] .iconbtn, :root[data-mood="celestial"] .gearbtn,
+:root[data-mood="celestial"] nav button, :root[data-mood="celestial"] button.act,
+:root[data-mood="celestial"] button.mini, :root[data-mood="celestial"] .edtools button,
+:root[data-mood="celestial"] .segmented button{
+  border:0; color:#2a1d08; font-family:'Cinzel',serif; font-weight:700; letter-spacing:.08em;
+  background:linear-gradient(180deg, #f6e3a6, #c79a42 55%, #8a6322); box-shadow:var(--cl-rim);
+  transition:transform .08s ease, box-shadow .08s ease}
+:root[data-mood="celestial"] .gearbtn{background:var(--cl-knob); border-radius:50%; width:40px; height:40px}
+:root[data-mood="celestial"] .iconbtn{border-radius:18px; min-height:38px}
+:root[data-mood="celestial"] button.act{border-radius:18px; min-height:46px; padding:10px 18px; text-transform:uppercase; letter-spacing:.12em; font-size:13px}
+:root[data-mood="celestial"] nav button{border-radius:18px; margin:0 3px}
+:root[data-mood="celestial"] nav.open{max-height:70px; padding-block:6px 14px}
+:root[data-mood="celestial"] .edtools button{border-radius:50%; min-width:40px; height:40px; background:var(--cl-knob)}
+:root[data-mood="celestial"] .edtools button[data-pop]{border-radius:18px; background:linear-gradient(180deg, #f6e3a6, #c79a42 55%, #8a6322)}
+:root[data-mood="celestial"] .iconbtn:active, :root[data-mood="celestial"] .gearbtn:active, :root[data-mood="celestial"] nav button:active,
+:root[data-mood="celestial"] button.act:active, :root[data-mood="celestial"] button.mini:active, :root[data-mood="celestial"] .edtools button:active,
+:root[data-mood="celestial"] .segmented button:active{transform:translateY(3px); box-shadow:var(--cl-rim-down)}
+/* the stage you're on glows like a lit dial */
+:root[data-mood="celestial"] nav button.active, :root[data-mood="celestial"] .segmented button.active, :root[data-mood="celestial"] .edtools button.on{
+  background:#0e1745; color:#f0d58a; box-shadow:0 0 0 2px #c79a42, 0 0 14px rgba(240,213,138,.45)}
+:root[data-mood="celestial"] .segmented{border:0; gap:10px; overflow:visible; padding:4px}
+:root[data-mood="celestial"] button.ghost{
+  border:0; border-radius:14px; min-height:42px; padding:9px 16px; color:#f0d58a; background:rgba(10,15,46,.7);
+  font-family:'Cinzel',serif; font-weight:600; letter-spacing:.06em; box-shadow:0 0 0 1.5px #c79a42, 0 4px 10px rgba(0,0,0,.4)}
+:root[data-mood="celestial"] button.ghost:active{transform:translateY(2px)}
+:root[data-mood="celestial"] button.muse{border:0; border-radius:14px; color:#2a1d08; background:linear-gradient(180deg,#f0dc9a,#c79a42 55%,#9a7229); box-shadow:0 0 0 2px #5a3f14, 0 6px 12px rgba(0,0,0,.5); font-family:'Cinzel',serif; font-weight:700}
+:root[data-mood="celestial"] button.danger{border:1.5px solid #f09a8a; color:#f09a8a; background:transparent; border-radius:12px}
+
+/* ---- cards: night-glass panels with a brass edge ---- */
+:root[data-mood="celestial"] .card{
+  position:relative; border:0; border-radius:18px;
+  background:linear-gradient(180deg, rgba(20,28,79,.88), rgba(10,15,46,.92));
+  box-shadow:0 0 0 1px rgba(199,154,66,.55), 0 12px 26px rgba(0,0,0,.5)}
+:root[data-mood="celestial"] .card h3{font-family:'Cinzel',serif; font-weight:600; font-size:11px; letter-spacing:.24em; color:#d8c27a}
+:root[data-mood="celestial"] h2{font-family:'Cinzel',serif; font-weight:600; letter-spacing:.06em; color:#fdf4d6; text-shadow:0 0 18px rgba(240,213,138,.35)}
+:root[data-mood="celestial"] label{font-family:'Cinzel',serif; font-weight:600; font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:#d8c27a}
+:root[data-mood="celestial"] label.swrow{font-family:'Spectral',Georgia,serif; font-weight:400; text-transform:none; letter-spacing:0; font-size:14px; color:#eef0ff}
+
+/* ---- text boxes: a dark slot with a brass ring ---- */
+:root[data-mood="celestial"] input, :root[data-mood="celestial"] textarea, :root[data-mood="celestial"] select{
+  background:#0a0f2e; color:#f3e7bd; border:0; border-radius:10px; box-shadow:inset 0 2px 6px #000, 0 0 0 1.5px #c79a42}
+:root[data-mood="celestial"] input::placeholder, :root[data-mood="celestial"] textarea::placeholder{color:#7d84ad}
+:root[data-mood="celestial"] input:focus, :root[data-mood="celestial"] textarea:focus, :root[data-mood="celestial"] select:focus{box-shadow:inset 0 2px 6px #000, 0 0 0 2px #f0d58a, 0 0 14px rgba(240,213,138,.3)}
+:root[data-mood="celestial"] .swrow input{box-shadow:none; accent-color:#f0d58a}
+
+/* ---- star-chart cards: scenes, characters, beats on parchment ---- */
+:root[data-mood="celestial"] .item{
+  --text:#2a2216; --muted:#5e4b2c; --surface-2:#f6eed6; --border:#b39a64; --accent:#7a5418;
+  position:relative; border:0; border-radius:10px; color:#2a2216;
+  background:radial-gradient(circle at 80% 10%, rgba(255,255,255,.5), rgba(255,255,255,0) 50%), var(--cl-parch); background-size:auto, 320px 320px; background-color:#e6d6ae;
+  box-shadow:0 0 0 2px #8a6322, 0 12px 22px rgba(0,0,0,.55)}
+:root[data-mood="celestial"] .item .item-head strong{font-family:'Cinzel',serif; font-weight:700; letter-spacing:.14em; color:#7a5418}
+:root[data-mood="celestial"] .item input, :root[data-mood="celestial"] .item textarea, :root[data-mood="celestial"] .item select{
+  background:rgba(255,252,240,.7); color:#2a2216; box-shadow:inset 0 1px 3px rgba(60,40,10,.3), 0 0 0 1px #b39a64}
+:root[data-mood="celestial"] .item label, :root[data-mood="celestial"] .item .hint{color:#5e4b2c}
+:root[data-mood="celestial"] .item button.danger{color:#8a2a1c; border-color:#8a2a1c}
+:root[data-mood="celestial"] .item .pill{background:#0e1745; color:#f0d58a; border-color:#c79a42}
+:root[data-mood="celestial"] .stat{border:0; border-radius:12px; background:#0a0f2e; box-shadow:inset 0 2px 6px #000, 0 0 0 1.5px #c79a42}
+:root[data-mood="celestial"] .stat .k{font-family:'Cinzel',serif; letter-spacing:.14em; color:#d8c27a}
+:root[data-mood="celestial"] .stat .v{font-family:'Cinzel',serif; color:#f0d58a}
+:root[data-mood="celestial"] .beat .num{background:#0e1745; color:#f0d58a; border-radius:50%; box-shadow:0 0 0 2px #c79a42 inset; font-family:'Cinzel',serif}
+:root[data-mood="celestial"] .pill{background:#0a0f2e; color:#d8c27a; border:1px solid #c79a42; font-family:'Cinzel',serif}
+
+/* ---- progress: a line of gold light ---- */
+:root[data-mood="celestial"] .bar{height:10px; border:0; border-radius:5px; background:#0a0f2e; box-shadow:inset 0 1px 3px #000, 0 0 0 1px #8a6322}
+:root[data-mood="celestial"] .bar > i{background:linear-gradient(90deg, #c79a42, #fff0b8)}
+
+/* ---- the writing page: parchment with a faint star chart ---- */
+:root[data-mood="celestial"] .platen{position:relative; margin:6px 2px}
+:root[data-mood="celestial"] .platen::before{content:""; position:absolute; inset:0; z-index:1; pointer-events:none; opacity:.10;
+  background:radial-gradient(circle at 50% 45%, rgba(0,0,0,0) 0 38%, #5a3f14 38.3% 38.6%, rgba(0,0,0,0) 38.9% 58%, #5a3f14 58.3% 58.6%, rgba(0,0,0,0) 58.9%),
+    linear-gradient(90deg, rgba(0,0,0,0) calc(50% - .5px), #5a3f14 calc(50% - .5px) calc(50% + .5px), rgba(0,0,0,0) calc(50% + .5px))}
+:root[data-mood="celestial"] .editor{
+  position:relative; border:0; border-radius:6px; padding:28px 22px 24px; color:#2a2216;
+  background-color:#ece0bf; background-image:radial-gradient(circle at 20% 15%, rgba(255,255,255,.4), rgba(255,255,255,0) 55%), var(--cl-parch); background-size:auto, 360px 360px;
+  font-family:'Spectral',Georgia,serif; font-size:18px; line-height:1.7; caret-color:#8a6322;
+  box-shadow:0 0 40px rgba(240,213,138,.22), 0 16px 30px rgba(0,0,0,.6)}
+:root[data-mood="celestial"] .editor:focus{border:0}
+:root[data-mood="celestial"] .editor:empty::before{color:#8a7a5a}
+:root[data-mood="celestial"] .editor blockquote{border-left-color:#c79a42; color:#5e4b2c}
+:root[data-mood="celestial"] .draftbar .wc{font-family:'Cinzel',serif; letter-spacing:.08em; color:#d8c27a}
+:root[data-mood="celestial"] .draftbar .wc b{color:#f0d58a}
+:root[data-mood="celestial"] .edtools{border:0; border-radius:18px; padding:9px 8px; background:rgba(5,7,26,.85); box-shadow:0 0 0 1px rgba(199,154,66,.6), 0 6px 14px rgba(0,0,0,.5)}
+:root[data-mood="celestial"] .edrow{gap:9px}
+:root[data-mood="celestial"] .edtools .sep{background:#3a4478}
+:root[data-mood="celestial"] .edpop{border-top-color:#3a4478}
+
+/* ---- pop-up sheets: midnight with a brass rule ---- */
+:root[data-mood="celestial"] .oversheet .sheet, :root[data-mood="celestial"] #museIntro .sheet, :root[data-mood="celestial"] .tipsheet .sheet{
+  border:0; border-radius:26px; color:#eef0ff; background:linear-gradient(180deg, #141c4f, #0a0f2e); box-shadow:0 -10px 30px rgba(0,0,0,.7), 0 -1px 0 #c79a42}
+
+/* ---- notes, Muse box, toast, labels ---- */
+:root[data-mood="celestial"] .musebox{border:0; border-radius:10px; color:#2a2216; background:#ece0bf var(--cl-parch); background-size:360px; box-shadow:0 0 0 1.5px #8a6322, 0 8px 16px rgba(0,0,0,.45)}
+:root[data-mood="celestial"] .musebox .lbl{font-family:'Cinzel',serif; letter-spacing:.14em; color:#7a5418}
+:root[data-mood="celestial"] .musebox .note{color:#5e4b2c}
+:root[data-mood="celestial"] #toast{background:#fff8e8; color:#2a211a; font-family:'Spectral',serif; box-shadow:0 10px 22px rgba(0,0,0,.45), 0 0 0 2px #f0d58a}
+:root[data-mood="celestial"] #tip{background:#fff8e8; color:#2a211a; border:0; box-shadow:0 10px 22px rgba(0,0,0,.45), 0 0 0 2px #f0d58a}
+:root[data-mood="celestial"] #tip b{color:#8a1f17; font-family:'Cinzel',serif; font-weight:700}
+:root[data-mood="celestial"] #splash{background:linear-gradient(180deg, #05071a 0%, #0e1745 50%, #27306a 100%)}
+:root[data-mood="celestial"] #splash h1{font-family:'Cinzel',serif; letter-spacing:.1em; color:#fdf4d6; text-shadow:0 0 24px rgba(240,213,138,.5)}
+:root[data-mood="celestial"] #splash h1 em{color:#f0d58a}
+:root[data-mood="celestial"] footer{color:#7d84ad}
+:root[data-mood="celestial"] .hint{color:#b9bfdc}
