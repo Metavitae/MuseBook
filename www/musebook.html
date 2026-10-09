@@ -1736,7 +1736,7 @@ async function backupNowFlow(){
 }
 async function sendCopy(){
   flushEditor();
-  const filename=(DB.contract.title||"book")+"-respaldo-"+todayStr()+".json";
+  const filename=(DB.contract.title||"book")+(LANG==="es"?" - respaldo de la app, no abrir - ":" - app backup, don't open - ")+todayStr()+".json";
   const data=JSON.stringify(Object.assign({_musebook:{app:"MuseBook",format:1,saved:new Date().toISOString()}}, bookCopy()),null,1);
   if(downloadsApi){
     try{ await downloadsApi.save({filename, data}); return; }catch(e){}

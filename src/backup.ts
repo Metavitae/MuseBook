@@ -141,11 +141,12 @@ async function runBackup(book: unknown) {
   }
   // Two files: the one the app restores from (everything: cards, settings, looks),
   // and a clean reading copy of the book for the writer.
-  const f = await writeVerified(dir, `${safeTitle(book)}-respaldo-${day}.json`, wrap(book));
+  // Names say who each file is for: the writer's copy to read, the app's file to restore.
+  const es = spanish(book);
+  const f = await writeVerified(dir, `${safeTitle(book)} - ${es ? "respaldo de la app, no abrir" : "app backup, don't open"} - ${day}.json`, wrap(book));
   const files: Record<string, string> = { [day]: f.uri };
   try {
-    const es = spanish(book);
-    const r = await writeVerified(dir, `${safeTitle(book)} - ${es ? "para leer" : "to read"} - ${day}.txt`, readable(book), "text/plain");
+    const r = await writeVerified(dir, `${safeTitle(book)} - ${es ? "TU LIBRO para leer" : "YOUR BOOK to read"} - ${day}.txt`, readable(book), "text/plain");
     files[day + "-read"] = r.uri;
   } catch {} // the restore file is what matters; the reading copy is a bonus
   // Only today's entries are needed; older days' files stay in the folder untouched.
@@ -212,7 +213,7 @@ export async function safetyCopy(book: unknown) {
   await FileSystem.writeAsStringAsync(SAFETY_DIR + `antes-de-restaurar-${stamp}.json`, text);
   if (state.dir) {
     try {
-      await writeVerified(new Directory(state.dir), `${safeTitle(book)}-antes-de-restaurar-${stamp.slice(0, 16)}.json`, text);
+      await writeVerified(new Directory(state.dir), `${safeTitle(book)} - ${spanish(book) ? "respaldo de la app antes de restaurar, no abrir" : "app backup before restoring, don't open"} - ${stamp.slice(0, 16)}.json`, text);
       return state.place || "";
     } catch {}
   }
