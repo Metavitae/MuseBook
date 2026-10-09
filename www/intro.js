@@ -1,0 +1,53 @@
+/* "Kithe presents MuseBook": the approved 10 s opening (Chat, v4), played
+   every time the app is opened fresh. The page loads once per open, so coming
+   back from the background never replays it. Tap anywhere to skip.
+   Sound off: the video plays silent. Calm or reduce-motion: the final emblem
+   as a still for 2 s instead. The video and still are packed in by build-www. */
+window.INTRO=(function(){
+const MP4="/*INTROMP4*/", STILL="/*INTROSTILL*/";
+const BLUE="#0f1d5d", WHITE="#f2f4f4";
+function bars(bg, dark){ try{ if(window.MuseNative && MuseNative.theme) MuseNative.theme(bg, dark); }catch(e){} }
+function start(o){
+  const el=document.getElementById("intro");
+  let over=false, timers=[];
+  function finish(){
+    if(over) return; over=true;
+    timers.forEach(clearTimeout);
+    const v=el.querySelector("video"); if(v){ try{ v.pause(); }catch(e){} }
+    el.classList.add("out");
+    setTimeout(()=>{ el.hidden=true; el.innerHTML=""; }, 400);
+    o.done();
+  }
+  if(!el){ o.done(); return; }
+  el.addEventListener("click", finish);
+  const still = o.calm || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
+  if(still || !MP4){
+    el.style.background=BLUE; bars(BLUE, true);
+    el.innerHTML='<img alt="MuseBook" src="data:image/webp;base64,'+STILL+'">';
+    timers.push(setTimeout(finish, 2000));
+    return;
+  }
+  bars(WHITE, false);
+  let url;
+  try{
+    const bin=atob(MP4), buf=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i);
+    url=URL.createObjectURL(new Blob([buf], {type:"video/mp4"}));
+  }catch(e){ finish(); return; }
+  const v=document.createElement("video");
+  v.playsInline=true; v.muted=!o.sound; v.preload="auto"; v.src=url;
+  v.addEventListener("ended", finish);
+  v.addEventListener("error", finish);
+  el.appendChild(v);
+  // The backdrop turns deep blue at about 3.3-4.3 s; the bars follow.
+  timers.push(setTimeout(()=>{ if(!over) bars(BLUE, true); }, 3800));
+  // Never let a stuck video block writing.
+  timers.push(setTimeout(finish, 12000));
+  const p=v.play();
+  if(p && p.catch) p.catch(()=>{
+    // Some phones refuse sound without a tap first: play silent rather than not at all.
+    if(over) return; v.muted=true; v.play().catch(finish);
+  });
+}
+return {start};
+})();

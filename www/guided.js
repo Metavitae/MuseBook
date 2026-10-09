@@ -354,6 +354,9 @@ function paste(){
   if(!pasteParts) return `<div class="g-own g-top"><button class="iconbtn g-key" data-g="welcomeBack">‹ ${L("Back","Volver")}</button></div>
     <h1 class="g-h1 g-left">${L("Bring your text","Trae tu texto")}</h1>
     <p class="g-lead">${L("Paste it here. I'll look for chapters and show you what I found before changing anything.","Pégalo aquí. Buscaré los capítulos y te mostraré lo que encontré antes de cambiar nada.")}</p>
+    <button class="ghost g-big" data-g="pasteFile">${L("Open a text file","Abrir un archivo de texto")}</button>
+    <p class="g-sub">${L("A .txt or .md file from anywhere: your phone, Drive, or a MuseBook “YOUR BOOK” copy.","Un archivo .txt o .md de donde sea: tu teléfono, Drive o una copia “TU LIBRO” de MuseBook.")}</p>
+    <p class="g-sub g-or">${L("or paste it:","o pégalo:")}</p>
     <textarea class="g-field g-pastebox" data-gi="pasteText" placeholder="${esc(L("Paste your text here.","Pega tu texto aquí."))}"></textarea>
     <div class="g-stack"><button class="act g-big" data-g="detect">${L("Continue","Seguir")}</button></div>`;
   const n=pasteParts.length;
@@ -476,6 +479,7 @@ async function act(a, el){
     case "fileSave": try{ const p=await MuseFiles.save(fileReady.f); if(p){ snd("saved"); toast(L("Saved to ","Guardado en ")+(p==="phone"?L("your phone","tu teléfono"):p)); } }catch(e){ toast(L("That didn't work. Try another folder.","No funcionó. Prueba otra carpeta.")); } return;
     case "backup": try{ if(!(MuseBackup.state||{}).dir){ const ok=await MuseBackup.choose(); if(!ok) return; } await MuseBackup.now(JSON.parse(JSON.stringify(DB))); snd("saved"); toast(L("Backed up","Respaldo hecho")); }catch(e){ toast(L("The backup didn't work. Try again.","El respaldo no funcionó. Inténtalo de nuevo.")); } return render();
     case "detect": return detect();
+    case "pasteFile": return openTextFile();
     case "pasteAgain": pasteParts=null; return render();
     case "partRead": pasteParts[+el.dataset.j].open=!pasteParts[+el.dataset.j].open; return render();
     case "partJoin": { const j=+el.dataset.j, a1=pasteParts[j-1], b1=pasteParts[j]; a1.text=(a1.text+"\n\n"+b1.text).trim(); pasteParts.splice(j,1); return render(); }
@@ -524,12 +528,22 @@ function detectParts(raw){
   const reBareNum=/^(\d{1,3}|[IVXLC]{1,7})\.?$/;
   const rePro=/^(?:pr[óo]logo|prologue)\s*[.:]?$/i, reEpi=/^(?:ep[íi]logo|epilogue)\s*[.:]?$/i, reDed=/^(?:dedicatoria|dedication)\s*[.:]?$/i;
   const reFoot=/^[\s_*]*[\d.,]+\s*(?:palabras|words)\s*·.*$/i;
-  const lines=(raw||"").replace(/\r/g,"").split("\n");
+  let lines=(raw||"").replace(/\r/g,"").split("\n");
   let title="", subtitle="", i0=0;
+  // MuseBook's own reading copy ("YOUR BOOK" .txt): title, maybe subtitle/author, then "Reading copy · …".
+  const ours=lines.slice(0,8).findIndex(l=>/^(Reading copy|Copia para leer) · /.test(l.trim()));
+  if(ours>=0){
+    const head=lines.slice(0,ours).map(l=>l.trim()).filter(Boolean);
+    const tc=t=> t===t.toUpperCase() ? t.toLowerCase().replace(/(^|[\s-])(\p{L})/gu,(m,a,b)=>a+b.toUpperCase()) : t;
+    if(head[0]) title=tc(head[0]);
+    if(head[1] && !/^(by|por) /i.test(head[1])) subtitle=head[1];
+    lines=lines.slice(ours+1);
+  }
   while(i0<lines.length && !lines[i0].trim()) i0++;
   if(i0<lines.length && /^#\s+\S/.test(lines[i0])){ title=strip(lines[i0]); i0++; while(i0<lines.length && !lines[i0].trim()) i0++;
     if(i0<lines.length && /^\s*[*_][^*_].*[*_]\s*$/.test(lines[i0])){ subtitle=strip(lines[i0]); i0++; } }
-  const body=lines.slice(i0).filter(l=>!reFoot.test(l) && !/^\s*(?:-{3,}|\*{3,}|_{3,})\s*$/.test(l));
+  const SB="\u2042"; // scene break marker
+  const body=lines.slice(i0).filter(l=>!reFoot.test(l)).map(l=>/^\s*(?:-{3,}|\*{3,}|_{3,}|\*(?:\s+\*){2,}|#\s*#\s*#)\s*$/.test(l)?SB:l);
   const parts=[]; let cur={name:"", kind:"", num:0, title:"", lines:[]}, justOpened=false;
   const push=()=>{ const text=cur.lines.join("\n").replace(/\n{3,}/g,"\n\n").trim(); if(text || cur.name) parts.push({name:cur.name, kind:cur.kind, num:cur.num, title:cur.title, text}); };
   const kindOf=(line, prevBlank)=>{
@@ -564,13 +578,39 @@ function detectParts(raw){
   let nn=0; out.forEach(p=>{ if(!p.kind){ if(p.num) nn=Math.max(nn,p.num); } });
   out.forEach(p=>{ if(!p.kind && !p.num){ p.num= out.some(q=>q.num===1)? 0 : 1; } });
   const nameOf=p=> p.kind==="prologue"?L("Prologue","Prólogo"): p.kind==="epilogue"?L("Epilogue","Epílogo"): p.kind==="dedication"?L("Dedication","Dedicatoria"): p.num? L("Chapter ","Capítulo ")+p.num : L("Opening text","Texto inicial");
-  return { parts: out.map(p=>({name:nameOf(p), kind:p.kind, num:p.num, title:p.title, text:p.text, open:false})), title, subtitle, warn, total };
+  const scenesOf=p=>{
+    const chunks=p.text.split(new RegExp("\\n*"+SB+"\\n*")).map(c=>c.trim()).filter(Boolean);
+    return chunks.map(c=>{
+      const paras=c.split(/\n{2,}/);
+      // Our copy prints each scene's name on its own line first (only when there's text after it).
+      if(ours>=0 && paras.length>1 && paras[0].length<=60 && !paras[0].includes("\n")) return {name:/^(scene|escena)\s+\d+$/i.test(paras[0])?"":paras[0], text:paras.slice(1).join("\n\n")};
+      return {name:"", text:c};
+    });
+  };
+  return { parts: out.map(p=>{ const sc=scenesOf(p); const one=sc.length===1;
+      return {name:nameOf(p), kind:p.kind, num:p.num, title: one&&sc[0].name&&!p.title ? sc[0].name : p.title, text: sc.map(x=>x.text).join("\n\n"), scenes: sc.length>1?sc:null, open:false}; }), title, subtitle, warn, total };
 }
 function detect(){
   if(!words(pasteText)) return toast(L("Paste your text first.","Primero pega tu texto."));
   const r=detectParts(pasteText);
   pasteParts=r.parts; pasteMeta={title: r.title || bookTitle(), subtitle:r.subtitle, warn:r.warn};
   render();
+}
+// Bring in a text file. A MuseBook app backup picked here goes to Restore instead.
+async function openTextFile(){
+  let text=null;
+  try{ text = window.MuseBackup ? await MuseBackup.pick() : await browserPick(); }
+  catch(e){ return toast(L("That file couldn't be read.","No se pudo leer ese archivo.")); }
+  if(text==null) return;
+  if(/^\s*\{/.test(text)){ try{ const d=JSON.parse(text); if(d && d._musebook){ if(window.previewRestore) previewRestore(text); return; } }catch(e){} }
+  if(/^PK/.test(text) || /\u0000/.test(text.slice(0,2000))) return toast(L("That looks like a Word or other document. Save it as plain text (.txt) first, or copy and paste the text.","Parece un documento de Word u otro tipo. Guárdalo primero como texto (.txt), o copia y pega el texto."));
+  importText(text);
+}
+function browserPick(){ return new Promise(res=>{ const i=document.createElement("input"); i.type="file"; i.accept=".txt,.md,.json,text/*"; i.onchange=()=>{ const f=i.files[0]; if(!f) return res(null); f.text().then(res,()=>res(null)); }; i.click(); }); }
+// Text from a file (or a non-backup picked in Restore): show what was found, change nothing yet.
+function importText(text){
+  if(!isGuided()) setMode("guided");
+  pasteText=text; pasteParts=null; show("paste"); detect();
 }
 function textToHtml(t){ return t.split(/\n{2,}/).map(p=>p.trim()).filter(Boolean).map(p=>"<p>"+esc(p).replace(/\n/g,"<br>")+"</p>").join(""); }
 function partFromName(name){
@@ -589,7 +629,8 @@ function createFromPaste(one){
     const f=partFromName(p.name); const kind=f.kind||"";
     let num= kind ? "" : String(f.num || ++n); if(!kind) n=Math.max(n, +num);
     const ttl=(p.title||"").trim() || (f.title && !/^\d+$/.test(f.title) && !/^(cap|chap)/i.test(f.title)? f.title : "");
-    newScene({kind, chapter:num, title:ttl, html:textToHtml(p.text), text:p.text});
+    if(p.scenes && !one) p.scenes.forEach(sc=>newScene({kind, chapter:num, title:sc.name||"", html:textToHtml(sc.text), text:sc.text}));
+    else newScene({kind, chapter:num, title:ttl, html:textToHtml(p.text), text:p.text});
   });
   if(pasteMeta.title) DB.contract.title=pasteMeta.title.trim();
   if(pasteMeta.subtitle) DB.contract.subtitle=pasteMeta.subtitle.trim();
@@ -633,5 +674,5 @@ document.addEventListener("click",e=>{
   if(e.target.closest("#gBackFromSettings")) show(cur()>=0?"page":"chapters");
 });
 
-return { init, show, render, onType, setMode, renderModeCard, holdMuseIntro, detectParts, get screen(){ return screen; } };
+return { init, show, render, onType, setMode, renderModeCard, holdMuseIntro, detectParts, importText, get screen(){ return screen; } };
 })();

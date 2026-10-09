@@ -144,3 +144,6 @@
 
 /* Welcome: the gear sits alone at the top right */
 .g-top.g-topright{justify-content:flex-end}
+
+/* "Bring your text": file first, paste second */
+.g-or{margin:14px 0 6px}

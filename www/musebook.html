@@ -58,6 +58,10 @@
   /* ---- Splash ---- */
   #splash{position:fixed; inset:0; z-index:200; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; cursor:pointer; transition:opacity .35s ease, transform .35s ease}
   #splash.out{opacity:0; transform:scale(1.02); pointer-events:none}
+  /* "Kithe presents MuseBook" opening (intro.js): above everything, white like the video's first frame. */
+  #intro{position:fixed; inset:0; z-index:300; background:#f2f4f4; transition:opacity .4s ease}
+  #intro.out{opacity:0; pointer-events:none}
+  #intro video, #intro img{width:100%; height:100%; object-fit:cover; display:block}
   #splash h1{font-size:clamp(34px,11vw,54px); margin:0; font-weight:700}
   #splash h1 em{color:var(--accent); font-style:normal}
   #splash .tap{color:var(--muted); font-size:12px; letter-spacing:1.5px; text-transform:uppercase; margin-top:10px}
@@ -269,6 +273,7 @@
   </div>
 </div>
 
+<div id="intro" data-nosound></div>
 <div id="splash">
   <h1>Muse<em>Book</em></h1>
   <div class="tap">tap to begin</div>
@@ -499,6 +504,7 @@
 <script>/*SOUND*/</script>
 <script>/*EXPORT*/</script>
 <script>/*GUIDED*/</script>
+<script>/*INTRO*/</script>
 <script>
 /* ============================================================
    DATA
@@ -1768,7 +1774,14 @@ function bookIsEmpty(){
 }
 function previewRestore(text){
   let d=null; try{ d=JSON.parse(text); }catch(e){}
-  if(!isBackup(d)){ toast("That file isn't a MuseBook backup."); return; }
+  if(!isBackup(d)){
+    // Plain text (a book from somewhere else, or a "YOUR BOOK" copy): offer it as text instead.
+    if(d===null && words(text)>0 && !/^PK/.test(text)){
+      if(bookIsEmpty() && window.G){ toast(t("That's a text file, not a backup. Here's what I found in it.")); G.importText(text); return; }
+      toast(t("That's a text file, not a backup. To bring it in, use “I already have text” on a new book.")); return;
+    }
+    toast("That file isn't a MuseBook backup."); return;
+  }
   const meta=d._musebook; delete d._musebook;
   const incoming=mergeDefaults(d);
   const w=incoming.scenes.reduce((n,s)=>n+words(s.text),0);
@@ -1852,7 +1865,12 @@ function renderAll(){
   renderLangCard();
   initMuseUI();
   G.init(); G.renderModeCard();
-  if(window.SND) SND.boot();
+  // The opening plays first; the look's own opening sound follows it.
+  INTRO.start({ sound: DB.ui.sound!==false, calm: !!DB.ui.calm, done(){
+    const sp=document.getElementById("splash"); if(sp) sp.hidden=true; // the opening replaces the old title card
+    if(window.MuseNative && MuseNative.theme){ const cs=getComputedStyle(document.documentElement); MuseNative.theme(cs.getPropertyValue("--bg").trim(), cs.colorScheme==="dark"); }
+    if(window.SND) SND.boot();
+  }});
 })();
 document.getElementById("langRow").addEventListener("click", e=>{
   const b=e.target.closest("[data-lang]"); if(b) setLang(b.dataset.lang);

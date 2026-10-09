@@ -43,3 +43,4 @@ yarn-error.*
 # generated from www/ by scripts/build-www.mjs
 src/www.generated.ts
 www/.sound.built.js
+www/.intro.built.js

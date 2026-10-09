@@ -113,6 +113,8 @@ const ES = {
   "Full Muse is still downloading. It will answer here once it's ready.":"Muse completo todavía se está descargando. Contestará aquí cuando esté listo.",
   "Full Muse isn't downloaded yet. Get it in Settings ⚙.":"Muse completo todavía no está descargado. Descárgalo en Ajustes ⚙.",
   "Tip: load a structure above to see every beat.":"Tip: carga una estructura arriba para ver todos los momentos.",
+  "That's a text file, not a backup. Here's what I found in it.":"Ese es un archivo de texto, no un respaldo. Esto es lo que encontré en él.",
+  "That's a text file, not a backup. To bring it in, use “I already have text” on a new book.":"Ese es un archivo de texto, no un respaldo. Para traerlo, usa “Ya tengo texto” en un libro nuevo.",
   "Download Muse (2.6 GB)":"Descargar Muse (2.6 GB)","Pause":"Pausar","Resume download":"Continuar descarga","Cancel and delete":"Cancelar y borrar","Remove Muse (frees 2.6 GB)":"Quitar Muse (libera 2.6 GB)","Tap again to remove":"Toca otra vez para quitarlo",
   "Muse isn't on this phone yet. It's a one-time 2.6 GB download (use wifi). After that it works offline. Until then, Muse-lite helps.":"Muse todavía no está en este celular. Es una descarga única de 2.6 GB (usa wifi). Después funciona sin internet. Mientras tanto, te ayuda Muse-lite.",
   "Muse is downloaded and works offline.":"Muse está descargado y funciona sin internet.",
