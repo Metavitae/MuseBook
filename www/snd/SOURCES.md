@@ -4,7 +4,7 @@ Every recording below is **CC0 (public domain)** on Freesound. CC0 was checked o
 
 - Originals (Freesound high-quality previews, MP3): `Art/Source/Sounds/<id>.mp3`
 - Versions used (trimmed, levelled, Opus): `Art/Working/Sounds/`. Named cuts (waveBreak, cityLoop, saxStreet…) come from the ids noted in sound.js.
-- jazzA–jazzD: four noir jazz candidates for the end of the book; Chancla picks one.
+- jazzA–jazzD: four noir jazz candidates for the end of the book. Chancla chose B, "A Sinful City" (Oct 8); it ships as jazz.ogg.
 
 | id | Recording | Author | Licence | Link |
 |---|---|---|---|---|
@@ -39,7 +39,6 @@ Every recording below is **CC0 (public domain)** on Freesound. CC0 was checked o
 | 262958 | Glass Tap.wav by Unicornaphobist | Unicornaphobist | CC0 | https://freesound.org/people/Unicornaphobist/sounds/262958/ |
 | 73497 | Gull.wav by nigelcoop | nigelcoop | CC0 | https://freesound.org/people/nigelcoop/sounds/73497/ |
 | 400809 | Stereo Harmony Bells by newagesoup | newagesoup | CC0 | https://freesound.org/people/newagesoup/sounds/400809/ |
-| 464923 | (Jazz Loop) Rusted Maid by plasterbrain | plasterbrain | CC0 | https://freesound.org/people/plasterbrain/sounds/464923/ |
 | 119136 | Lamp Switch.wav by esperri | esperri | CC0 | https://freesound.org/people/esperri/sounds/119136/ |
 | 380651 | Light rain on street.wav by BonnyOrbit | BonnyOrbit | CC0 | https://freesound.org/people/BonnyOrbit/sounds/380651/ |
 | 151638 | Squeaking Metal Gate Door in the Night of Berlin by qubodup | qubodup | CC0 | https://freesound.org/people/qubodup/sounds/151638/ |

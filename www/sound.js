@@ -57,7 +57,7 @@ const S={
   saved:[["464302",0,.8]],
   muse:[["685111",0,.6]],
   chapterDone:[["470710",0,1],["318687",.7,.8]],
-  bookDone:[["470710",0,1],["jazz",.9,.9]]                 // the stamp, then a noir jazz piece (Chancla chooses which)
+  bookDone:[["470710",0,1],["jazz",.9,.9]]                 // the stamp, then the noir jazz piece "A Sinful City" (Chancla chose B, Oct 8)
  },
  shore:{
   tap:[["174718",0,.5]],
