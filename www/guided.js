@@ -272,17 +272,18 @@ function done(){
     </div>`;
 }
 // "Keep writing" list: each part once as a heading (total words, in progress / done),
-// its unfinished scenes indented underneath. The part just finished is left out.
+// every one of its scenes indented underneath; finished ones say so. A part drops out
+// only when all its scenes are finished (the scene just finished counts as finished).
 function keepList(cur){
-  const u=units();
+  const u=units(), fin=j=>j===cur || DB.scenes[j].done;
   return groups().map(g=>{
-    const open=g.ids.filter(j=>j!==cur && !DB.scenes[j].done);
+    const open=g.ids.filter(j=>!fin(j));
     if(!open.length) return "";
     const s0=DB.scenes[g.ids[0]], tw=g.ids.reduce((n,j)=>n+wc(DB.scenes[j]),0);
-    const st= g.ids.every(j=>DB.scenes[j].done) ? L("Done","Terminado") : tw ? L("In progress","En progreso") : L("Not started yet","Sin empezar");
+    const st= tw ? L("In progress","En progreso") : L("Not started yet","Sin empezar");
     const several=g.ids.length>1 && u.sub;
     const head=`<button class="ghost g-choice g-parthead" data-g="goChapter" data-i="${open[0]}"><span>${L("Continue ","Seguir con ")}${esc(label(s0))}${!several&&ownTitle(s0)?" · "+esc(ownTitle(s0)):""}</span><small>${fmt(tw)} ${L("words","palabras")} · ${st}</small></button>`;
-    const subs= several ? open.map(j=>`<button class="ghost g-choice g-scene" data-g="goChapter" data-i="${j}"><span>${esc(sceneName(j))}</span><small>${fmt(wc(DB.scenes[j]))} ${L("words","palabras")}</small></button>`).join("") : "";
+    const subs= several ? g.ids.map(j=>`<button class="ghost g-choice g-scene" data-g="goChapter" data-i="${j}"><span>${esc(sceneName(j))}</span><small>${fmt(wc(DB.scenes[j]))} ${L("words","palabras")}${fin(j)?" · "+L("Done","Terminado"):""}</small></button>`).join("") : "";
     return head+subs;
   }).join("");
 }
