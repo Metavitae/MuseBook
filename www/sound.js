@@ -13,7 +13,9 @@ const DATA = /*SNDDATA*/{};      // id → base64 Opus, filled in at build
 let ctx=null, master=null, amb=null;
 const bufs={}, loading={};
 const calm=()=> document.documentElement.getAttribute("data-calm")==="1";
-const on=()=> !calm() && !(window.DB && DB.ui && DB.ui.sound===false);
+// The book (DB) is a top-level `let` in musebook.html: reachable by name, never as window.DB.
+const ui=()=>{ try{ return (typeof DB!=="undefined" && DB && DB.ui) || {}; }catch(e){ return {}; } };
+const on=()=> !calm() && ui().sound!==false;
 const mood=()=> document.documentElement.getAttribute("data-mood")||"shore";
 function ac(){
   if(!ctx){ const C=window.AudioContext||window.webkitAudioContext; if(!C) return null; ctx=new C(); master=ctx.createGain(); master.gain.value=.9; master.connect(ctx.destination); }
@@ -29,7 +31,7 @@ function load(id){
 }
 // Play one recording: at (seconds later), vol (0–1), rate (pitch/speed).
 async function hit(id, at, vol, rate, move){
-  if(id==="jazz") id=(window.DB&&DB.ui&&DB.ui.jazz)||"jazz";
+  if(id==="jazz") id=ui().jazz||"jazz";
   const b=await load(id); const a=ac(); if(!b || !a) return;
   const s=a.createBufferSource(), g=a.createGain(), t=a.currentTime+(at||0);
   s.buffer=b; s.playbackRate.value=rate||1; g.gain.value=vol==null?1:vol;
@@ -119,13 +121,13 @@ function play(name){
   if(v==="typewriter"){ const now=Date.now(); if(now-lastKey<35) return; lastKey=now; return hit(Math.random()<.5?"380138":"160678",0,.5,.92+Math.random()*.16); }
   if(Array.isArray(v)) seq(v);
 }
-function vibrate(p){ try{ if(!calm() && !(window.DB&&DB.ui&&DB.ui.sound===false) && navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+function vibrate(p){ try{ if(!calm() && ui().sound!==false && navigator.vibrate) navigator.vibrate(p); }catch(e){} }
 
 /* ---------- background sound on the writing page ---------- */
 let ambWanted=false;
 async function startAmbience(){
   ambWanted=true; stopAmbience(true);
-  if(!on() || (window.DB&&DB.ui&&DB.ui.ambience===false)) return;
+  if(!on() || ui().ambience===false) return;
   const m=mood(), [id,vol]=AMB[m]||AMB.shore; const a=ac(); const b=await load(id);
   if(!a || !b || amb || !ambWanted) return;
   const out=a.createGain(); out.gain.setValueAtTime(0.0001,a.currentTime); out.gain.exponentialRampToValueAtTime(vol,a.currentTime+2.5);
@@ -164,25 +166,31 @@ function stopAmbience(keepWanted){
 // It plays only on the writing page (guided page, or the Draft stage), and
 // stops in Calm, with sound off, or with the background switch off.
 function writing(){ const d=document.documentElement.dataset; return d.mode==="guided" ? d.gscreen==="page" : d.tab==="draft"; }
-function sync(){ if(on() && writing() && !(window.DB&&DB.ui&&DB.ui.ambience===false)){ if(!amb || amb.m!==mood()) startAmbience(); } else if(amb||ambWanted) stopAmbience(); }
+function sync(){ if(on() && writing() && !ui().ambience===false){ if(!amb || amb.m!==mood()) startAmbience(); } else if(amb||ambWanted) stopAmbience(); }
 new MutationObserver(()=>sync()).observe(document.documentElement,{attributes:true, attributeFilter:["data-tab","data-gscreen","data-mode","data-mood","data-calm"]});
 // Opening the app: its look's opening sound, then the background if on the writing page.
 function boot(){ play("open"); setTimeout(sync, 1200); }
 
 /* ---------- hooks ---------- */
-// Keys sound when pressed (not the writing page itself).
-document.addEventListener("pointerdown",e=>{
+// Keys sound when tapped (not the writing page itself). On click, not touch-down,
+// so touching the screen to scroll or to place the cursor stays silent.
+document.addEventListener("click",e=>{
   if(!on()) return;
   const k=e.target.closest("button, .plate, [data-g]");
   if(!k || k.disabled || k.closest(".editor") || k.closest("[data-nosound]")) return;
   play("tap");
 },true);
-// Noir: the typewriter while you type, the bell on a new line. (Counted from what
-// is typed: Android keyboards often send no key codes.)
-document.addEventListener("beforeinput",e=>{
-  if(!on() || mood()!=="noir" || (window.DB&&DB.ui&&DB.ui.typingSound===false)) return;
-  if(!e.target.closest || !e.target.closest(".editor")) return;
-  if(e.inputType==="insertParagraph"||e.inputType==="insertLineBreak") play("enter"); else if(/^insert/.test(e.inputType)) play("key");
+// Noir: the typewriter while you type, the bell on a new line. Counted from the text
+// itself growing: Android keyboards send no key codes, and Gboard re-sends the word
+// under the cursor ("composition") when you just touch the text, which must stay silent.
+let typedLen=-1, typedEl=null;
+const textLen=el=>(el.innerText||"").length;
+document.addEventListener("focusin",e=>{ const ed=e.target.closest&&e.target.closest(".editor"); if(ed){ typedEl=ed; typedLen=textLen(ed); } },true);
+document.addEventListener("input",e=>{
+  const ed=e.target.closest&&e.target.closest(".editor"); if(!ed) return;
+  const n=textLen(ed), grew= ed===typedEl && typedLen>=0 && n>typedLen; typedEl=ed; typedLen=n;
+  if(!grew || !on() || mood()!=="noir" || ui().typingSound===false) return;
+  if(e.inputType==="insertParagraph"||e.inputType==="insertLineBreak") play("enter"); else play("key");
 },true);
 // Silence when the app goes to the background.
 document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="hidden"){ stopAmbience(); if(ctx) ctx.suspend(); } else { if(ctx) ctx.resume(); sync(); } });
