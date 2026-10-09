@@ -31,14 +31,9 @@ function start(o){
     return;
   }
   bars(WHITE, false);
-  let url;
-  try{
-    const bin=atob(MP4), buf=new Uint8Array(bin.length);
-    for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i);
-    url=URL.createObjectURL(new Blob([buf], {type:"video/mp4"}));
-  }catch(e){ finish(); return; }
   const v=document.createElement("video");
-  v.playsInline=true; v.muted=!o.sound; v.preload="auto"; v.src=url;
+  // Straight from the packed data: the browser decodes it, no copying in script first.
+  v.playsInline=true; v.muted=!o.sound; v.preload="auto"; v.src="data:video/mp4;base64,"+MP4;
   v.addEventListener("ended", finish);
   v.addEventListener("error", finish);
   el.appendChild(v);
