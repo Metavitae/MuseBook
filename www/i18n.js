@@ -92,7 +92,7 @@ const ES = {
   "Close":"Cerrar",
   "The keyboard you type with belongs to Google (or your phone's maker), not to MuseBook. It may learn your words to suggest them; MuseBook never sees that.":"El teclado con el que escribes es de Google (o de quien hizo tu teléfono), no de MuseBook. Puede aprender tus palabras para sugerirlas; MuseBook nunca ve eso.",
   "‹ Back to my book":"‹ Volver a mi libro","How you write":"Cómo escribes","Guided":"Guía","Full view":"Vista completa",
-  "Guided shows one step at a time: your page, your chapters, and what comes next. Full view shows all six stages of planning. Your book stays the same in both.":"La guiada te muestra un paso a la vez: tu página, tus capítulos y lo que sigue. La vista completa muestra las seis etapas de planeación. Tu libro es el mismo en las dos.",
+  "Guided shows one step at a time: your page, your chapters, and what comes next. Full view shows all six stages of planning. Your book stays the same in both.":"La guía te muestra un paso a la vez: tu página, tus capítulos y lo que sigue. La vista completa muestra las seis etapas de planeación. Tu libro es el mismo en las dos.",
   "Sounds and vibration":"Sonidos y vibración",
   "Typewriter keys while you type (Noir)":"Teclas de máquina de escribir al escribir (Noir)",
   "Background sound on the writing page":"Sonido de fondo en la página de escritura",
