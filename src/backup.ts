@@ -146,7 +146,7 @@ async function runBackup(book: unknown) {
   const f = await writeVerified(dir, `${safeTitle(book)} - ${es ? "respaldo de la app, no abrir" : "app backup, don't open"} - ${day}.json`, wrap(book));
   const files: Record<string, string> = { [day]: f.uri };
   try {
-    const r = await writeVerified(dir, `${safeTitle(book)} - ${es ? "TU LIBRO para leer" : "YOUR BOOK to read"} - ${day}.txt`, readable(book), "text/plain");
+    const r = await writeVerified(dir, `${safeTitle(book)} - ${es ? "TU LIBRO" : "YOUR BOOK"} - ${day}.txt`, readable(book), "text/plain");
     files[day + "-read"] = r.uri;
   } catch {} // the restore file is what matters; the reading copy is a bonus
   // Only today's entries are needed; older days' files stay in the folder untouched.
