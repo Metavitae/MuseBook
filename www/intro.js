@@ -1,24 +1,27 @@
 /* "Kithe presents MuseBook": the approved 10 s opening (Chat, v4), played
    every time the app is opened fresh. The page loads once per open, so coming
    back from the background never replays it. Tap anywhere to skip.
+   It starts the moment the page opens (this script sits right after #intro),
+   and the book loads behind it; the page calls INTRO.after() for what follows.
    Sound off: the video plays silent. Calm or reduce-motion: the final emblem
    as a still for 2 s instead. The video and still are packed in by build-www. */
 window.INTRO=(function(){
 const MP4="/*INTROMP4*/", STILL="/*INTROSTILL*/";
 const BLUE="#0f1d5d", WHITE="#f2f4f4";
 function bars(bg, dark){ try{ if(window.MuseNative && MuseNative.theme) MuseNative.theme(bg, dark); }catch(e){} }
+let ended=false, waiting=[];
+function after(f){ if(ended) f(); else waiting.push(f); }
 function start(o){
   const el=document.getElementById("intro");
   let over=false, timers=[];
   function finish(){
     if(over) return; over=true;
     timers.forEach(clearTimeout);
-    const v=el.querySelector("video"); if(v){ try{ v.pause(); }catch(e){} }
-    el.classList.add("out");
-    setTimeout(()=>{ el.hidden=true; el.innerHTML=""; }, 400);
-    o.done();
+    const v=el && el.querySelector("video"); if(v){ try{ v.pause(); }catch(e){} }
+    if(el){ el.classList.add("out"); setTimeout(()=>{ el.hidden=true; el.innerHTML=""; }, 400); }
+    ended=true; waiting.splice(0).forEach(f=>{ try{ f(); }catch(e){} });
   }
-  if(!el){ o.done(); return; }
+  if(!el){ finish(); return; }
   el.addEventListener("click", finish);
   const still = o.calm || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   if(still || !MP4){
@@ -49,5 +52,10 @@ function start(o){
     if(over) return; v.muted=true; v.play().catch(finish);
   });
 }
-return {start};
+return {start, after};
+})();
+// The writer's sound and Calm settings come with the book the app hands the page.
+(function(){
+  let ui={}; try{ ui=(window.MuseNative && MuseNative.bootUi) || JSON.parse(localStorage.getItem("musebook_v1")||"{}").ui || {}; }catch(e){}
+  INTRO.start({ sound: ui.sound!==false, calm: !!ui.calm });
 })();

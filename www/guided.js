@@ -153,6 +153,8 @@ function welcome(){
       <button class="ghost g-big" data-g="paste">${L("I already have text","Ya tengo texto")}</button>
       <p class="g-sub">${L("Paste it. I'll find the chapters and ask before changing anything.","Pégalo. Buscaré los capítulos y te preguntaré antes de cambiar nada.")}</p>
       <button class="g-link" data-g="restore">${L("Bring back a book from a backup","Recuperar un libro de un respaldo")}</button>
+      ${window.MuseBackup?`<p class="g-sub">${L("Don't see your newest backup? Open the Google Drive app once, then come back and try again.","¿No ves tu respaldo más reciente? Abre la app de Google Drive una vez y vuelve a intentarlo.")}</p>`:""}
+      ${window.MuseNative&&MuseNative.hasDrive?`<button class="g-link" data-g="openDrive">${L("Open Google Drive","Abrir Google Drive")}</button>`:""}
     </div></div>`;
 }
 function question(){
@@ -449,6 +451,7 @@ async function act(a, el){
     case "toPage": DB.ui.gStarted=true; save(); return show("page");
     case "chapters": snd("chapters"); return show("chapters");
     case "settings": return show("settings");
+    case "openDrive": MuseNative.openDrive().catch(()=>{}); return;
     case "restore": { const b=document.getElementById("restoreBtn"); if(b) b.click(); return; }
     case "open": { const j=+el.dataset.i; DB.ui.scene=j; save(); const multi=DB.scenes.filter(x=>partKey(x)===partKey(DB.scenes[j])).length>1 && !DB.ui.gMultiSeen; show("page"); if(multi){ DB.ui.gMultiSeen=true; save(); sheet="multi"; renderLayer(); } return; }
     case "done": commitEditor(); show("done"); ring(); museOfferOnce(); return;
@@ -477,7 +480,7 @@ async function act(a, el){
     case "file": return makeFile(el.dataset.k);
     case "fileShare": try{ await MuseFiles.share(fileReady.f); }catch(e){ toast(L("Couldn't open the share screen. Try again.","No se pudo abrir la pantalla para compartir. Inténtalo de nuevo.")); } return;
     case "fileSave": try{ const p=await MuseFiles.save(fileReady.f); if(p){ snd("saved"); toast(L("Saved to ","Guardado en ")+(p==="phone"?L("your phone","tu teléfono"):p)); } }catch(e){ toast(L("That didn't work. Try another folder.","No funcionó. Prueba otra carpeta.")); } return;
-    case "backup": try{ if(!(MuseBackup.state||{}).dir){ const ok=await MuseBackup.choose(); if(!ok) return; } await MuseBackup.now(JSON.parse(JSON.stringify(DB))); snd("saved"); toast(L("Backed up","Respaldo hecho")); }catch(e){ toast(L("The backup didn't work. Try again.","El respaldo no funcionó. Inténtalo de nuevo.")); } return render();
+    case "backup": try{ if(!(MuseBackup.state||{}).dir){ const ok=await MuseBackup.choose(); if(!ok) return; } if(!(await window.backupManual(JSON.parse(JSON.stringify(DB))))) return render(); snd("saved"); toast(L("Backed up","Respaldo hecho")); }catch(e){ toast(L("The backup didn't work. Try again.","El respaldo no funcionó. Inténtalo de nuevo.")); } return render();
     case "detect": return detect();
     case "pasteFile": return openTextFile();
     case "pasteAgain": pasteParts=null; return render();

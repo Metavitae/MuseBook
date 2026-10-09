@@ -177,6 +177,10 @@
   .bstatus.bad{color:var(--bad); cursor:pointer}
   .swrow{display:flex; align-items:center; gap:10px; margin-top:14px; font-size:14px; cursor:pointer}
   .swrow input{width:20px; height:20px; accent-color:var(--accent); flex:none}
+  #againSheet{position:fixed; inset:0; z-index:150; background:var(--scrim); display:flex; align-items:flex-end; justify-content:center; padding:16px}
+  #againSheet[hidden]{display:none}
+  #againSheet .sheet{background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--radius); padding:20px 18px; max-width:520px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,.25)}
+  #againSheet p{margin:0 0 10px; font-size:14.5px}
   #restoreSheet{position:fixed; inset:0; z-index:150; background:var(--scrim); display:flex; align-items:flex-end; justify-content:center; padding:16px}
   #restoreSheet[hidden]{display:none}
   #restoreSheet .sheet{background:var(--surface); color:var(--text); border:1px solid var(--border); border-radius:var(--radius); padding:20px 18px; max-width:520px; width:100%; box-shadow:0 10px 30px rgba(0,0,0,.25)}
@@ -273,7 +277,18 @@
   </div>
 </div>
 
+<div id="againSheet" class="oversheet" hidden>
+  <div class="sheet">
+    <p>There's already a backup of this exact book in your files. Make another anyway?</p>
+    <div class="btns">
+      <button class="act" id="againYes">Yes</button>
+      <button class="ghost" id="againNo">No</button>
+    </div>
+  </div>
+</div>
+
 <div id="intro" data-nosound></div>
+<script>/*INTRO*/</script>
 <div id="splash">
   <h1>Muse<em>Book</em></h1>
   <div class="tap">tap to begin</div>
@@ -490,6 +505,8 @@
         <button class="ghost" id="restoreBtn">Restore from a backup</button>
         <button class="ghost" id="sendCopyBtn">Send a copy</button>
       </div>
+      <p class="hint" style="margin:8px 0 0" data-drive-hint hidden>Don't see your newest backup? Open the Google Drive app once, then come back and try again.</p>
+      <div class="btns" data-drive-open-row hidden><button class="ghost" data-drive-open>Open Google Drive</button></div>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none" />
       <p class="warnbox" id="eraseWarn" style="margin-top:16px" hidden>Your latest changes aren't backed up yet.</p>
       <div class="btns" style="margin-top:16px">
@@ -504,7 +521,6 @@
 <script>/*SOUND*/</script>
 <script>/*EXPORT*/</script>
 <script>/*GUIDED*/</script>
-<script>/*INTRO*/</script>
 <script>
 /* ============================================================
    DATA
@@ -1737,9 +1753,32 @@ async function backupNowFlow(){
     let ok=false; try{ ok=await MuseBackup.choose(); }catch(e){}
     if(!ok) return;
   }
-  try{ await MuseBackup.now(bookCopy()); if(window.SND) SND.play("saved"); toast("Backup saved"); }
-  catch(e){ toast("We couldn't save the backup. Check the place you chose."); }
+  try{ if(!(await backupManual(bookCopy()))) return; if(window.SND) SND.play("saved"); toast(t("Backup saved")); }
+  catch(e){ toast(t("We couldn't save the backup. Check the place you chose.")); }
 }
+// A tap on "Back up now" (never an automatic backup): if the book is exactly what the
+// last backup holds, ask first. "Yes" still just replaces today's pair.
+// Resolves true when it backed up, false when the writer said No.
+async function backupManual(d){
+  let same=false; try{ same=await MuseBackup.same(d); }catch(e){}
+  if(same && !(await askAgain())) return false;
+  await MuseBackup.now(d);
+  return true;
+}
+window.backupManual=backupManual;
+function askAgain(){
+  return new Promise(res=>{
+    const sh=document.getElementById("againSheet"), yes=document.getElementById("againYes"), no=document.getElementById("againNo");
+    function end(v){ sh.hidden=true; yes.onclick=no.onclick=sh.onclick=null; res(v); }
+    yes.onclick=()=>end(true); no.onclick=()=>end(false);
+    sh.onclick=e=>{ if(e.target===sh) end(false); };
+    sh.hidden=false;
+  });
+}
+// Restore: Android's file picker can show an old list of Drive until the Drive app is opened once.
+document.querySelectorAll("[data-drive-hint]").forEach(el=>el.hidden=!window.MuseBackup);
+document.querySelectorAll("[data-drive-open-row]").forEach(el=>el.hidden=!(window.MuseNative && MuseNative.hasDrive));
+document.querySelectorAll("[data-drive-open]").forEach(b=>b.addEventListener("click", ()=>{ MuseNative.openDrive().catch(()=>{}); }));
 async function sendCopy(){
   flushEditor();
   const filename=(DB.contract.title||"book")+(LANG==="es"?" - respaldo de la app, no abrir - ":" - app backup, don't open - ")+todayStr()+".json";
@@ -1865,12 +1904,12 @@ function renderAll(){
   renderLangCard();
   initMuseUI();
   G.init(); G.renderModeCard();
-  // The opening plays first; the look's own opening sound follows it.
-  INTRO.start({ sound: DB.ui.sound!==false, calm: !!DB.ui.calm, done(){
+  // The opening started as soon as the page opened; the look's own opening sound follows it.
+  INTRO.after(()=>{
     const sp=document.getElementById("splash"); if(sp) sp.hidden=true; // the opening replaces the old title card
     if(window.MuseNative && MuseNative.theme){ const cs=getComputedStyle(document.documentElement); MuseNative.theme(cs.getPropertyValue("--bg").trim(), cs.colorScheme==="dark"); }
     if(window.SND) SND.boot();
-  }});
+  });
 })();
 document.getElementById("langRow").addEventListener("click", e=>{
   const b=e.target.closest("[data-lang]"); if(b) setLang(b.dataset.lang);

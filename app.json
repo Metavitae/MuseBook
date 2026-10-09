@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "backgroundColor": "#f6f2e9",
+    "backgroundColor": "#f2f4f4",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.metavitae.musebook"
@@ -25,12 +25,15 @@
     "plugins": [
       "react-native-litert-lm",
       "expo-sharing",
+      "./plugins/drive-visible",
       [
         "expo-build-properties",
         {
           "android": {
             "minSdkVersion": 26,
-            "buildArchs": ["arm64-v8a"]
+            "buildArchs": [
+              "arm64-v8a"
+            ]
           }
         }
       ]

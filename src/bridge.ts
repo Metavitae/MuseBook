@@ -4,7 +4,7 @@
 import type { MuseStatus } from "./muse";
 import type { BackupState } from "./backup";
 
-export function bridgeScript(book: unknown, status: MuseStatus, firstRunSeen: boolean, backup: BackupState) {
+export function bridgeScript(book: any, status: MuseStatus, firstRunSeen: boolean, backup: BackupState, hasDrive: boolean) {
   return `(function(){
   var pending = {}, streams = {}, seq = 0, listeners = [];
   var status = ${JSON.stringify(status)};
@@ -29,6 +29,7 @@ export function bridgeScript(book: unknown, status: MuseStatus, firstRunSeen: bo
     onState: function(f){ backupListeners.push(f); f(backup); },
     choose: function(){ return call("backupChoose"); },
     now: function(d){ return call("backupNow", [d]); },
+    same: function(d){ return call("backupSame", [d]); }, // nothing changed since the last backup?
     setAuto: function(on){ return call("backupAuto", [!!on]); },
     safetyCopy: function(d){ return call("backupSafety", [d]); },
     pick: function(){ return call("backupPick"); }
@@ -42,6 +43,9 @@ export function bridgeScript(book: unknown, status: MuseStatus, firstRunSeen: bo
   };
   window.MuseNative = {
     firstRunSeen: ${firstRunSeen ? "true" : "false"},
+    bootUi: (book && book.ui) || {}, // sound and Calm, so the opening can start before the page has the book
+    hasDrive: ${hasDrive ? "true" : "false"},
+    openDrive: function(){ return call("openDrive"); },
     get status(){ return status; },
     onStatus: function(f){ listeners.push(f); f(status); },
     download: function(){ return call("museDownload"); },

@@ -8,9 +8,15 @@ import { bridgeScript } from "./src/bridge";
 import * as Muse from "./src/muse";
 import * as Backup from "./src/backup";
 import * as Files from "./src/files";
+import * as IntentLauncher from "expo-intent-launcher";
 import { loadBook, saveBook, loadPrefs, savePrefs, shareFile, type Prefs } from "./src/storage";
 
+const DRIVE_APP = "com.google.android.apps.docs";
+// The opening video starts on this near-white, so the moment before the page is up matches it.
+const INTRO_WHITE = "#f2f4f4";
+
 interface Boot {
+  hasDrive: boolean;
   book: object | null;
   prefs: Prefs;
   status: Muse.MuseStatus;
@@ -21,18 +27,22 @@ export default function App() {
   const web = useRef<WebView>(null);
   const prefs = useRef<Prefs>({});
   // The page reports its atmosphere so the bars around it match.
-  const [theme, setTheme] = useState({ bg: "#f6f2e9", dark: false });
+  const [theme, setTheme] = useState({ bg: INTRO_WHITE, dark: false });
 
   useEffect(() => {
     (async () => {
       await Muse.init();
-      const [book, p] = await Promise.all([loadBook(), loadPrefs()]);
+      const [book, p, hasDrive] = await Promise.all([
+        loadBook(),
+        loadPrefs(),
+        IntentLauncher.getApplicationIconAsync(DRIVE_APP).then(() => true, () => false),
+      ]);
       prefs.current = p;
       Backup.init(p.backup, book, async (b) => {
         prefs.current = { ...prefs.current, backup: b };
         await savePrefs(prefs.current);
       }, (b) => run(`window.__mb.backup(${JSON.stringify(b)})`));
-      setBoot({ book, prefs: p, status: Muse.getStatus() });
+      setBoot({ book, prefs: p, status: Muse.getStatus(), hasDrive });
     })();
   }, []);
 
@@ -80,11 +90,17 @@ export default function App() {
           return reply(id, true, await Backup.chooseFolder());
         case "backupNow":
           return reply(id, true, await Backup.backupNow(a[0]));
+        case "backupSame":
+          return reply(id, true, Backup.unchanged(a[0]));
         case "backupAuto":
           await Backup.setAuto(!!a[0]);
           return reply(id, true, null);
         case "backupSafety":
           return reply(id, true, await Backup.safetyCopy(a[0]));
+        case "openDrive":
+          // Opening the Drive app refreshes the list Android's file picker shows.
+          IntentLauncher.openApplication(DRIVE_APP);
+          return reply(id, true, null);
         case "backupPick":
           return reply(id, true, await Backup.pickBackupFile());
         case "share": {
@@ -132,11 +148,11 @@ export default function App() {
   // Stable props: a new source object would make the WebView reload the page.
   const source = useMemo(() => ({ html: WWW_HTML, baseUrl: "https://musebook.local/" }), []);
   const injected = useMemo(
-    () => (boot ? bridgeScript(boot.book, boot.status, !!boot.prefs.firstRunSeen, Backup.getState()) : ""),
+    () => (boot ? bridgeScript(boot.book, boot.status, !!boot.prefs.firstRunSeen, Backup.getState(), boot.hasDrive) : ""),
     [boot],
   );
 
-  if (!boot) return <View style={{ flex: 1, backgroundColor: "#f6f2e9" }} />;
+  if (!boot) return <View style={{ flex: 1, backgroundColor: INTRO_WHITE }} />;
 
   return (
     <SafeAreaProvider>

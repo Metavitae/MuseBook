@@ -2,9 +2,11 @@
 // phone or in their own Drive). The book itself stays in book.json; this never
 // replaces it. MuseBook keeps nothing anywhere else and runs no server.
 //
-// Android's folder access hands back opaque file ids, not names, so we remember
-// the file we wrote for each day and replace it ourselves: delete the old one,
-// write the new one, read it back to check.
+// One pair of files per day (the writer's reading copy + the app's restore file).
+// Every save that day writes over that day's pair; a new day starts a new pair
+// and earlier days are never touched. Deleting and re-creating made Drive add
+// "(1)" copies (the old name was still taken), so we write over the file in place.
+// Automatic backups only run when the book itself changed since the last one.
 import { Directory, File } from "expo-file-system";
 import * as FileSystem from "expo-file-system/legacy";
 
@@ -15,6 +17,7 @@ export interface BackupState {
   last?: { at: string; place: string }; // last good backup
   failed?: string; // when the last try failed (cleared by a good one)
   files?: Record<string, string>; // "YYYY-MM-DD" → restore file written that day; "YYYY-MM-DD-read" → reading copy
+  sig?: string; // fingerprint of the book in the last good backup
 }
 
 const SAFETY_DIR = FileSystem.documentDirectory + "safety/";
@@ -37,6 +40,19 @@ export function init(saved: BackupState | undefined, book: unknown,
   notify = onChange;
 }
 export const getState = () => state;
+
+/** A fingerprint of what's in the book: the writing, cards and plan. Which screen
+ *  is open or today's word count (ui, stats) don't make it a different book. */
+function sig(book: any) {
+  if (!book) return "";
+  const { ui, stats, ...rest } = book;
+  const text = JSON.stringify(rest);
+  let h = 0x811c9dc5;
+  for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 0x01000193);
+  return text.length + ":" + (h >>> 0).toString(36);
+}
+/** True when this book is exactly what the last backup holds. */
+export const unchanged = (book: unknown) => !!state.sig && sig(book) === state.sig;
 
 async function update(patch: Partial<BackupState>) {
   state = { ...state, ...patch };
@@ -117,7 +133,7 @@ export async function chooseFolder() {
   } catch {
     return false;
   }
-  await update({ dir: dir.uri, place: placeName(dir.uri), files: {}, failed: undefined });
+  await update({ dir: dir.uri, place: placeName(dir.uri), files: {}, sig: undefined, failed: undefined }); // a new place gets a first backup
   return true;
 }
 
@@ -131,26 +147,50 @@ async function writeVerified(dir: Directory, name: string, text: string, mime = 
   return f;
 }
 
+/** Today's file by this name: the one we wrote earlier today, else one already in the folder. */
+function findToday(dir: Directory, name: string, known?: string) {
+  if (known) {
+    try { const f = new File(known); if (f.exists && f.name === name) return f; } catch {}
+  }
+  try {
+    for (const x of dir.list()) if (x instanceof File && x.name === name) return x;
+  } catch {}
+  return null;
+}
+/** Write over today's file if it's there (read back to check), otherwise make it. */
+async function writeOver(dir: Directory, name: string, text: string, mime: string, known?: string) {
+  const old = findToday(dir, name, known);
+  if (old) {
+    try {
+      old.write(text);
+      if ((await old.text()) === text) return old;
+    } catch {}
+    // Some folders don't shorten a file on write: replace it instead.
+    try { old.delete(); } catch {}
+  }
+  return writeVerified(dir, name, text, mime);
+}
+
 async function runBackup(book: unknown) {
   if (!state.dir) throw new Error("no folder");
   const dir = new Directory(state.dir);
   const day = today();
-  for (const k of [day, day + "-read"]) {
-    const old = state.files?.[k];
-    if (old) { try { new File(old).delete(); } catch {} } // gone already is fine
-  }
   // Two files: the one the app restores from (everything: cards, settings, looks),
   // and a clean reading copy of the book for the writer.
   // Names say who each file is for: the writer's copy to read, the app's file to restore.
   const es = spanish(book);
-  const f = await writeVerified(dir, `${safeTitle(book)} - ${es ? "respaldo de la app, no abrir" : "app backup, don't open"} - ${day}.json`, wrap(book));
+  const f = await writeOver(dir, `${safeTitle(book)} - ${es ? "respaldo de la app, no abrir" : "app backup, don't open"} - ${day}.json`, wrap(book), "application/json", state.files?.[day]);
   const files: Record<string, string> = { [day]: f.uri };
   try {
-    const r = await writeVerified(dir, `${safeTitle(book)} - ${es ? "TU LIBRO" : "YOUR BOOK"} - ${day}.txt`, readable(book), "text/plain");
+    const r = await writeOver(dir, `${safeTitle(book)} - ${es ? "TU LIBRO" : "YOUR BOOK"} - ${day}.txt`, readable(book), "text/plain", state.files?.[day + "-read"]);
     files[day + "-read"] = r.uri;
   } catch {} // the restore file is what matters; the reading copy is a bonus
+  // Renamed book or switched language today: the morning's pair had other names. Still one pair per day.
+  for (const [k, uri] of Object.entries(state.files ?? {})) {
+    if (k.startsWith(day) && files[k] && uri !== files[k]) { try { new File(uri).delete(); } catch {} }
+  }
   // Only today's entries are needed; older days' files stay in the folder untouched.
-  await update({ files, last: { at: new Date().toISOString(), place: state.place || "" }, failed: undefined });
+  await update({ files, sig: sig(book), last: { at: new Date().toISOString(), place: state.place || "" }, failed: undefined });
 }
 
 /** Back up now. Resolves with the new state; throws if it didn't work. */
@@ -189,7 +229,8 @@ function schedule(delay: number) {
 /** Every save of the book comes through here. */
 export function bookChanged(book: unknown) {
   latest = book;
-  dirty = true;
+  dirty = !unchanged(book);
+  if (!dirty) { if (timer) { clearTimeout(timer); timer = null; } return; }
   if (state.dir && state.auto !== false) schedule(AUTO_DELAY);
 }
 
