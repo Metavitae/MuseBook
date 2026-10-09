@@ -17,6 +17,7 @@ export interface BackupState {
   last?: { at: string; place: string }; // last good backup
   failed?: string; // when the last try failed (cleared by a good one)
   files?: Record<string, string>; // "YYYY-MM-DD" → restore file written that day; "YYYY-MM-DD-read" → reading copy
+  names?: Record<string, string>; // same keys as files: the name that file was given
   sig?: string; // fingerprint of the book in the last good backup
 }
 
@@ -134,7 +135,7 @@ export async function chooseFolder() {
   } catch {
     return false;
   }
-  await update({ dir: dir.uri, place: placeName(dir.uri), files: {}, sig: undefined, failed: undefined }); // a new place gets a first backup
+  await update({ dir: dir.uri, place: placeName(dir.uri), files: {}, names: {}, sig: undefined, failed: undefined }); // a new place gets a first backup
   return true;
 }
 
@@ -148,18 +149,24 @@ async function writeVerified(dir: Directory, name: string, text: string, mime = 
   return f;
 }
 
-/** Today's file by this name: the one we wrote earlier today, else one already in the folder. */
-function findToday(dir: Directory, name: string, known?: string) {
-  if (known) {
-    try { const f = new File(known); if (f.exists && f.name === name) return f; } catch {}
+/** Today's file by this name: the one we wrote earlier today, else one already in the folder.
+ *  In Drive a file's uri is an id, not its name, so names come from the folder listing:
+ *  info().files and list() walk the folder in the same order. */
+function findToday(dir: Directory, name: string, known?: { uri?: string; name?: string }) {
+  if (known?.uri && known.name === name) {
+    try { const f = new File(known.uri); if (f.exists) return f; } catch {}
   }
   try {
-    for (const x of dir.list()) if (x instanceof File && x.name === name) return x;
+    const names = dir.info().files ?? [], items = dir.list();
+    if (names.length === items.length) {
+      const i = names.indexOf(name), x = items[i];
+      if (i >= 0 && x instanceof File) return x;
+    }
   } catch {}
   return null;
 }
 /** Write over today's file if it's there (read back to check), otherwise make it. */
-async function writeOver(dir: Directory, name: string, text: string, mime: string, known?: string) {
+async function writeOver(dir: Directory, name: string, text: string, mime: string, known?: { uri?: string; name?: string }) {
   const old = findToday(dir, name, known);
   if (old) {
     try {
@@ -180,18 +187,22 @@ async function runBackup(book: unknown) {
   // and a clean reading copy of the book for the writer.
   // Names say who each file is for: the writer's copy to read, the app's file to restore.
   const es = spanish(book);
-  const f = await writeOver(dir, `${safeTitle(book)} - ${es ? "respaldo de la app, no abrir" : "app backup, don't open"} - ${day}.json`, wrap(book), "application/json", state.files?.[day]);
-  const files: Record<string, string> = { [day]: f.uri };
+  const known = (k: string) => ({ uri: state.files?.[k], name: state.names?.[k] });
+  const name = `${safeTitle(book)} - ${es ? "respaldo de la app, no abrir" : "app backup, don't open"} - ${day}.json`;
+  const f = await writeOver(dir, name, wrap(book), "application/json", known(day));
+  const files: Record<string, string> = { [day]: f.uri }, names: Record<string, string> = { [day]: name };
   try {
-    const r = await writeOver(dir, `${safeTitle(book)} - ${es ? "TU LIBRO" : "YOUR BOOK"} - ${day}.txt`, readable(book), "text/plain", state.files?.[day + "-read"]);
+    const readName = `${safeTitle(book)} - ${es ? "TU LIBRO" : "YOUR BOOK"} - ${day}.txt`;
+    const r = await writeOver(dir, readName, readable(book), "text/plain", known(day + "-read"));
     files[day + "-read"] = r.uri;
+    names[day + "-read"] = readName;
   } catch {} // the restore file is what matters; the reading copy is a bonus
   // Renamed book or switched language today: the morning's pair had other names. Still one pair per day.
   for (const [k, uri] of Object.entries(state.files ?? {})) {
     if (k.startsWith(day) && files[k] && uri !== files[k]) { try { new File(uri).delete(); } catch {} }
   }
   // Only today's entries are needed; older days' files stay in the folder untouched.
-  await update({ files, sig: sig(book), last: { at: new Date().toISOString(), place: state.place || "" }, failed: undefined });
+  await update({ files, names, sig: sig(book), last: { at: new Date().toISOString(), place: state.place || "" }, failed: undefined });
 }
 
 /** Back up now. Resolves with the new state; throws if it didn't work. */
