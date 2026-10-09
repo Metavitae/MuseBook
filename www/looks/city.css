@@ -35,6 +35,10 @@
 @keyframes ctsweep{0%,100%{transform:rotate(14deg)} 50%{transform:rotate(48deg)}}
 :root[data-mood="city"] .ct-rain i{position:absolute; top:0; width:1px; height:46px; background:linear-gradient(180deg, rgba(220,230,225,0), rgba(220,230,225,.45)); animation:ctrain 1.6s linear infinite}
 @keyframes ctrain{0%{transform:translateY(-60px) rotate(12deg)} 100%{transform:translateY(110vh) rotate(12deg)}}
+:root[data-mood="city"] .ct-post{position:absolute; bottom:-34px; width:30px; height:112px}
+:root[data-mood="city"] .ct-post.l{left:-2px} :root[data-mood="city"] .ct-post.r{right:-2px}
+:root[data-mood="city"] .ct-lm{animation:ctlamp 5s ease-in-out infinite}
+@keyframes ctlamp{0%,100%{opacity:.8} 50%{opacity:1}}
 
 /* ---- header: the Metro glass canopy with warm lamps ---- */
 :root[data-mood="city"] header{

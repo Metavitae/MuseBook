@@ -81,8 +81,22 @@
 :root[data-mood="celestial"] .g-stamp{border:0; transform:none; font-family:'Cinzel',serif; color:#fdf4d6; text-shadow:0 0 24px rgba(240,213,138,.8); animation:grise 1.2s ease-out both}
 :root[data-mood="city"] .g-stamp{border:0; transform:none; font-family:'Limelight',serif; font-size:56px; color:#e6c887; text-shadow:0 0 22px rgba(240,200,120,.55)}
 :root[data-mood="shore"] .g-stamp{border:0; transform:none; font-family:'Cormorant Garamond',serif; font-style:italic; color:#2f8a85; animation:grise 1.2s ease-out both}
-:root[data-mood="room"] .g-stamp{border:0; transform:none; font-family:'Newsreader',serif; color:#a5482e; letter-spacing:.04em; animation:grise 1s ease-out both}
+:root[data-mood="room"] .g-stamp{border:0; transform:none; font-family:'Newsreader',serif; color:#a5482e; letter-spacing:.04em; animation:gsettle .8s ease-out both}
 @keyframes grise{0%{transform:translateY(24px); opacity:0} 100%{transform:translateY(0); opacity:1}}
+@keyframes gsettle{0%{transform:translateY(-14px); opacity:0} 100%{transform:translateY(0); opacity:1}}
+/* Calm Shore: the chapter goes into a bottle that rocks on the swell (still in Calm) */
+.g-bottle{display:none; max-width:100%; height:auto; margin:0 auto -6px;
+  -webkit-mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent),linear-gradient(180deg,#000 62%,transparent); -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent),linear-gradient(180deg,#000 62%,transparent); mask-composite:intersect}
+:root[data-mood="shore"] .g-bottle{display:block}
+:root[data-mood="shore"] .g-done .g-bell, :root[data-mood="shore"] .g-done .g-stamp{display:none}
+.g-bb{animation:gbob 6s ease-in-out infinite; transform-origin:170px 106px}
+.g-rp{animation:gripple 4s ease-out infinite; transform-origin:170px 106px}
+.g-sw{animation:gswell 7s ease-in-out infinite}
+@keyframes gbob{0%,100%{transform:translateY(0) rotate(-7deg)} 50%{transform:translateY(6px) rotate(-2deg)}}
+@keyframes gripple{0%{transform:scale(.4); opacity:.8} 100%{transform:scale(1.5); opacity:0}}
+@keyframes gswell{0%,100%{transform:translateX(0)} 50%{transform:translateX(-22px)}}
+@media (prefers-reduced-motion: reduce){ .g-bb, .g-rp, .g-sw{animation:none} }
 .g-well{font-family:var(--font-display); font-size:24px; line-height:1.25; color:var(--text); margin:8px 18px 0}
 .g-donesheet{margin-top:6px}
 .g-cap{font-family:var(--font-display); font-size:11px; letter-spacing:.2em; color:var(--accent); margin:14px 0 8px}
