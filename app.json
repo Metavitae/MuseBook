@@ -4,6 +4,7 @@
     "slug": "musebook",
     "version": "0.1.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "backgroundColor": "#f6f2e9",
     "ios": {
@@ -13,6 +14,11 @@
     "android": {
       "package": "com.metavitae.musebook",
       "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png",
+        "backgroundColor": "#14246b"
+      },
       "softwareKeyboardLayoutMode": "resize",
       "predictiveBackGestureEnabled": false
     },
