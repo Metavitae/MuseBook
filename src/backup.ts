@@ -60,7 +60,8 @@ async function update(patch: Partial<BackupState>) {
   await persist(state);
 }
 
-const today = () => new Date().toISOString().slice(0, 10);
+// The phone's own date (toISOString is UTC: in Mexico every evening backup was dated tomorrow).
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
 function safeTitle(book: any) {
   const t = String(book?.contract?.title || "").trim() || "libro";
   return t.replace(/[\\/:*?"<>|\n\r]+/g, "-").slice(0, 60);
