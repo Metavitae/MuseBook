@@ -141,3 +141,6 @@
 .g-choice.g-scene span{font-size:15px}
 /* Writing more in a finished part */
 .g-reopen{margin:6px 0 0; font-size:13px; color:var(--accent)}
+
+/* Welcome: the gear sits alone at the top right */
+.g-top.g-topright{justify-content:flex-end}

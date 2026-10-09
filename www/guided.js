@@ -142,7 +142,8 @@ function renderLayer(){
 
 /* ---------- screens ---------- */
 function welcome(){
-  return `<div class="g-center">
+  return `<div class="g-own g-top g-topright"><button class="gearbtn g-key" data-g="settings" aria-label="${L("Settings","Ajustes")}">⚙</button></div>
+    <div class="g-center">
     <div class="g-brand">MuseBook</div>
     <h1 class="g-h1">${L("Write your book","Escribe tu libro")}</h1>
     <p class="g-lead">${L("Everything stays on your phone. Write at your pace; I'll ask small questions only when you want them.","Todo se queda en tu teléfono. Escribe a tu ritmo; solo te haré preguntas pequeñas cuando tú quieras.")}</p>
@@ -151,6 +152,7 @@ function welcome(){
       <p class="g-sub">${L("Takes about a minute to set up. Then you write.","Toma como un minuto. Después escribes.")}</p>
       <button class="ghost g-big" data-g="paste">${L("I already have text","Ya tengo texto")}</button>
       <p class="g-sub">${L("Paste it. I'll find the chapters and ask before changing anything.","Pégalo. Buscaré los capítulos y te preguntaré antes de cambiar nada.")}</p>
+      <button class="g-link" data-g="restore">${L("Bring back a book from a backup","Recuperar un libro de un respaldo")}</button>
     </div></div>`;
 }
 function question(){
@@ -444,6 +446,7 @@ async function act(a, el){
     case "toPage": DB.ui.gStarted=true; save(); return show("page");
     case "chapters": snd("chapters"); return show("chapters");
     case "settings": return show("settings");
+    case "restore": { const b=document.getElementById("restoreBtn"); if(b) b.click(); return; }
     case "open": { const j=+el.dataset.i; DB.ui.scene=j; save(); const multi=DB.scenes.filter(x=>partKey(x)===partKey(DB.scenes[j])).length>1 && !DB.ui.gMultiSeen; show("page"); if(multi){ DB.ui.gMultiSeen=true; save(); sheet="multi"; renderLayer(); } return; }
     case "done": commitEditor(); show("done"); ring(); museOfferOnce(); return;
     case "keep": return show("page");

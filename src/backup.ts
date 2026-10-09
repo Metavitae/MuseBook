@@ -14,7 +14,7 @@ export interface BackupState {
   auto?: boolean; // back up when the writer stops writing (default on)
   last?: { at: string; place: string }; // last good backup
   failed?: string; // when the last try failed (cleared by a good one)
-  files?: Record<string, string>; // "YYYY-MM-DD" → file uri written that day
+  files?: Record<string, string>; // "YYYY-MM-DD" → restore file written that day; "YYYY-MM-DD-read" → reading copy
 }
 
 const SAFETY_DIR = FileSystem.documentDirectory + "safety/";
@@ -54,6 +54,54 @@ function wrap(book: unknown) {
   return JSON.stringify({ _musebook: { app: "MuseBook", format: 1, saved: new Date().toISOString() }, ...(book as object) }, null, 1);
 }
 
+/** The writer's language: their choice in the app, else the phone's. */
+function spanish(book: any) {
+  const l = book?.ui?.lang || book?.ui?.shownLang; // chosen in the app, else what the app shows
+  if (l) return l === "es";
+  try { return /^es/i.test(Intl.DateTimeFormat().resolvedOptions().locale); } catch { return false; }
+}
+/** The reading copy: just the book, in reading order, as plain text anyone can open.
+ *  Dedication, prologue, chapters by number, epilogue; scenes in their order. */
+function readable(book: any) {
+  const es = spanish(book), c = book?.contract || {};
+  const KIND: Record<string, [string, string]> = { dedication: ["Dedication", "Dedicatoria"], prologue: ["Prologue", "Prólogo"], epilogue: ["Epilogue", "Epílogo"] };
+  const key = (s: any) => (KIND[s.kind] ? "#" + s.kind : String(s.chapter || "").trim() || "—");
+  const rank = (k: string) => (k === "#dedication" ? 0 : k === "#prologue" ? 1 : k === "#epilogue" ? 3 : 2);
+  const scenes: any[] = (book?.scenes || []).filter((s: any) => String(s.text || "").trim());
+  const keys = [...new Set(scenes.map(key))].sort((a, b) => {
+    const r = rank(a) - rank(b); if (r) return r;
+    const na = parseFloat(a), nb = parseFloat(b);
+    return !isNaN(na) && !isNaN(nb) ? na - nb : a.localeCompare(b);
+  });
+  const clean = (t: string) => String(t || "").trim().replace(/[.\s]+$/, "");
+  const same = (a: string, b: string) => a.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "") === b.toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+  const out: string[] = [];
+  const title = String(c.title || "").trim() || (es ? "Mi libro" : "My book");
+  out.push(title.toUpperCase());
+  if (String(c.subtitle || "").trim()) out.push(String(c.subtitle).trim());
+  if (String(c.author || "").trim()) out.push((es ? "por " : "by ") + String(c.author).trim());
+  const words = scenes.reduce((n, s) => n + (String(s.text).trim().match(/\S+/g) || []).length, 0);
+  out.push("", (es ? "Copia para leer · " : "Reading copy · ") + new Date().toLocaleDateString(es ? "es-MX" : "en-US", { day: "numeric", month: "long", year: "numeric" }) + " · " + words.toLocaleString("en-US") + (es ? " palabras" : " words"), "");
+  keys.forEach((k) => {
+    const group = scenes.filter((s) => key(s) === k);
+    const head = k[0] === "#" ? KIND[k.slice(1)][es ? 1 : 0] : (es ? "Capítulo " : "Chapter ") + k;
+    out.push("", "", head.toUpperCase(), "");
+    group.forEach((s, i) => {
+      const t = clean(s.title);
+      let text = String(s.text).trim();
+      // The writer often starts the text with the same heading ("Prólogo", "Nora."): print it once.
+      const first = text.split("\n")[0];
+      const repeats = first.length < 60 && (same(first, head) || (t && same(first, t)));
+      if (repeats) text = text.slice(first.length).trim();
+      if (t && !/^(scene|escena)\s*\d+$/i.test(t) && !same(t, head)) out.push(t, "");
+      else if (group.length > 1) out.push((es ? "Escena " : "Scene ") + (i + 1), "");
+      out.push(text.replace(/\n{3,}/g, "\n\n"), "");
+      if (i < group.length - 1) out.push("* * *", "");
+    });
+  });
+  return out.join("\n").replace(/\n{4,}/g, "\n\n\n") + "\n";
+}
+
 /** A readable name for the folder the writer picked. */
 function placeName(uri: string) {
   if (uri.includes("com.google.android.apps.docs")) return "Google Drive";
@@ -73,8 +121,8 @@ export async function chooseFolder() {
   return true;
 }
 
-async function writeVerified(dir: Directory, name: string, text: string) {
-  const f = dir.createFile(name, "application/json");
+async function writeVerified(dir: Directory, name: string, text: string, mime = "application/json") {
+  const f = dir.createFile(name, mime);
   f.write(text);
   if ((await f.text()) !== text) {
     try { f.delete(); } catch {}
@@ -87,13 +135,21 @@ async function runBackup(book: unknown) {
   if (!state.dir) throw new Error("no folder");
   const dir = new Directory(state.dir);
   const day = today();
-  const old = state.files?.[day];
-  if (old) {
-    try { new File(old).delete(); } catch {} // gone already is fine
+  for (const k of [day, day + "-read"]) {
+    const old = state.files?.[k];
+    if (old) { try { new File(old).delete(); } catch {} } // gone already is fine
   }
+  // Two files: the one the app restores from (everything: cards, settings, looks),
+  // and a clean reading copy of the book for the writer.
   const f = await writeVerified(dir, `${safeTitle(book)}-respaldo-${day}.json`, wrap(book));
-  // Only today's entry is needed; older days' files stay in the folder untouched.
-  await update({ files: { [day]: f.uri }, last: { at: new Date().toISOString(), place: state.place || "" }, failed: undefined });
+  const files: Record<string, string> = { [day]: f.uri };
+  try {
+    const es = spanish(book);
+    const r = await writeVerified(dir, `${safeTitle(book)} - ${es ? "para leer" : "to read"} - ${day}.txt`, readable(book), "text/plain");
+    files[day + "-read"] = r.uri;
+  } catch {} // the restore file is what matters; the reading copy is a bonus
+  // Only today's entries are needed; older days' files stay in the folder untouched.
+  await update({ files, last: { at: new Date().toISOString(), place: state.place || "" }, failed: undefined });
 }
 
 /** Back up now. Resolves with the new state; throws if it didn't work. */
