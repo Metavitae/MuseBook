@@ -130,3 +130,14 @@
 @media (prefers-reduced-motion: reduce){ .g-bell, .g-stamp{animation:none} }
 /* Messages never cover the main step at the bottom */
 :root[data-guided="1"] #toast{bottom:104px}
+
+/* "Your chapters": the part you are writing now is outlined and says so */
+.g-nowtag{position:absolute; right:12px; bottom:8px; font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); font-weight:600}
+.g-row{position:relative}
+/* Buttons that name where they lead can be long: let them wrap */
+.g-keylong{white-space:normal; text-align:left; line-height:1.25; max-width:calc(100% - 64px)}
+/* "Keep writing" list: scenes sit under their chapter */
+.g-choice.g-scene{margin-left:22px; width:calc(100% - 22px); min-height:48px}
+.g-choice.g-scene span{font-size:15px}
+/* Writing more in a finished part */
+.g-reopen{margin:6px 0 0; font-size:13px; color:var(--accent)}

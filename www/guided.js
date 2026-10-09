@@ -24,10 +24,47 @@ function label(s){
   if(s.kind==="prologue") return L("Prologue","Prólogo");
   if(s.kind==="epilogue") return L("Epilogue","Epílogo");
   if(s.kind==="dedication") return L("Dedication","Dedicatoria");
-  return s.chapter ? L("Chapter ","Capítulo ")+s.chapter : L("Untitled part","Parte sin nombre");
+  return s.chapter ? units().one+" "+s.chapter : L("Untitled part","Parte sin nombre");
 }
 const title=s=> MBX.guidedTitle(s);
 const wc=s=> words(s.text||"");
+// What kind of book this is, read from the genre the writer typed (free text, EN or ES).
+function bookKind(){
+  const g=(DB.contract.genre||"").toLowerCase();
+  if(/screenplay|guion|guión|script/.test(g)) return "screen";
+  if(/\bplay\b|teatro|obra de teatro|dramaturg/.test(g)) return "play";
+  if(/children|picture book|infantil|niñ[oa]s/.test(g)) return "kids";
+  if(/memoir|memoria|autobiogra|biogra|non-?fiction|no ?ficci|ensayo|essay|cr[oó]nica/.test(g)) return "memoir";
+  return "fiction";
+}
+// The writer's words for the big part and the small part inside it.
+function units(){
+  const k=bookKind();
+  if(k==="play") return {one:L("Act","Acto"), many:L("acts","actos"), sub:L("Scene","Escena")};
+  if(k==="screen") return {one:L("Sequence","Secuencia"), many:L("sequences","secuencias"), sub:L("Scene","Escena")};
+  if(k==="kids") return {one:L("Page","Página"), many:L("pages","páginas"), sub:""};
+  return {one:L("Chapter","Capítulo"), many:L("chapters","capítulos"), sub:L("Scene","Escena")};
+}
+// Parts in reading order, each with its scenes (indexes into DB.scenes).
+function groups(){
+  const out=[], at={};
+  ordered().forEach(i=>{ const k=partKey(DB.scenes[i]); if(!at[k]){ at[k]={key:k, ids:[]}; out.push(at[k]); } at[k].ids.push(i); });
+  return out;
+}
+// A scene's name: the writer's own title, else "Scene 2" by its place in the part.
+// A title that only repeats the part's name ("Prólogo" on the prologue) adds nothing.
+const same=(a,b)=>String(a).toLowerCase().replace(/[^\p{L}\p{N}]/gu,"")===String(b).toLowerCase().replace(/[^\p{L}\p{N}]/gu,"");
+const ownTitle=s=>{ const t=title(s); return t && !same(t,label(s)) ? t : ""; };
+function sceneName(i){
+  const t=ownTitle(DB.scenes[i]); if(t) return t;
+  const g=groups().find(g=>g.ids.includes(i)); return units().sub+" "+((g?g.ids.indexOf(i):0)+1);
+}
+// Where a button leads: "Chapter 1 · Mirtha" (scene named only when the part has several).
+function placeName(i){
+  const s=DB.scenes[i]; if(!s) return "";
+  const g=groups().find(g=>g.ids.includes(i)), several=g && g.ids.length>1, t=ownTitle(s);
+  return label(s)+(several ? " · "+sceneName(i) : (t ? " · "+t : ""));
+}
 function status(s){ return !wc(s) ? L("Empty","Vacío") : s.done ? L("Done","Terminado") : L("In progress","En progreso"); }
 // Reading order: dedication, prologue, chapters by number, epilogue; scenes keep their order inside a part.
 function ordered(){
@@ -130,6 +167,7 @@ function renderPage(r){
   let i=cur();
   if(i<0){ i=addChapter(); }
   const s=DB.scenes[i], w=wc(s), empty=!w;
+  pageStartWords=w;
   DB.ui.draftMode="write";
   r.innerHTML=`<div class="g-screen g-page">
     <div class="g-own g-top">
@@ -157,16 +195,26 @@ function bottomBar(w){
     ? `<button class="act g-big g-wide" data-g="done">${L("I'm done with this chapter","Terminé este capítulo")}</button>`
     : `<p class="g-hint">${L("Write a few lines. A button will appear here to show you what comes next.","Escribe unas líneas. Aquí aparecerá un botón que te dirá qué sigue.")}</p>`;
 }
+let pageStartWords=0;
 function onType(n){
   if(screen!=="page") return;
+  const cs=DB.scenes[cur()];
+  if(cs && cs.done && n>pageStartWords){ cs.done=false; save();
+    const st=document.querySelector(".g-status");
+    if(st && !document.getElementById("gReopen")) st.insertAdjacentHTML("afterend",`<p class="g-reopen" id="gReopen">${L("You wrote more, so this part is “In progress” again.","Escribiste más, así que esta parte está “En progreso” otra vez.")}</p>`); }
   const el=document.getElementById("gWords"); if(el) el.textContent=fmt(n)+" "+L(n===1?"word":"words",n===1?"palabra":"palabras");
   const b=document.getElementById("gBottom"); if(b){ const want=bottomBar(n); if(b.dataset.k!==String(n>=50||DB.scenes.length>1)){ b.innerHTML=want; b.dataset.k=String(n>=50||DB.scenes.length>1); } }
   const p=document.querySelector(".g-prompt"); if(p && n>0) p.remove();
 }
 
 function chapters(){
-  const ids=ordered(), total=totalWords();
-  const shown=ids.filter(i=>wc(DB.scenes[i])).length;
+  const ids=ordered(), total=totalWords(), u=units();
+  // Count parts, not scenes: chapters (acts, sequences, pages) plus any special pages.
+  const written=groups().filter(g=>g.ids.some(i=>wc(DB.scenes[i])));
+  const nMain=written.filter(g=>g.key[0]!=="#").length;
+  const specialNames=written.filter(g=>g.key[0]==="#").map(g=>label(DB.scenes[g.ids[0]]));
+  const countText=[`${fmt(nMain)} ${nMain===1?u.one.toLowerCase():u.many}`].concat(specialNames).join(" + ");
+  const c=cur(), backBtn= c>=0 && DB.ui.gStarted ? L("Keep writing: ","Seguir escribiendo: ")+placeName(c) : L("Back to writing","Volver a escribir");
   const rows=ids.map(i=>{
     const s=DB.scenes[i], st=status(s), num= s.kind ? "·" : esc(s.chapter||"·");
     return `<button class="item g-row ${s.done?"is-done":""} ${!wc(s)?"is-empty":""} ${i===DB.ui.scene?"is-cur":""}" data-g="open" data-i="${i}">
@@ -174,19 +222,20 @@ function chapters(){
       <span class="g-num">${num}</span>
       <span class="g-rowtxt"><span class="g-rowt">${esc(title(s)||label(s))}</span><span class="g-rows">${fmt(wc(s))} ${L("words","palabras")} · ${st}</span></span>
       ${s.done?`<span class="g-stamp-mini">${L("DONE","LISTO")}</span>`:""}
+      ${i===DB.ui.scene?`<span class="g-nowtag">${L("Writing now","Escribiendo ahora")}</span>`:""}
     </button>`;
   }).join("");
   const specials=[["dedication",L("Dedication","Dedicatoria")],["prologue",L("Prologue","Prólogo")],["epilogue",L("Epilogue","Epílogo")]].filter(([k])=>!DB.scenes.some(s=>s.kind===k));
   const ideas=(DB.ideas||[]).map((it,j)=>`<div class="card g-idea"><p class="g-ideat">${esc(it.text)}</p><p class="g-sub">${esc(it.where==="loose"||!it.where?L("Loose idea","Idea suelta"):L("For ","Para ")+it.where)}</p>
       <div class="btns"><button class="ghost" data-g="ideaStart" data-j="${j}">${L("Start writing from this","Empezar a escribir con esto")}</button><button class="mini" data-g="ideaDel" data-j="${j}">${L("Remove","Quitar")}</button></div></div>`).join("");
   return `<div class="g-own g-top">
-      <button class="iconbtn g-key" data-g="toPage">‹ ${L("Back to my page","Volver a mi página")}</button>
+      <button class="iconbtn g-key g-keylong" data-g="toPage">‹ ${esc(backBtn)}</button>
       <button class="gearbtn g-key" data-g="settings" aria-label="${L("Settings","Ajustes")}">⚙</button></div>
     <h1 class="g-h1 g-left">${L("Your chapters","Tus capítulos")}</h1>
     <label class="g-lbl">${L("Book title · tap to rename","Título del libro · tócalo para cambiarlo")}</label>
     <input class="g-field g-titlefield" data-gi="booktitle" value="${esc(bookTitle())}" placeholder="${esc(L("Name your book","Ponle nombre a tu libro"))}">
     ${DB.premise.logline?`<p class="g-logline">“${esc(DB.premise.logline.slice(0,160))}”</p>`:""}
-    <p class="g-sub">${fmt(shown)} ${L(shown===1?"chapter":"chapters",shown===1?"capítulo":"capítulos")} · ${fmt(total)} ${L("words","palabras")}. ${L("Tap a chapter to keep writing it. Everything is saved on this phone.","Toca un capítulo para seguir escribiéndolo. Todo se guarda en este teléfono.")}</p>
+    <p class="g-sub">${esc(countText)} · ${fmt(total)} ${L("words","palabras")}. ${L("Tap a chapter to keep writing it. Everything is saved on this phone.","Toca un capítulo para seguir escribiéndolo. Todo se guarda en este teléfono.")}</p>
     <div class="g-rowsbox">${rows}</div>
     ${specials.length?`<p class="g-sub g-spec">${L("Add a page that goes before or after your chapters:","Agrega una página que va antes o después de tus capítulos:")}</p><div class="btns">${specials.map(([k,n])=>`<button class="ghost" data-g="special" data-k="${k}">+ ${n}</button>`).join("")}</div>`:""}
     ${ideas?`<h3 class="g-h3">${L("Your ideas","Tus ideas")}</h3>${ideas}`:""}
@@ -201,10 +250,8 @@ function done(){
   const i=cur(), s=DB.scenes[i]||{}, w=wc(s);
   const st=(window.MuseBackup&&MuseBackup.state)||{};
   const safe= st.last ? L("Safe on this phone. Last copy to ","A salvo en este teléfono. Última copia en ")+(st.last.place==="phone"?L("your phone","tu teléfono"):st.last.place)+": "+backupWhen(st.last.at)+"." : L("Safe on this phone.","A salvo en este teléfono.");
-  const others=ordered().filter(j=>j!==i && !DB.scenes[j].done);
-  const keep=others.map(j=>{ const o=DB.scenes[j], ow=wc(o);
-    return `<button class="ghost g-choice" data-g="goChapter" data-i="${j}"><span>${L("Continue ","Seguir con ")}${esc(label(o))}${title(o)?" · "+esc(title(o)):""}</span><small>${ow?L("In progress, ","En progreso, ")+fmt(ow)+" "+L("words.","palabras."):L("Not started yet.","Sin empezar.")}</small></button>`; }).join("");
-  const q=nextCard(s);
+  const keep=keepList(i);
+  const shore=document.documentElement.getAttribute("data-mood")==="shore";
   return `<div class="g-moment">
       <svg class="g-bell" width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 17V11a6 6 0 0112 0v6l1.5 2h-15z"/><path d="M10 21a2 2 0 004 0"/></svg>
       <svg class="g-bottle" width="330" height="190" viewBox="0 0 330 190" aria-hidden="true"><defs><linearGradient id="gbGl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfeee4" stop-opacity=".85"/><stop offset=".55" stop-color="#7fc4b0" stop-opacity=".7"/><stop offset="1" stop-color="#3f8f80" stop-opacity=".8"/></linearGradient><linearGradient id="gbWt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5cc0b8" stop-opacity=".8"/><stop offset="1" stop-color="#1f7a7c" stop-opacity=".94"/></linearGradient></defs>
@@ -212,18 +259,32 @@ function done(){
         <g class="g-bb"><path d="M88 92 C 88 78, 100 72, 118 72 L 196 72 C 214 72, 222 82, 240 90 L 286 94 L 286 118 L 240 122 C 222 130, 214 140, 196 140 L 118 140 C 100 140, 88 134, 88 120 Z" fill="url(#gbGl)" stroke="#2f7a6e" stroke-width="3" stroke-linejoin="round"/><path d="M100 118 C 112 124, 130 126, 150 126" fill="none" stroke="#2f7a6e" stroke-width="2" opacity=".5"/><rect x="286" y="90" width="9" height="32" rx="3" fill="#b9d9cf" stroke="#2f7a6e" stroke-width="2.5"/><rect x="294" y="97" width="22" height="18" rx="4" fill="#c9a06a" stroke="#8d6a3c" stroke-width="2.5"/><g transform="rotate(-4 150 106)"><rect x="112" y="92" width="72" height="30" rx="5" fill="#fbf0d6" stroke="#c9b184" stroke-width="2"/><path d="M120 101h54M120 108h54M120 115h34" stroke="#9c8660" stroke-width="2" stroke-linecap="round"/><path d="M112 107 h-4 M184 107 h4" stroke="#d9644d" stroke-width="5" stroke-linecap="round"/></g><path d="M108 82 C 120 76, 150 76, 176 78" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".75"/><path d="M232 96 C 242 98, 262 99, 280 99" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/></g>
         <g class="g-sw"><path d="M-30 104 Q 10 92 50 104 T 130 104 T 210 104 T 290 104 T 370 104 V190 H-30z" fill="url(#gbWt)"/><path d="M-30 104 Q 10 92 50 104 T 130 104 T 210 104 T 290 104 T 370 104" fill="none" stroke="rgba(255,255,255,.95)" stroke-width="3" stroke-linecap="round"/></g></svg>
       <div class="g-stamp">${L("DONE","LISTO")}</div>
-      <div class="g-lab">${esc(label(s))}${title(s)?" · "+esc(title(s)):""}</div>
-      <div class="g-well">${document.documentElement.getAttribute("data-mood")==="shore"?L("Well done. Your chapter is in the bottle.","Bien hecho. Tu capítulo está en la botella."):L("Well done. That chapter is written.","Bien hecho. Ese capítulo está escrito.")}</div>
+      <div class="g-lab">${esc(placeName(i))}</div>
+      <div class="g-well">${shore?L("Well done. Your chapter is in the bottle.","Bien hecho. Tu capítulo está en la botella."):L("Well done. That chapter is written.","Bien hecho. Ese capítulo está escrito.")}</div>
       <p class="g-sub">${fmt(w)} ${L("words.","palabras.")} ${esc(safe)}</p>
     </div>
     <div class="g-donesheet card">
       ${keep?`<div class="g-cap">${L("KEEP WRITING SOMETHING IN PROGRESS","SEGUIR CON ALGO EN PROGRESO")}</div><div class="g-stack">${keep}</div>`:""}
       <div class="g-cap">${L("OR START SOMETHING NEW","O EMPEZAR ALGO NUEVO")}</div>
-      <button class="act g-choice" data-g="newChapter"><span>${L("Start a new chapter","Empezar un capítulo nuevo")}</span><small>${L("Opens a blank page called ","Abre una página en blanco llamada ")}${L("Chapter ","Capítulo ")}${nextNum()}. ${esc(label(s))} ${L("stays as it is.","se queda como está.")}</small></button>
-      ${q?`<button class="ghost g-choice" data-g="card"><span>${L("Answer a quick question","Responder una pregunta rápida")}</span><small>${L("One small question that shows what this chapter does.","Una pregunta pequeña que muestra lo que hace este capítulo.")}</small></button>`:""}
+      <button class="act g-choice" data-g="newChapter"><span>${L("Start a new ","Empezar ")+(bookKind()==="kids"?L("page","una página nueva"):bookKind()==="play"?L("act","un acto nuevo"):bookKind()==="screen"?L("sequence","una secuencia nueva"):L("chapter","un capítulo nuevo"))}</span><small>${L("Opens a blank page called ","Abre una página en blanco llamada ")}${units().one} ${nextNum()}. ${esc(label(s))} ${L("stays as it is.","se queda como está.")}</small></button>
       <button class="ghost g-choice" data-g="finish"><span>${L("I'm finished with my whole book","Terminé todo mi libro")}</span><small>${L("Shows how to read it, make a file and keep a safe copy.","Te muestra cómo leerlo, hacer un archivo y guardar una copia segura.")}</small></button>
-      <button class="g-link" data-g="keep">${L("Keep writing ","Seguir escribiendo ")}${esc(label(s))}</button>
+      <button class="g-link" data-g="keep">${L("Not finished yet? Keep writing ","¿Aún no terminas? Seguir escribiendo ")}${esc(placeName(i))}</button>
     </div>`;
+}
+// "Keep writing" list: each part once as a heading (total words, in progress / done),
+// its unfinished scenes indented underneath. The part just finished is left out.
+function keepList(cur){
+  const u=units();
+  return groups().map(g=>{
+    const open=g.ids.filter(j=>j!==cur && !DB.scenes[j].done);
+    if(!open.length) return "";
+    const s0=DB.scenes[g.ids[0]], tw=g.ids.reduce((n,j)=>n+wc(DB.scenes[j]),0);
+    const st= g.ids.every(j=>DB.scenes[j].done) ? L("Done","Terminado") : tw ? L("In progress","En progreso") : L("Not started yet","Sin empezar");
+    const several=g.ids.length>1 && u.sub;
+    const head=`<button class="ghost g-choice g-parthead" data-g="goChapter" data-i="${open[0]}"><span>${L("Continue ","Seguir con ")}${esc(label(s0))}${!several&&ownTitle(s0)?" · "+esc(ownTitle(s0)):""}</span><small>${fmt(tw)} ${L("words","palabras")} · ${st}</small></button>`;
+    const subs= several ? open.map(j=>`<button class="ghost g-choice g-scene" data-g="goChapter" data-i="${j}"><span>${esc(sceneName(j))}</span><small>${fmt(wc(DB.scenes[j]))} ${L("words","palabras")}</small></button>`).join("") : "";
+    return head+subs;
+  }).join("");
 }
 
 function back(){
@@ -320,7 +381,18 @@ const CARDS=[
   {f:"conflict", h:["What stands in the way?","¿Qué se lo impide?"], why:["Without an obstacle there is no story, only a list of events.","Sin un obstáculo no hay historia, solo una lista de sucesos."], ex:["E.g.: The bus is already leaving.","Ej.: El camión ya se va."]},
   {f:"outcome", h:["What changes by the end?","¿Qué cambia al final?"], why:["A chapter earns its place when something is different after it.","Un capítulo se gana su lugar cuando algo es distinto después."], ex:["E.g.: She gets on, but now she has to lie.","Ej.: Se sube, pero ahora tiene que mentir."]}
 ];
-function nextCard(s){ return CARDS.find(c=>!(s[c.f]||"").trim() && !((s.cardsSkipped||[]).includes(c.f))); }
+// Only one question now, asked when a new chapter starts: who it is about. Never for
+// a dedication, prologue or epilogue. The example is a hint in the empty box only.
+function nextCard(s){ const c=CARDS[0]; return !s.kind && !(s[c.f]||"").trim() && !((s.cardsSkipped||[]).includes(c.f)) ? c : null; }
+function centerCard(){
+  const u=units().one.toLowerCase(), est=/secuencia|página/.test(u)?"esta":"este";
+  if(bookKind()==="memoir") return {h:L("Who are you remembering in this "+u+"?","¿A quién recuerdas en "+est+" "+u+"?"),
+    ex:L("E.g.: My grandmother Rosa, the summer she taught me to cook.","Ej.: Mi abuela Rosa, el verano en que me enseñó a cocinar."),
+    why:L("Writing their name down helps you stay close to them while you write.","Escribir su nombre te ayuda a quedarte cerca de esa persona mientras escribes.")};
+  return {h:L("Who is at the center of this "+u+"?","¿Quién está en el centro de "+est+" "+u+"?"),
+    ex:L("E.g.: Ana, a girl late for school.","Ej.: Ana, una muchacha que llega tarde a la escuela."),
+    why:L("Every chapter works better when it moves around one person.","Todo capítulo funciona mejor cuando gira alrededor de una persona.")};
+}
 function sheetHtml(){
   const s=DB.scenes[cur()]||{};
   if(sheet==="idea") return `<h2>${L("Jot an idea","Anotar una idea")}</h2>
@@ -331,10 +403,10 @@ function sheetHtml(){
       <button class="ghost g-choice" data-g="ideaAttach"><span>${L("Attach it to ","Ponerla en ")}${esc(label(s))}</span><small>${L("It shows in your ideas list with this chapter's name.","Aparece en tu lista de ideas con el nombre de este capítulo.")}</small></button>
       <button class="ghost g-choice" data-g="ideaNew"><span>${L("Start a new chapter from it","Empezar un capítulo nuevo con ella")}</span><small>${L("Opens a new page with your idea at the top.","Abre una página nueva con tu idea arriba.")}</small></button>
       <button class="g-link" data-g="closeSheet">${L("Cancel","Cancelar")}</button></div>`;
-  if(sheet==="card"){ const c=nextCard(s); if(!c) return "";
-    return `<h2>${L(c.h[0],c.h[1])}</h2>
-    <textarea class="g-field" data-gi="cardText" rows="3" placeholder="${esc(L(c.ex[0],c.ex[1]))}"></textarea>
-    <p class="g-sub">${L(c.why[0],c.why[1])}</p>
+  if(sheet==="card"){ const c=nextCard(s); if(!c) return ""; const q=centerCard();
+    return `<h2>${esc(q.h)}</h2>
+    <textarea class="g-field" data-gi="cardText" rows="3" placeholder="${esc(q.ex)}"></textarea>
+    <p class="g-sub">${esc(q.why)}</p>
     <div class="btns"><button class="act" data-g="cardSave">${L("Save","Guardar")}</button><button class="ghost" data-g="cardSkip">${L("Not now","Ahora no")}</button></div>`; }
   if(sheet==="multi") return `<h2>${L("This chapter has several scenes","Este capítulo tiene varias escenas")}</h2>
     <p class="g-sub">${L("Each scene opens on its own page here. To see them side by side, use the full view.","Cada escena se abre aquí en su propia página. Para verlas juntas, usa la vista completa.")}</p>
@@ -375,11 +447,11 @@ async function act(a, el){
     case "done": commitEditor(); show("done"); ring(); museOfferOnce(); return;
     case "keep": return show("page");
     case "goChapter": markDone(i); DB.ui.scene=+el.dataset.i; save(); return show("page");
-    case "newChapter": if(screen==="done") markDone(i); addChapter(); snd("newChapter"); return show("page");
+    case "newChapter": { if(screen==="done") markDone(i); const n=addChapter(); snd("newChapter"); show("page");
+      if(nextCard(DB.scenes[n]) && !wc(DB.scenes[n])){ cardText=""; sheet="card"; renderLayer(); } return; }
     case "special": addSpecial(el.dataset.k); return show("page");
-    case "card": if(screen==="done") markDone(i); save(); cardText=""; sheet="card"; return renderLayer();
-    case "cardSave": { const c=nextCard(s); if(c && cardText.trim()){ s[c.f]=cardText.trim(); if(c.f==="pov") addPerson(cardText.trim()); save(); toast(L("Saved to your book","Guardado en tu libro")); } sheet=""; return show(screen==="done"?"page":screen); }
-    case "cardSkip": { const c=nextCard(s); if(c){ s.cardsSkipped=(s.cardsSkipped||[]).concat(c.f); save(); } sheet=""; return show(screen==="done"?"page":screen); }
+    case "cardSave": { const c=nextCard(s); if(c && cardText.trim()){ s[c.f]=cardText.trim(); if(c.f==="pov") addPerson(cardText.trim()); save(); toast(L("Saved to your book","Guardado en tu libro")); } sheet=""; return renderLayer(); }
+    case "cardSkip": { const c=nextCard(s); if(c){ s.cardsSkipped=(s.cardsSkipped||[]).concat(c.f); save(); } sheet=""; return renderLayer(); }
     case "finish": if(screen==="done") markDone(i); save(); snd("bookDone"); if(window.SND) SND.vibrate([30,80,30,80,60]); return show("finish");
     case "idea": commitEditor(); ideaText=""; sheet="idea"; return renderLayer();
     case "closeSheet": sheet=""; return renderLayer();
