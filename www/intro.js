@@ -3,6 +3,7 @@
    back from the background never replays it. Tap anywhere to skip.
    It starts the moment the page opens (this script sits right after #intro),
    and the book loads behind it; the page calls INTRO.after() for what follows.
+   In the phone app the app plays it instead (src/Intro.tsx); this page waits.
    Sound off: the video plays silent. Calm or reduce-motion: the final emblem
    as a still for 2 s instead. The video and still are packed in by build-www. */
 window.INTRO=(function(){
@@ -22,6 +23,13 @@ function start(o){
     ended=true; waiting.splice(0).forEach(f=>{ try{ f(); }catch(e){} });
   }
   if(!el){ finish(); return; }
+  // In the phone app the opening is played by the app itself, before this page has
+  // even loaded; just wait for it to end.
+  if(window.MuseNative && MuseNative.nativeIntro){
+    el.hidden=true;
+    MuseNative.introWait().then(finish, finish);
+    return;
+  }
   el.addEventListener("click", finish);
   const still = o.calm || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   if(still || !MP4){

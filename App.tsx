@@ -9,6 +9,7 @@ import * as Muse from "./src/muse";
 import * as Backup from "./src/backup";
 import * as Files from "./src/files";
 import * as IntentLauncher from "expo-intent-launcher";
+import { Intro } from "./src/Intro";
 import { loadBook, saveBook, loadPrefs, savePrefs, shareFile, type Prefs } from "./src/storage";
 
 const DRIVE_APP = "com.google.android.apps.docs";
@@ -24,6 +25,11 @@ interface Boot {
 
 export default function App() {
   const [boot, setBoot] = useState<Boot | null>(null);
+  // The opening plays as soon as the writer's sound and Calm settings are read;
+  // the page waits for it (introWait) before its own opening sound.
+  const [intro, setIntro] = useState<{ sound: boolean; calm: boolean } | null>(null);
+  const introOver = useRef(false);
+  const introWaiting = useRef<number[]>([]);
   const web = useRef<WebView>(null);
   const prefs = useRef<Prefs>({});
   // The page reports its atmosphere so the bars around it match.
@@ -31,9 +37,11 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
+      const book = await loadBook();
+      const ui = (book as { ui?: { sound?: boolean; calm?: boolean } } | null)?.ui ?? {};
+      setIntro({ sound: ui.sound !== false, calm: !!ui.calm });
       await Muse.init();
-      const [book, p, hasDrive] = await Promise.all([
-        loadBook(),
+      const [p, hasDrive] = await Promise.all([
         loadPrefs(),
         IntentLauncher.getApplicationIconAsync(DRIVE_APP).then(() => true, () => false),
       ]);
@@ -72,6 +80,11 @@ export default function App() {
   const reply = (id: number, ok: boolean, v: unknown) =>
     run(`window.__mb.reply(${id}, ${ok}, ${JSON.stringify(v ?? null)})`);
 
+  function introEnded() {
+    introOver.current = true;
+    introWaiting.current.splice(0).forEach((id) => reply(id, true, null));
+  }
+
   async function onMessage(e: WebViewMessageEvent) {
     let msg: { id: number; m: string; a: unknown[] };
     try {
@@ -97,6 +110,10 @@ export default function App() {
           return reply(id, true, null);
         case "backupSafety":
           return reply(id, true, await Backup.safetyCopy(a[0]));
+        case "introWait":
+          if (introOver.current) return reply(id, true, null);
+          introWaiting.current.push(id);
+          return;
         case "openDrive":
           // Opening the Drive app refreshes the list Android's file picker shows.
           IntentLauncher.openApplication(DRIVE_APP);
@@ -152,9 +169,13 @@ export default function App() {
     [boot],
   );
 
-  if (!boot) return <View style={{ flex: 1, backgroundColor: INTRO_WHITE }} />;
+  const opening = intro && (
+    <Intro sound={intro.sound} calm={intro.calm} onEnd={introEnded} onBars={(bg, dark) => setTheme({ bg, dark })} />
+  );
+  if (!boot) return <View style={{ flex: 1, backgroundColor: INTRO_WHITE }}>{opening}</View>;
 
   return (
+    <View style={{ flex: 1, backgroundColor: INTRO_WHITE }}>
     <SafeAreaProvider>
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }} edges={["top", "bottom"]}>
       <StatusBar style={theme.dark ? "light" : "dark"} />
@@ -175,5 +196,7 @@ export default function App() {
       />
     </SafeAreaView>
     </SafeAreaProvider>
+    {opening}
+    </View>
   );
 }

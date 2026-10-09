@@ -45,6 +45,8 @@ export function bridgeScript(book: any, status: MuseStatus, firstRunSeen: boolea
     firstRunSeen: ${firstRunSeen ? "true" : "false"},
     bootUi: (book && book.ui) || {}, // sound and Calm, so the opening can start before the page has the book
     hasDrive: ${hasDrive ? "true" : "false"},
+    nativeIntro: true, // the app plays the opening itself (src/Intro.tsx)
+    introWait: function(){ return call("introWait"); },
     openDrive: function(){ return call("openDrive"); },
     get status(){ return status; },
     onStatus: function(f){ listeners.push(f); f(status); },

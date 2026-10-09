@@ -31,12 +31,14 @@ html = html.replace(/env\(safe-area-inset-(top|bottom),0px\)/g, "0px");
   if (!snd.includes("/*SNDDATA*/{}")) throw new Error("sound data placeholder missing");
   fs.writeFileSync(new URL("www/.sound.built.js", root), snd.replace("/*SNDDATA*/{}", () => JSON.stringify(data)));
 }
-// The opening video and its Calm still (www/intro), packed into intro.js.
+// The opening's Calm still (www/intro), packed into intro.js.
 {
   const b64 = (f) => fs.readFileSync(new URL("www/intro/" + f, root)).toString("base64");
   let intro = fs.readFileSync(new URL("www/intro.js", root), "utf8");
   if (!intro.includes("/*INTROMP4*/") || !intro.includes("/*INTROSTILL*/")) throw new Error("intro placeholders missing");
-  intro = intro.replace("/*INTROMP4*/", () => b64("intro.mp4")).replace("/*INTROSTILL*/", () => b64("still.webp"));
+  // The phone app plays the video itself (src/Intro.tsx), so the page carries only
+  // the Calm still; leaving the 2 MB video out lets the page load faster.
+  intro = intro.replace("/*INTROMP4*/", () => "").replace("/*INTROSTILL*/", () => b64("still.webp"));
   fs.writeFileSync(new URL("www/.intro.built.js", root), intro);
 }
 // Guided mode and the file makers, each its own file.
