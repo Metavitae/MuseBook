@@ -71,7 +71,7 @@ const S={
   saved:[["chimeWood",0,.55]],
   muse:[["chime6",0,.6]],
   chapterDone:[["waveBreak",0,.9,1,"move"]],                // a wave breaks, moving past you
-  bookDone:[["waveBig",0,1,1,"move"],["thunder",.8,.55]]    // a big wave, thunder behind it
+  bookDone:[["waveBig",0,.7,1,"move"],["endShore",.8,.9]]   // a big wave rolls in, then a ukulele jingle (Chancla chose A, Oct 8)
  },
  city:{
   tap:[["126041",0,.35,1.4]],
@@ -83,7 +83,7 @@ const S={
   saved:[["register",0,.6]],
   muse:[["saxLick",0,.6]],
   chapterDone:[["cheerShort",0,.7]],
-  bookDone:[["saxStreet",0,.8],["cheerBig",4.5,.6]]
+  bookDone:[["cheerShort",0,.6],["endCity",.9,.9]]         // a short cheer, then a Paris café tune (Chancla chose B, Oct 8)
  },
  celestial:{
   tap:[["262958",0,.35]],
@@ -95,7 +95,7 @@ const S={
   saved:[["windup",0,.7]],
   muse:[["harp",0,.6]],
   chapterDone:[["400809",0,.8]],
-  bookDone:[["419594",0,.9],["400809",1.2,.6]]
+  bookDone:[["419594",0,.8],["endCelestial",1.2,.9]]       // wind chimes, then an angelic choir (Chancla chose C, Oct 8)
  },
  room:{
   tap:[["66397",0,.4,1.15]],
@@ -107,7 +107,7 @@ const S={
   saved:[["360949",0,.8]],
   muse:[["571513",0,.7]],
   chapterDone:[["teaPour",0,.8],["teacup",3.0,.8]],           // you've earned a cup of tea
-  bookDone:[["cork",0,.9],["champPour",.6,.8],["cheers",3.6,.9]] // the cork, the pour, two glasses
+  bookDone:[["cork",0,.9],["cheers",.8,.8],["endRoom",2.2,.85]] // the cork, two glasses, then a summer-night piano (Chancla chose B, Oct 8)
  }
 };
 // Background loops. Shore's waves move nearer and farther and side to side;

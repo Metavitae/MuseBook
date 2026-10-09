@@ -5,6 +5,7 @@ Every recording below is **CC0 (public domain)** on Freesound. CC0 was checked o
 - Originals (Freesound high-quality previews, MP3): `Art/Source/Sounds/<id>.mp3`
 - Versions used (trimmed, levelled, Opus): `Art/Working/Sounds/`. Named cuts (waveBreak, cityLoop, saxStreet…) come from the ids noted in sound.js.
 - jazzA–jazzD: four noir jazz candidates for the end of the book. Chancla chose B, "A Sinful City" (Oct 8); it ships as jazz.ogg.
+- End-of-book music for the other looks (Chancla chose Oct 8): endShore = 389758, endCity = 636035, endCelestial = 434700, endRoom = 577844. The other candidates are in `Art/Working/Sounds/End music candidates/`.
 
 | id | Recording | Author | Licence | Link |
 |---|---|---|---|---|
@@ -92,3 +93,7 @@ Every recording below is **CC0 (public domain)** on Freesound. CC0 was checked o
 | 162806 | Wind-up2.aif by timgormly | timgormly | CC0 | https://freesound.org/people/timgormly/sounds/162806/ |
 | 66397 | wood_knock.wav by 110110010 | 110110010 | CC0 | https://freesound.org/people/110110010/sounds/66397/ |
 | 708025 | Wooden Wind Chime in Breeze SFX by Soup_UnderScore | Soup_UnderScore | CC0 | https://freesound.org/people/Soup_UnderScore/sounds/708025/ |
+| 389758 | ukulele jingle.wav by buzbe20 | buzbe20 | CC0 | https://freesound.org/people/buzbe20/sounds/389758/ |
+| 636035 | musica café parís.wav by paolacruz84 | paolacruz84 | CC0 | https://freesound.org/people/paolacruz84/sounds/636035/ |
+| 434700 | Angelic Choir.wav by BuytheField | BuytheField | CC0 | https://freesound.org/people/BuytheField/sounds/434700/ |
+| 577844 | Summer night piano solo by szegvari | szegvari | CC0 | https://freesound.org/people/szegvari/sounds/577844/ |
