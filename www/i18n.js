@@ -75,7 +75,7 @@ const ES = {
   "✓ No structural issues detected. Keep going.":"✓ No hay problemas de estructura. Sigue así.",
   "Manuscript & Backup":"Manuscrito y respaldo",
   "Your book is saved on this phone as you write, no internet needed. Export a backup now and then (to Drive, email or anywhere) so it survives a lost or broken phone.":"Tu libro se guarda en este celular mientras escribes, sin internet. Exporta un respaldo de vez en cuando (a Drive, al correo o a donde quieras) para no perderlo si se pierde o se rompe el celular.",
-  "Export manuscript (.md)":"Exportar manuscrito (.md)","Export data backup (.json)":"Exportar respaldo (.json)","Import backup":"Importar respaldo","Erase everything":"Borrar todo","The Moon":"La Luna","Moonlight":"Luz de luna","Checking the Moon…":"Revisando la Luna…","Your books":"Tus libros","+ Start a new book":"+ Empezar un libro nuevo","My books":"Mis libros","Tap again to confirm erase":"Toca otra vez para borrar todo",
+  "Export manuscript (.md)":"Exportar manuscrito (.md)","Export data backup (.json)":"Exportar respaldo (.json)","Import backup":"Importar respaldo","Erase everything":"Borrar todo","Go to the end":"Ir al final","To the end":"Al final","Jumps to the last line of this part, ready to keep writing.":"Te lleva a la última línea de esta parte, lista para seguir escribiendo.","The Moon":"La Luna","Moonlight":"Luz de luna","Checking the Moon…":"Revisando la Luna…","Your books":"Tus libros","+ Start a new book":"+ Empezar un libro nuevo","My books":"Mis libros","Tap again to confirm erase":"Toca otra vez para borrar todo",
   // settings
   "The Moon, how Moonbook looks, and where your book is saved.":"La Luna, cómo se ve Moonbook y dónde se guarda tu libro.",
   "Typewriter, brass and lamplight":"Máquina de escribir, latón y luz de lámpara","Sand, sea glass and driftwood":"Arena, vidrio de mar y madera de playa",
@@ -83,7 +83,7 @@ const ES = {
   "Linen, walnut and a warm lamp":"Lino, nogal y una lámpara tibia","Calm: no movement, no tilt. Same look, quieter.":"Calma: sin movimiento ni inclinación. El mismo ambiente, más tranquilo.",
   "What do these keys do?":"¿Qué hace cada tecla?","Hold any key for a second to see its name. Here they all are.":"Mantén el dedo sobre una tecla un segundo para ver su nombre. Aquí están todas.",
   "Stages":"Etapas","Opens the list of stages: your plan, characters, scenes and writing.":"Abre la lista de etapas: tu plan, personajes, escenas y escritura.",
-  "Language, The Moon, how Moonbook looks, and backups.":"Idioma, la Luna, cómo se ve Moonbook y respaldos.",
+  "Language, the Moon, how Moonbook looks, and backups.":"Idioma, la Luna, cómo se ve Moonbook y respaldos.",
   "Makes the selected words bold.":"Pone en negritas las palabras elegidas.","Makes the selected words italic.":"Pone en cursiva las palabras elegidas.",
   "Draws a line under the selected words.":"Subraya las palabras elegidas.","Changes the letters of the selected words.":"Cambia el tipo de letra de las palabras elegidas.",
   "Makes the selected words bigger or smaller.":"Hace más grandes o más chicas las palabras elegidas.","Colors the selected words.":"Da color a las palabras elegidas.",

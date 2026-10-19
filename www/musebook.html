@@ -162,7 +162,7 @@
   .segmented button{border:none; background:var(--surface); color:var(--muted); padding:7px 13px; font-size:12px; font-weight:700; cursor:pointer}
   .segmented button.active{background:var(--accent); color:var(--bg)}
 
-  .edtools{position:sticky; top:calc(var(--hdr,56px) + env(safe-area-inset-top,0px) + 4px); z-index:20; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:6px; margin-bottom:10px; box-shadow:0 4px 12px rgba(0,0,0,.18)}
+  .edtools{position:sticky; top:calc(var(--hdr,56px) + env(safe-area-inset-top,0px) + 4px + var(--vvtop,0px)); z-index:20; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:6px; margin-bottom:10px; box-shadow:0 4px 12px rgba(0,0,0,.18)}
   .edrow{display:flex; gap:5px; flex-wrap:wrap; align-items:center}
   .edtools button{background:var(--surface-2); color:var(--text); border:1px solid var(--border); border-radius:8px; min-width:38px; height:36px; padding:0 9px; font-size:14px; font-weight:700; cursor:pointer; touch-action:manipulation}
   .edtools button.on{background:var(--accent); color:var(--bg); border-color:var(--accent)}
@@ -1006,7 +1006,7 @@ document.getElementById("ambToggle").addEventListener("change", e=>{ DB.ui.ambie
    and one plain line about what it does. Same words in every look. */
 const KEY_TIPS=[
   ["#stagesToggle","Stages","Opens the list of stages: your plan, characters, scenes and writing."],
-  ["#settingsToggle","Settings","Language, The Moon, how Moonbook looks, and backups."],
+  ["#settingsToggle","Settings","Language, the Moon, how Moonbook looks, and backups."],
   ['[data-cmd="bold"]',"Bold","Makes the selected words bold."],
   ['[data-cmd="italic"]',"Italic","Makes the selected words italic."],
   ['[data-cmd="underline"]',"Underline","Draws a line under the selected words."],
@@ -1016,6 +1016,7 @@ const KEY_TIPS=[
   ['[data-pop="more"]',"More","Headings, quotes, alignment and clearing a style."],
   ['[data-cmd="undo"]',"Undo","Takes back your last change."],
   ['[data-cmd="redo"]',"Redo","Puts back what you just undid."],
+  ['[data-go="end"]',"To the end","Jumps to the last line of this part, ready to keep writing."],
   ["#museContinue","The Moon","Ask for an idea when you're stuck. Only when you ask."]
 ];
 const KEY_SEL=KEY_TIPS.map(k=>k[0]).join(",");
@@ -1048,7 +1049,7 @@ function tipFor(el){ const k=KEY_TIPS.find(k=>el.matches(k[0])); return k?[t(k[1
   }
   document.addEventListener("scroll",hide,true);
 })();
-const ICON_FACE={"#stagesToggle":"☰","#settingsToggle":"⚙",'[data-cmd="bold"]':"<b>B</b>",'[data-cmd="italic"]':"<i>I</i>",'[data-cmd="underline"]':"<u>U</u>",'[data-pop="font"]':"Aa",'[data-pop="size"]':"Size",'[data-pop="color"]':"Color",'[data-pop="more"]':"¶",'[data-cmd="undo"]':"↶",'[data-cmd="redo"]':"↷","#museContinue":"✦"};
+const ICON_FACE={"#stagesToggle":"☰","#settingsToggle":"⚙",'[data-go="end"]':"⤓",'[data-cmd="bold"]':"<b>B</b>",'[data-cmd="italic"]':"<i>I</i>",'[data-cmd="underline"]':"<u>U</u>",'[data-pop="font"]':"Aa",'[data-pop="size"]':"Size",'[data-pop="color"]':"Color",'[data-pop="more"]':"¶",'[data-cmd="undo"]':"↶",'[data-cmd="redo"]':"↷","#museContinue":"✦"};
 document.getElementById("keysHelpBtn").addEventListener("click",()=>{
   document.getElementById("keysHelpList").innerHTML=KEY_TIPS.map(k=>`<div class="tiprow"><span class="k">${ICON_FACE[k[0]]||""}</span><p><b>${esc(t(k[1]))}</b>${esc(t(k[2]))}</p></div>`).join("");
   document.getElementById("keysHelp").hidden=false;
@@ -1296,6 +1297,7 @@ function renderDraft(){
           <button data-pop="more" title="More">¶ ▾</button>
           <button data-cmd="undo" title="Undo">↶</button>
           <button data-cmd="redo" title="Redo">↷</button>
+          <button data-go="end" title="Go to the end">⤓</button>
         </div>
         <div class="edpop" id="edpop" hidden></div>
       </div>
@@ -1386,6 +1388,17 @@ function initEditor(idx){
     if(wc) wc.innerHTML="Scene: <b>"+fmt(words(ed.innerText))+"</b> words";
     if(window.G) G.onType(words(ed.innerText));
   }
+  // A long chapter: straight to its last line, cursor there, ready to keep writing.
+  function toEnd(){
+    ed.focus({preventScroll:true});
+    // Inside the last paragraph (not after it), so new words keep its style.
+    let last=ed; while(last.lastChild && !(last.lastChild.nodeType===1 && last.lastChild.tagName==="BR")) last=last.lastChild;
+    const r=document.createRange();
+    if(last.nodeType===3) r.setStart(last,last.length); else { r.selectNodeContents(last); r.collapse(false); }
+    const sel=getSelection(); sel.removeAllRanges(); sel.addRange(r); remember();
+    const view=window.visualViewport ? visualViewport.height : innerHeight;
+    window.scrollTo({top: Math.max(0, scrollY + ed.getBoundingClientRect().bottom - view*0.6), behavior:"smooth"});
+  }
   function exec(cmd,val){ restore(); try{ document.execCommand(cmd,false,val); }catch(e){} remember(); mark(); refreshState(); }
   function refreshState(){
     tools.querySelectorAll("[data-cmd]").forEach(b=>{
@@ -1414,6 +1427,7 @@ function initEditor(idx){
     const b=e.target.closest("button"); if(!b) return;
     if(b.dataset.pop) return showPop(b.dataset.pop);
     if(b.dataset.cmd) return exec(b.dataset.cmd);
+    if(b.dataset.go==="end") return toEnd();
     if(b.dataset.font) return exec("fontName",ED_FONTS[b.dataset.font].split(",")[0].replace(/'/g,""));
     if(b.dataset.size) return exec("fontSize",b.dataset.size);
     if(b.dataset.color) return exec("foreColor",b.dataset.color);
@@ -1431,6 +1445,12 @@ function initEditor(idx){
   });
   ed.addEventListener("drop",e=>e.preventDefault());
   liveCount();
+}
+// Phone keyboard: what's on screen can slide down inside the page, which left the
+// tools bar (pinned to the page's top) out of sight. --vvtop follows what's on screen.
+if(window.visualViewport){
+  const vv=visualViewport, f=()=>document.documentElement.style.setProperty("--vvtop", Math.max(0, Math.round(vv.offsetTop))+"px");
+  vv.addEventListener("resize",f); vv.addEventListener("scroll",f); f();
 }
 (function(){
   const h=document.querySelector("header"); if(!h) return;
