@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, AppState } from "react-native";
+import { View, AppState, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { WebView, type WebViewMessageEvent } from "react-native-webview";
 import { WWW_HTML } from "./src/www.generated";
@@ -24,23 +24,28 @@ interface Boot {
   prefs: Prefs;
   status: Muse.MuseStatus;
 }
-// What the page shows: one open book, or the bookshelf (id null).
-interface Showing {
+// A page: one open book, or the bookshelf (id null). A new page loads behind the
+// one on screen and takes its place once it has drawn itself (it reports its colors),
+// so opening a book never flashes an empty page.
+interface Page {
+  key: string;
   id: string | null;
-  book: object | null;
+  injected: string;
 }
 
 export default function App() {
   const [boot, setBoot] = useState<Boot | null>(null);
-  const [view, setView] = useState<Showing | null>(null);
+  const [pages, setPages] = useState<Page[]>([]);
+  const pageSeq = useRef(0);
   const lib = useRef<Library>({ books: [] });
   const openId = useRef<string | null>(null);
   // The opening plays as soon as the writer's sound and Calm settings are read;
   // the page waits for it (introWait) before its own opening sound.
   const [intro, setIntro] = useState<{ sound: boolean; calm: boolean } | null>(null);
   const introOver = useRef(false);
-  const introWaiting = useRef<number[]>([]);
-  const web = useRef<WebView>(null);
+  const introWaiting = useRef<{ id: number; key: string }[]>([]);
+  const webs = useRef<Record<string, WebView | null>>({});
+  const hasDrive = useRef(false);
   const prefs = useRef<Prefs>({});
   // The page reports its atmosphere so the bars around it match.
   const [theme, setTheme] = useState({ bg: INTRO_WHITE, dark: false });
@@ -49,19 +54,47 @@ export default function App() {
     (async () => {
       const p = await loadPrefs();
       prefs.current = p;
+      // The opening starts on the small prefs file alone (sound and Calm of the last book),
+      // before the shelf or any book is read.
+      if (p.introUi) setIntro(p.introUi);
       lib.current = await loadLibrary(p.backup);
-      const lastId = lib.current.last ?? lib.current.books[0]?.id;
-      const last = lastId ? await loadBook(lastId) : null;
-      const ui = (last as { ui?: { sound?: boolean; calm?: boolean } } | null)?.ui ?? {};
-      setIntro({ sound: ui.sound !== false, calm: !!ui.calm });
+      if (!p.introUi) {
+        const lastId = lib.current.last ?? lib.current.books[0]?.id;
+        const last = lastId ? await loadBook(lastId) : null;
+        setIntro(introUi(last));
+      }
       await Muse.init();
-      const hasDrive = await IntentLauncher.getApplicationIconAsync(DRIVE_APP).then(() => true, () => false);
-      setBoot({ prefs: p, status: Muse.getStatus(), hasDrive });
+      hasDrive.current = await IntentLauncher.getApplicationIconAsync(DRIVE_APP).then(() => true, () => false);
+      setBoot({ prefs: p, status: Muse.getStatus(), hasDrive: hasDrive.current });
       // Every open starts at the bookshelf; with no books yet, straight into a new one.
-      if (lib.current.books.length) setView({ id: null, book: null });
+      if (lib.current.books.length) showPage(null, null);
       else await openBook(addBook());
     })();
   }, []);
+
+  function introUi(book: unknown) {
+    const ui = (book as { ui?: { sound?: boolean; calm?: boolean } } | null)?.ui ?? {};
+    return { sound: ui.sound !== false, calm: !!ui.calm };
+  }
+
+  /** Loads a page for this book (or the shelf) behind the one on screen. */
+  function showPage(id: string | null, book: object | null) {
+    const key = (id ?? "shelf") + ":" + ++pageSeq.current;
+    const injected = bridgeScript(book, Muse.getStatus(), !!prefs.current.firstRunSeen, Backup.getState(), hasDrive.current,
+      id, id ? null : shelfData(), pageSeq.current > 1);
+    setPages((ps) => [...ps, { key, id, injected }]);
+    // If a page never reports in, show it anyway.
+    setTimeout(() => pageReady(key), 6000);
+  }
+  /** The newest page has drawn itself: it takes over the screen and the older ones close. */
+  function pageReady(key: string) {
+    setPages((ps) => {
+      const i = ps.findIndex((p) => p.key === key);
+      if (i <= 0) return ps;
+      for (const p of ps.slice(0, i)) delete webs.current[p.key];
+      return ps.slice(i);
+    });
+  }
 
   /** A new, empty book on the shelf. Its file is written on its first save. */
   function addBook() {
@@ -79,8 +112,13 @@ export default function App() {
     }, (b) => run(`window.__mb.backup(${JSON.stringify(b)})`));
     lib.current.last = id;
     await saveLibrary(lib.current);
+    const ui = introUi(book);
+    if (ui.sound !== prefs.current.introUi?.sound || ui.calm !== prefs.current.introUi?.calm) {
+      prefs.current = { ...prefs.current, introUi: ui };
+      savePrefs(prefs.current);
+    }
     openId.current = id;
-    setView({ id, book });
+    showPage(id, book);
   }
 
   /** Back to the bookshelf: everything written is on disk and backed up first. */
@@ -88,7 +126,7 @@ export default function App() {
     await saved();
     await Backup.flush();
     openId.current = null;
-    setView({ id: null, book: null });
+    showPage(null, null);
   }
 
   /** What the page needs to draw the shelf (no backup details). */
@@ -105,7 +143,7 @@ export default function App() {
 
   useEffect(() => {
     if (!boot) return;
-    const off = Muse.onStatus((s) => run(`window.__mb.status(${JSON.stringify(s)})`));
+    const off = Muse.onStatus((s) => Object.keys(webs.current).forEach((k) => run(`window.__mb.status(${JSON.stringify(s)})`, k)));
     // Warm Muse up shortly after start so the first request answers quickly.
     const warm = setTimeout(() => Muse.load(), 4000);
     return () => {
@@ -123,18 +161,20 @@ export default function App() {
     return () => sub.remove();
   }, []);
 
-  function run(js: string) {
-    web.current?.injectJavaScript(js + "; true;");
+  /** Runs in a page: the one named, else the newest (the open book or the shelf). */
+  function run(js: string, key?: string) {
+    const k = key ?? Object.keys(webs.current).pop();
+    if (k) webs.current[k]?.injectJavaScript(js + "; true;");
   }
-  const reply = (id: number, ok: boolean, v: unknown) =>
-    run(`window.__mb.reply(${id}, ${ok}, ${JSON.stringify(v ?? null)})`);
 
   function introEnded() {
     introOver.current = true;
-    introWaiting.current.splice(0).forEach((id) => reply(id, true, null));
+    introWaiting.current.splice(0).forEach((w) => run(`window.__mb.reply(${w.id}, true, null)`, w.key));
   }
 
-  async function onMessage(e: WebViewMessageEvent) {
+  async function onMessage(e: WebViewMessageEvent, key: string) {
+    const reply = (id: number, ok: boolean, v: unknown) =>
+      run(`window.__mb.reply(${id}, ${ok}, ${JSON.stringify(v ?? null)})`, key);
     let msg: { id: number; m: string; a: unknown[] };
     try {
       msg = JSON.parse(e.nativeEvent.data);
@@ -191,7 +231,7 @@ export default function App() {
           return reply(id, true, await Backup.safetyCopy(a[0]));
         case "introWait":
           if (introOver.current) return reply(id, true, null);
-          introWaiting.current.push(id);
+          introWaiting.current.push({ id, key });
           return;
         case "openDrive":
           // Opening the Drive app refreshes the list Android's file picker shows.
@@ -228,9 +268,10 @@ export default function App() {
           return reply(id, true, null);
         case "theme":
           setTheme({ bg: String(a[0]) || "#f6f2e9", dark: !!a[1] });
+          pageReady(key); // the page reports its colors once it has drawn itself
           return reply(id, true, null);
         case "museAsk": {
-          const text = await Muse.ask(String(a[0]), (t) => run(`window.__mb.stream(${id}, ${JSON.stringify(t)})`));
+          const text = await Muse.ask(String(a[0]), (t) => run(`window.__mb.stream(${id}, ${JSON.stringify(t)})`, key));
           return reply(id, true, text);
         }
         default:
@@ -243,31 +284,26 @@ export default function App() {
 
   // Stable props: a new source object would make the WebView reload the page.
   const source = useMemo(() => ({ html: WWW_HTML, baseUrl: "https://musebook.local/" }), []);
-  const injected = useMemo(
-    () => (boot && view
-      ? bridgeScript(view.book, Muse.getStatus(), !!prefs.current.firstRunSeen, Backup.getState(), boot.hasDrive,
-        view.id, view.id ? null : shelfData())
-      : ""),
-    [boot, view],
-  );
 
   const opening = intro && (
     <Intro sound={intro.sound} calm={intro.calm} onEnd={introEnded} onBars={(bg, dark) => setTheme({ bg, dark })} />
   );
-  if (!boot || !view) return <View style={{ flex: 1, backgroundColor: INTRO_WHITE }}>{opening}</View>;
+  if (!boot || !pages.length) return <View style={{ flex: 1, backgroundColor: INTRO_WHITE }}>{opening}</View>;
 
   return (
     <View style={{ flex: 1, backgroundColor: INTRO_WHITE }}>
     <SafeAreaProvider>
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }} edges={["top", "bottom"]}>
       <StatusBar style={theme.dark ? "light" : "dark"} />
+      <View style={{ flex: 1 }}>
+      {pages.map((p, i) => (
       <WebView
-        key={view.id ?? "shelf"} // a new page for each book, so nothing from one book stays in the next
-        ref={web}
+        key={p.key} // a new page for each book, so nothing from one book stays in the next
+        ref={(w) => { if (w) webs.current[p.key] = w; }}
         originWhitelist={["*"]}
         source={source}
-        injectedJavaScriptBeforeContentLoaded={injected}
-        onMessage={onMessage}
+        injectedJavaScriptBeforeContentLoaded={p.injected}
+        onMessage={(e) => onMessage(e, p.key)}
         domStorageEnabled
         mediaPlaybackRequiresUserAction={false}
         javaScriptEnabled
@@ -275,8 +311,11 @@ export default function App() {
         setSupportMultipleWindows={false}
         textZoom={100}
         overScrollMode="never"
-        style={{ flex: 1, backgroundColor: "transparent" }}
+        // The page on screen is drawn last (on top); a loading page waits underneath it.
+        style={[{ backgroundColor: "transparent" }, StyleSheet.absoluteFill, { zIndex: i === 0 ? 1 : 0 }]}
       />
+      ))}
+      </View>
     </SafeAreaView>
     </SafeAreaProvider>
     {opening}

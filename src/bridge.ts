@@ -5,8 +5,10 @@ import type { MuseStatus } from "./muse";
 import type { BackupState } from "./backup";
 
 export function bridgeScript(book: any, status: MuseStatus, firstRunSeen: boolean, backup: BackupState, hasDrive: boolean,
-  bookId: string | null, shelf: object | null) {
+  bookId: string | null, shelf: object | null, quick: boolean) {
   return `(function(){
+  // After the first page the opening has already played: no title card while a book loads.
+  ${quick ? 'document.documentElement.classList.add("mb-quick");' : ""}
   var pending = {}, streams = {}, seq = 0, listeners = [];
   var status = ${JSON.stringify(status)};
   var book = ${JSON.stringify(book ?? null)};
