@@ -4,7 +4,8 @@
 import type { MuseStatus } from "./muse";
 import type { BackupState } from "./backup";
 
-export function bridgeScript(book: any, status: MuseStatus, firstRunSeen: boolean, backup: BackupState, hasDrive: boolean) {
+export function bridgeScript(book: any, status: MuseStatus, firstRunSeen: boolean, backup: BackupState, hasDrive: boolean,
+  bookId: string | null, shelf: object | null) {
   return `(function(){
   var pending = {}, streams = {}, seq = 0, listeners = [];
   var status = ${JSON.stringify(status)};
@@ -46,6 +47,14 @@ export function bridgeScript(book: any, status: MuseStatus, firstRunSeen: boolea
     bootUi: (book && book.ui) || {}, // sound and Calm, so the opening can start before the page has the book
     hasDrive: ${hasDrive ? "true" : "false"},
     nativeIntro: true, // the app plays the opening itself (src/Intro.tsx)
+    // The bookshelf: each book is its own page. bookId names the open book; shelf is
+    // set (and bookId null) when the page is the shelf itself.
+    bookId: ${JSON.stringify(bookId)},
+    shelf: ${JSON.stringify(shelf)},
+    openBook: function(id){ return call("shelfOpen", [id]); },
+    newBook: function(){ return call("shelfNew"); },
+    toShelf: function(){ return call("shelfShow"); },
+    removeBook: function(id){ return call("shelfRemove", [id]); },
     introWait: function(){ return call("introWait"); },
     openDrive: function(){ return call("openDrive"); },
     get status(){ return status; },

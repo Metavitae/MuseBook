@@ -64,6 +64,20 @@
   a{color:var(--accent)}
 
   /* ---- Splash ---- */
+  /* Bookshelf (phone app): every open starts here; each book opens as its own page. */
+  #shelf[hidden]{display:none}
+  #shelf{position:relative; z-index:1; max-width:640px; margin:0 auto; padding:28px 18px 40px}
+  html.on-shelf header, html.on-shelf main{display:none}
+  #shelf .wordmark{font-family:var(--font-display); font-size:2.2rem; margin:8px 0 2px; text-align:center}
+  #shelf .shelf-sub{color:var(--muted); text-align:center; margin:0 0 22px}
+  .shelf-book{display:flex; align-items:stretch; margin:0 0 12px; background:var(--surface); border:1px solid var(--border); border-left:8px solid var(--spine); border-radius:var(--radius); overflow:hidden}
+  .shelf-open{flex:1; display:flex; flex-direction:column; gap:4px; text-align:left; padding:16px; background:none; border:0; color:var(--text); font:inherit; cursor:pointer}
+  .shelf-title{font-family:var(--font-display); font-size:1.45rem; line-height:1.15}
+  .shelf-author{color:var(--muted)}
+  .shelf-meta{color:var(--muted); font-size:.85rem}
+  .shelf-more{background:none; border:0; border-left:1px solid var(--border); color:var(--muted); font:inherit; padding:0 14px; min-width:52px; cursor:pointer}
+  .shelf-more.armed{color:var(--bad); max-width:130px; font-size:.85rem}
+  #shelfNew{width:100%; margin-top:8px}
   #splash{position:fixed; inset:0; z-index:200; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; cursor:pointer; transition:opacity .35s ease, transform .35s ease}
   #splash.out{opacity:0; transform:scale(1.02); pointer-events:none}
   /* "Kithe presents MuseBook" opening (intro.js): above everything, white like the video's first frame. */
@@ -297,6 +311,13 @@
   <div class="tap">tap to begin</div>
 </div>
 
+<div id="shelf" hidden>
+  <h1 class="wordmark">Muse<em>Book</em></h1>
+  <p class="shelf-sub">Your books</p>
+  <div id="shelfList"></div>
+  <button class="act" id="shelfNew">+ Start a new book</button>
+</div>
+
 <header>
   <div class="topbar">
     <button class="iconbtn" id="stagesToggle" aria-expanded="false" aria-controls="nav">☰ <span id="stageLabel">Contract</span></button>
@@ -450,7 +471,7 @@
   <!-- SETTINGS -->
   <section id="tab-settings">
     <h2>Settings</h2>
-    <div class="btns" style="margin:0 0 12px"><button class="ghost" id="gBackFromSettings" hidden>‹ Back to my book</button></div>
+    <div class="btns" style="margin:0 0 12px"><button class="ghost" id="gBackFromSettings" hidden>‹ Back to my book</button><button class="ghost" id="toShelfBtn" hidden>My books</button></div>
     <p class="hint">Muse, how MuseBook looks, and where your book is saved.</p>
     <div class="card">
       <h3>How you write</h3>
@@ -615,15 +636,19 @@ let DB = JSON.parse(JSON.stringify(DEFAULT));
 let dbApi=null, userApi=null, downloadsApi=null, sampleApi=null, uid=null, docRef=null, cloudReady=false;
 let suppressEcho=false;
 
+// The phone app keeps each book apart (MuseNative.bookId); the bookshelf page has no book to keep.
+const LKEY = !window.MuseNative ? "musebook_v1" : MuseNative.bookId ? "musebook_v1:"+MuseNative.bookId : null;
 function localLoad(){
+  if(!LKEY) return null;
   try{
-    const raw = localStorage.getItem("musebook_v1");
+    const raw = localStorage.getItem(LKEY);
     if(raw) return JSON.parse(raw);
   }catch(e){}
   return null;
 }
 function localSave(){
-  try{ localStorage.setItem("musebook_v1", JSON.stringify(DB)); }catch(e){}
+  if(!LKEY) return;
+  try{ localStorage.setItem(LKEY, JSON.stringify(DB)); }catch(e){}
 }
 
 /*SANITIZE-START*/
@@ -1871,10 +1896,77 @@ document.getElementById("resetBtn").addEventListener("click",(e)=>{
   }
   resetArmed=false; e.target.textContent="Erase everything"; edDirty=false;
   document.getElementById("eraseWarn").hidden=true;
-  try{ localStorage.removeItem("musebook_v1"); }catch(err){}
+  try{ if(LKEY) localStorage.removeItem(LKEY); }catch(err){}
   DB=JSON.parse(JSON.stringify(DEFAULT));
   save(); renderAll(); G.init(); G.renderModeCard();
 });
+
+/* ============================================================
+   BOOKSHELF (phone app). App.tsx opens each book as its own page;
+   this page is the shelf when MuseNative.shelf is set.
+   ============================================================ */
+const SHELF=(()=>{
+  const SPINE={noir:"#c9a04e",shore:"#2f8f7a",city:"#ff3d80",celestial:"#d9b561",room:"#a5482e"};
+  const es=()=>LANG==="es";
+  let books=[], armed=null, armTimer=null, busy=false;
+  function when(iso){
+    const d=new Date(iso), now=new Date(), day=864e5;
+    const days=Math.round((new Date(now.toDateString())-new Date(d.toDateString()))/day);
+    if(days<=0) return es()?"escrito hoy":"written today";
+    if(days===1) return es()?"escrito ayer":"written yesterday";
+    return (es()?"escrito el ":"written ")+d.toLocaleDateString(es()?"es-MX":"en-US",{day:"numeric",month:"long",year: d.getFullYear()===now.getFullYear()?undefined:"numeric"});
+  }
+  function render(){
+    document.getElementById("shelfList").innerHTML=books.map(b=>`<div class="shelf-book" style="--spine:${SPINE[b.mood]||"var(--accent)"}">
+      <button class="shelf-open" data-open="${esc(b.id)}">
+        <span class="shelf-title">${esc(b.title||(es()?"Libro sin título":"Untitled book"))}</span>
+        ${b.author?`<span class="shelf-author">${esc(b.author)}</span>`:""}
+        <span class="shelf-meta">${fmt(b.words)} ${es()?"palabras":"words"} · ${when(b.updated)}</span>
+      </button>
+      <button class="shelf-more${armed===b.id?" armed":""}" data-remove="${esc(b.id)}" aria-label="${es()?"Quitar":"Remove"}">${armed===b.id?(es()?"Toca otra vez para quitarlo":"Tap again to remove it"):"✕"}</button>
+    </div>`).join("");
+  }
+  function start(){
+    const s=MuseNative.shelf;
+    books=s.books||[];
+    if(s.lang) DB.ui.lang=s.lang;
+    if(s.mood) DB.ui.mood=s.mood;
+    document.documentElement.classList.add("on-shelf");
+    document.getElementById("shelf").hidden=false;
+    initI18n();
+    initMood();
+    render();
+    INTRO.after(()=>{
+      const sp=document.getElementById("splash"); if(sp) sp.hidden=true;
+      const cs=getComputedStyle(document.documentElement); MuseNative.theme(cs.getPropertyValue("--bg").trim(), cs.colorScheme==="dark");
+    });
+  }
+  document.getElementById("shelfList").addEventListener("click", async e=>{
+    const open=e.target.closest("[data-open]"), rm=e.target.closest("[data-remove]");
+    if(open && !busy){ busy=true; MuseNative.openBook(open.dataset.open); return; }
+    if(!rm) return;
+    const id=rm.dataset.remove;
+    clearTimeout(armTimer);
+    if(armed!==id){ armed=id; render(); armTimer=setTimeout(()=>{ armed=null; render(); },4000); return; }
+    armed=null;
+    // The book's file goes to the app's safety folder and its backups stay where they are.
+    try{ books=await MuseNative.removeBook(id); render(); toast(es()?"Quitado del estante. Tus respaldos siguen en su carpeta.":"Taken off the shelf. Its backups stay in their folder."); }
+    catch(err){ render(); toast(es()?"No se pudo quitar.":"Couldn't remove it."); }
+  });
+  document.getElementById("shelfNew").addEventListener("click",()=>{ if(busy) return; busy=true; MuseNative.newBook(); });
+  return {start};
+})();
+// From a book back to the shelf: the last words are saved before the page closes.
+if(window.MuseNative && MuseNative.toShelf){
+  const b=document.getElementById("toShelfBtn"); b.hidden=false;
+  b.addEventListener("click", async ()=>{
+    b.disabled=true;
+    try{ commitEditor(); }catch(e){}
+    clearTimeout(saveTimer); localSave();
+    if(cloudReady && docRef){ try{ await docRef.set(JSON.parse(JSON.stringify(DB))); }catch(e){} }
+    MuseNative.toShelf();
+  });
+}
 
 /* ============================================================
    RENDER ALL + INIT
@@ -1892,6 +1984,7 @@ function renderAll(){
 }
 
 (async ()=>{
+  if(window.MuseNative && MuseNative.shelf){ SHELF.start(); return; }
   const local = localLoad();
   if(local) DB = mergeDefaults(local);
   if(!DB.stats.date){ DB.stats.date=todayStr(); DB.stats.lastTotal=totalWords(); }
@@ -1920,12 +2013,12 @@ document.getElementById("langRow").addEventListener("click", e=>{
 
 // Phone app: leaving the app (home button, a call) must not lose the last words.
 document.addEventListener("visibilitychange", ()=>{
-  if(document.visibilityState!=="hidden") return;
+  if(document.visibilityState!=="hidden" || !LKEY) return;
   try{ commitEditor(); }catch(e){}
   clearTimeout(saveTimer); localSave();
   if(cloudReady && docRef){ docRef.set(JSON.parse(JSON.stringify(DB))).catch(()=>{}); }
 });
-window.addEventListener("beforeunload", ()=>{ try{ commitEditor(); }catch(e){} try{ localStorage.setItem("musebook_v1", JSON.stringify(DB)); }catch(e){} });
+window.addEventListener("beforeunload", ()=>{ try{ commitEditor(); }catch(e){} localSave(); });
 </script>
 
 </body></html>

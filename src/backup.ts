@@ -1,5 +1,5 @@
 // Backups: an extra copy of the book in a folder the writer picks once (on the
-// phone or in their own Drive). The book itself stays in book.json; this never
+// phone or in their own Drive). The book itself stays in books/<id>.json; this never
 // replaces it. MuseBook keeps nothing anywhere else and runs no server.
 //
 // One pair of files per day (the writer's reading copy + the app's restore file).
@@ -35,6 +35,9 @@ let running: Promise<void> | null = null;
 
 export function init(saved: BackupState | undefined, book: unknown,
   onPersist: (s: BackupState) => Promise<void>, onChange: (s: BackupState) => void) {
+  // Each book has its own backups: opening another book starts over with its state.
+  if (timer) { clearTimeout(timer); timer = null; }
+  dirty = false;
   state = { auto: true, ...(saved ?? {}) };
   latest = book;
   persist = onPersist;
@@ -251,6 +254,14 @@ export function leaving() {
   if (!dirty || !state.dir || state.auto === false) return;
   if (sinceLast() < MIN_GAP) return schedule(MIN_GAP - sinceLast());
   backupNow().catch(() => schedule(MIN_GAP));
+}
+
+/** Closing this book (back to the bookshelf): back up first if anything changed. */
+export async function flush() {
+  if (timer) { clearTimeout(timer); timer = null; }
+  if (running) await running.catch(() => {});
+  if (!dirty || !state.dir || state.auto === false) return;
+  await backupNow().catch(() => {});
 }
 
 export async function setAuto(on: boolean) {

@@ -75,7 +75,7 @@ const ES = {
   "✓ No structural issues detected. Keep going.":"✓ No hay problemas de estructura. Sigue así.",
   "Manuscript & Backup":"Manuscrito y respaldo",
   "Your book is saved on this phone as you write, no internet needed. Export a backup now and then (to Drive, email or anywhere) so it survives a lost or broken phone.":"Tu libro se guarda en este celular mientras escribes, sin internet. Exporta un respaldo de vez en cuando (a Drive, al correo o a donde quieras) para no perderlo si se pierde o se rompe el celular.",
-  "Export manuscript (.md)":"Exportar manuscrito (.md)","Export data backup (.json)":"Exportar respaldo (.json)","Import backup":"Importar respaldo","Erase everything":"Borrar todo","Tap again to confirm erase":"Toca otra vez para borrar todo",
+  "Export manuscript (.md)":"Exportar manuscrito (.md)","Export data backup (.json)":"Exportar respaldo (.json)","Import backup":"Importar respaldo","Erase everything":"Borrar todo","Your books":"Tus libros","+ Start a new book":"+ Empezar un libro nuevo","My books":"Mis libros","Tap again to confirm erase":"Toca otra vez para borrar todo",
   // settings
   "Muse, how MuseBook looks, and where your book is saved.":"Muse, cómo se ve MuseBook y dónde se guarda tu libro.",
   "Typewriter, brass and lamplight":"Máquina de escribir, latón y luz de lámpara","Sand, sea glass and driftwood":"Arena, vidrio de mar y madera de playa",

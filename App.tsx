@@ -10,7 +10,10 @@ import * as Backup from "./src/backup";
 import * as Files from "./src/files";
 import * as IntentLauncher from "expo-intent-launcher";
 import { Intro } from "./src/Intro";
-import { loadBook, saveBook, loadPrefs, savePrefs, shareFile, type Prefs } from "./src/storage";
+import {
+  loadBook, saveBook, saved, loadLibrary, saveLibrary, removeBook, newId, summary,
+  loadPrefs, savePrefs, shareFile, type Prefs, type Library,
+} from "./src/storage";
 
 const DRIVE_APP = "com.google.android.apps.docs";
 // The opening video starts on this near-white, so the moment before the page is up matches it.
@@ -18,13 +21,20 @@ const INTRO_WHITE = "#f2f4f4";
 
 interface Boot {
   hasDrive: boolean;
-  book: object | null;
   prefs: Prefs;
   status: Muse.MuseStatus;
+}
+// What the page shows: one open book, or the bookshelf (id null).
+interface Showing {
+  id: string | null;
+  book: object | null;
 }
 
 export default function App() {
   const [boot, setBoot] = useState<Boot | null>(null);
+  const [view, setView] = useState<Showing | null>(null);
+  const lib = useRef<Library>({ books: [] });
+  const openId = useRef<string | null>(null);
   // The opening plays as soon as the writer's sound and Calm settings are read;
   // the page waits for it (introWait) before its own opening sound.
   const [intro, setIntro] = useState<{ sound: boolean; calm: boolean } | null>(null);
@@ -37,22 +47,61 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-      const book = await loadBook();
-      const ui = (book as { ui?: { sound?: boolean; calm?: boolean } } | null)?.ui ?? {};
+      const p = await loadPrefs();
+      prefs.current = p;
+      lib.current = await loadLibrary(p.backup);
+      const lastId = lib.current.last ?? lib.current.books[0]?.id;
+      const last = lastId ? await loadBook(lastId) : null;
+      const ui = (last as { ui?: { sound?: boolean; calm?: boolean } } | null)?.ui ?? {};
       setIntro({ sound: ui.sound !== false, calm: !!ui.calm });
       await Muse.init();
-      const [p, hasDrive] = await Promise.all([
-        loadPrefs(),
-        IntentLauncher.getApplicationIconAsync(DRIVE_APP).then(() => true, () => false),
-      ]);
-      prefs.current = p;
-      Backup.init(p.backup, book, async (b) => {
-        prefs.current = { ...prefs.current, backup: b };
-        await savePrefs(prefs.current);
-      }, (b) => run(`window.__mb.backup(${JSON.stringify(b)})`));
-      setBoot({ book, prefs: p, status: Muse.getStatus(), hasDrive });
+      const hasDrive = await IntentLauncher.getApplicationIconAsync(DRIVE_APP).then(() => true, () => false);
+      setBoot({ prefs: p, status: Muse.getStatus(), hasDrive });
+      // Every open starts at the bookshelf; with no books yet, straight into a new one.
+      if (lib.current.books.length) setView({ id: null, book: null });
+      else await openBook(addBook());
     })();
   }, []);
+
+  /** A new, empty book on the shelf. Its file is written on its first save. */
+  function addBook() {
+    const id = newId();
+    lib.current.books.push({ id, title: "", author: "", words: 0, updated: new Date().toISOString() });
+    return id;
+  }
+
+  async function openBook(id: string) {
+    const book = await loadBook(id);
+    Backup.init(lib.current.books.find((b) => b.id === id)?.backup, book, async (b) => {
+      const entry = lib.current.books.find((x) => x.id === id);
+      if (entry) entry.backup = b;
+      await saveLibrary(lib.current);
+    }, (b) => run(`window.__mb.backup(${JSON.stringify(b)})`));
+    lib.current.last = id;
+    await saveLibrary(lib.current);
+    openId.current = id;
+    setView({ id, book });
+  }
+
+  /** Back to the bookshelf: everything written is on disk and backed up first. */
+  async function showShelf() {
+    await saved();
+    await Backup.flush();
+    openId.current = null;
+    setView({ id: null, book: null });
+  }
+
+  /** What the page needs to draw the shelf (no backup details). */
+  function shelfData() {
+    const last = lib.current.books.find((b) => b.id === lib.current.last);
+    return {
+      books: [...lib.current.books]
+        .sort((a, b) => b.updated.localeCompare(a.updated))
+        .map(({ backup, ...b }) => b),
+      mood: last?.mood,
+      lang: last?.lang,
+    };
+  }
 
   useEffect(() => {
     if (!boot) return;
@@ -69,7 +118,7 @@ export default function App() {
   useEffect(() => {
     const sub = AppState.addEventListener("change", (s) => {
       if (s === "background" && Muse.getStatus().state === "downloading") Muse.pause();
-      if (s === "background") Backup.leaving();
+      if (s === "background" && openId.current) Backup.leaving();
     });
     return () => sub.remove();
   }, []);
@@ -95,10 +144,40 @@ export default function App() {
     const { id, m, a } = msg;
     try {
       switch (m) {
-        case "save":
-          await saveBook(a[0]);
+        case "save": {
+          const bookId = openId.current;
+          if (!bookId) return reply(id, true, null); // the shelf has no book to save
+          await saveBook(bookId, a[0]);
           Backup.bookChanged(a[0]);
+          const entry = lib.current.books.find((b) => b.id === bookId);
+          if (entry) {
+            const s = summary(a[0]);
+            // "Last written" moves only when the writing or the name changed, not on opening a screen.
+            const same = s.words === entry.words && s.title === entry.title && s.author === entry.author;
+            Object.assign(entry, same ? { ...s, updated: entry.updated } : s);
+            saveLibrary(lib.current);
+          }
           return reply(id, true, null);
+        }
+        case "shelfOpen":
+          reply(id, true, null);
+          return openBook(String(a[0]));
+        case "shelfNew":
+          reply(id, true, null);
+          return openBook(addBook());
+        case "shelfShow":
+          reply(id, true, null);
+          return showShelf();
+        case "shelfRemove": {
+          const gone = lib.current.books.find((b) => b.id === String(a[0]));
+          if (gone) {
+            await removeBook(gone.id, gone.title);
+            lib.current.books = lib.current.books.filter((b) => b !== gone);
+            if (lib.current.last === gone.id) lib.current.last = lib.current.books[0]?.id;
+            await saveLibrary(lib.current);
+          }
+          return reply(id, true, shelfData().books);
+        }
         case "backupChoose":
           return reply(id, true, await Backup.chooseFolder());
         case "backupNow":
@@ -165,14 +244,17 @@ export default function App() {
   // Stable props: a new source object would make the WebView reload the page.
   const source = useMemo(() => ({ html: WWW_HTML, baseUrl: "https://musebook.local/" }), []);
   const injected = useMemo(
-    () => (boot ? bridgeScript(boot.book, boot.status, !!boot.prefs.firstRunSeen, Backup.getState(), boot.hasDrive) : ""),
-    [boot],
+    () => (boot && view
+      ? bridgeScript(view.book, Muse.getStatus(), !!prefs.current.firstRunSeen, Backup.getState(), boot.hasDrive,
+        view.id, view.id ? null : shelfData())
+      : ""),
+    [boot, view],
   );
 
   const opening = intro && (
     <Intro sound={intro.sound} calm={intro.calm} onEnd={introEnded} onBars={(bg, dark) => setTheme({ bg, dark })} />
   );
-  if (!boot) return <View style={{ flex: 1, backgroundColor: INTRO_WHITE }}>{opening}</View>;
+  if (!boot || !view) return <View style={{ flex: 1, backgroundColor: INTRO_WHITE }}>{opening}</View>;
 
   return (
     <View style={{ flex: 1, backgroundColor: INTRO_WHITE }}>
@@ -180,6 +262,7 @@ export default function App() {
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.bg }} edges={["top", "bottom"]}>
       <StatusBar style={theme.dark ? "light" : "dark"} />
       <WebView
+        key={view.id ?? "shelf"} // a new page for each book, so nothing from one book stays in the next
         ref={web}
         originWhitelist={["*"]}
         source={source}
