@@ -193,7 +193,7 @@ function md(parts){
     pt.scenes.forEach((s,i)=>{ if(i) out+="* * *\n\n"; const t2=htmlToMarkdown(s.html||"").trim(); if(t2) out+=t2+"\n\n"; });
   });
   const n=parts.reduce((a,p)=>a+p.scenes.reduce((b,s)=>b+words(s.text||""),0),0);
-  out += LANG==="es" ? `---\n\n_${fmt(n)} palabras · exportado el ${todayStr()} desde MuseBook_\n` : `---\n\n_${fmt(n)} words · exported ${todayStr()} from MuseBook_\n`;
+  out += LANG==="es" ? `---\n\n_${fmt(n)} palabras · exportado el ${todayStr()} desde Moonbook_\n` : `---\n\n_${fmt(n)} words · exported ${todayStr()} from Moonbook_\n`;
   return out;
 }
 

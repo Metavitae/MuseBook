@@ -1,4 +1,4 @@
-// Lets MuseBook see whether the Google Drive app is on the phone (Android 11+
+// Lets Moonbook see whether the Google Drive app is on the phone (Android 11+
 // hides other apps unless the manifest names them). Used by the restore
 // screen's "Open Google Drive" button.
 const { withAndroidManifest } = require("expo/config-plugins");

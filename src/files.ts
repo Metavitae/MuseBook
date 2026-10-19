@@ -1,6 +1,6 @@
 // Files the writer makes from the book (Word, eBook, PDF, text): written to the
 // app's cache first, then handed to the share sheet or saved into a folder the
-// writer picks (phone or Drive). Nothing is uploaded anywhere by MuseBook.
+// writer picks (phone or Drive). Nothing is uploaded anywhere by Moonbook.
 import * as FileSystem from "expo-file-system/legacy";
 import { Directory, File } from "expo-file-system";
 import * as Print from "expo-print";

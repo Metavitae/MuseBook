@@ -1,6 +1,6 @@
 // Backups: an extra copy of the book in a folder the writer picks once (on the
 // phone or in their own Drive). The book itself stays in books/<id>.json; this never
-// replaces it. MuseBook keeps nothing anywhere else and runs no server.
+// replaces it. Moonbook keeps nothing anywhere else and runs no server.
 //
 // One pair of files per day (the writer's reading copy + the app's restore file).
 // Every save that day writes over that day's pair; a new day starts a new pair
@@ -72,7 +72,7 @@ function safeTitle(book: any) {
 }
 /** The backup file: the book plus a small header so restore can recognise it. */
 function wrap(book: unknown) {
-  return JSON.stringify({ _musebook: { app: "MuseBook", format: 1, saved: new Date().toISOString() }, ...(book as object) }, null, 1);
+  return JSON.stringify({ _musebook: { app: "Moonbook", format: 1, saved: new Date().toISOString() }, ...(book as object) }, null, 1);
 }
 
 /** The writer's language: their choice in the app, else the phone's. */

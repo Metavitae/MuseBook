@@ -1,4 +1,4 @@
-/* "Kithe presents MuseBook": the approved 10 s opening (Chat, v4), played
+/* "Kithe presents Moonbook": the approved 10 s opening (Chat, v4), played
    every time the app is opened fresh. The page loads once per open, so coming
    back from the background never replays it. Tap anywhere to skip.
    It starts the moment the page opens (this script sits right after #intro),
@@ -34,7 +34,7 @@ function start(o){
   const still = o.calm || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
   if(still || !MP4){
     el.style.background=BLUE; bars(BLUE, true);
-    el.innerHTML='<img alt="MuseBook" src="data:image/webp;base64,'+STILL+'">';
+    el.innerHTML='<img alt="Moonbook" src="data:image/webp;base64,'+STILL+'">';
     timers.push(setTimeout(finish, 2000));
     return;
   }

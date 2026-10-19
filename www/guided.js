@@ -144,7 +144,7 @@ function renderLayer(){
 function welcome(){
   return `<div class="g-own g-top g-topright"><button class="gearbtn g-key" data-g="settings" aria-label="${L("Settings","Ajustes")}">⚙</button></div>
     <div class="g-center">
-    <div class="g-brand">MuseBook</div>
+    <div class="g-brand">Moonbook</div>
     <h1 class="g-h1">${L("Write your book","Escribe tu libro")}</h1>
     <p class="g-lead">${L("Everything stays on your phone. Write at your pace; I'll ask small questions only when you want them.","Todo se queda en tu teléfono. Escribe a tu ritmo; solo te haré preguntas pequeñas cuando tú quieras.")}</p>
     <div class="g-stack">
@@ -357,7 +357,7 @@ function paste(){
     <h1 class="g-h1 g-left">${L("Bring your text","Trae tu texto")}</h1>
     <p class="g-lead">${L("Paste it here. I'll look for chapters and show you what I found before changing anything.","Pégalo aquí. Buscaré los capítulos y te mostraré lo que encontré antes de cambiar nada.")}</p>
     <button class="ghost g-big" data-g="pasteFile">${L("Open a text file","Abrir un archivo de texto")}</button>
-    <p class="g-sub">${L("A .txt or .md file from anywhere: your phone, Drive, or a MuseBook “YOUR BOOK” copy.","Un archivo .txt o .md de donde sea: tu teléfono, Drive o una copia “TU LIBRO” de MuseBook.")}</p>
+    <p class="g-sub">${L("A .txt or .md file from anywhere: your phone, Drive, or a Moonbook “YOUR BOOK” copy.","Un archivo .txt o .md de donde sea: tu teléfono, Drive o una copia “TU LIBRO” de Moonbook.")}</p>
     <p class="g-sub g-or">${L("or paste it:","o pégalo:")}</p>
     <textarea class="g-field g-pastebox" data-gi="pasteText" placeholder="${esc(L("Paste your text here.","Pega tu texto aquí."))}"></textarea>
     <div class="g-stack"><button class="act g-big" data-g="detect">${L("Continue","Seguir")}</button></div>`;
@@ -533,7 +533,7 @@ function detectParts(raw){
   const reFoot=/^[\s_*]*[\d.,]+\s*(?:palabras|words)\s*·.*$/i;
   let lines=(raw||"").replace(/\r/g,"").split("\n");
   let title="", subtitle="", i0=0;
-  // MuseBook's own reading copy ("YOUR BOOK" .txt): title, maybe subtitle/author, then "Reading copy · …".
+  // Moonbook's own reading copy ("YOUR BOOK" .txt): title, maybe subtitle/author, then "Reading copy · …".
   const ours=lines.slice(0,8).findIndex(l=>/^(Reading copy|Copia para leer) · /.test(l.trim()));
   if(ours>=0){
     const head=lines.slice(0,ours).map(l=>l.trim()).filter(Boolean);
@@ -599,7 +599,7 @@ function detect(){
   pasteParts=r.parts; pasteMeta={title: r.title || bookTitle(), subtitle:r.subtitle, warn:r.warn};
   render();
 }
-// Bring in a text file. A MuseBook app backup picked here goes to Restore instead.
+// Bring in a text file. A Moonbook app backup picked here goes to Restore instead.
 async function openTextFile(){
   let text=null;
   try{ text = window.MuseBackup ? await MuseBackup.pick() : await browserPick(); }
