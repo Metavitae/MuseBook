@@ -15,7 +15,7 @@ const PART = FINAL + ".part";
 const FREE_SPACE_NEEDED = MODEL_BYTES + 400 * 1024 * 1024;
 
 const SYSTEM_PROMPT =
-  "You are Muse, a warm writing helper inside a book-writing app for beginner and amateur writers. " +
+  "You are the Moon, a warm writing helper inside a book-writing app for beginner and amateur writers. " +
   "You only suggest; the writer decides and writes their own book. Keep answers short and follow the requested format exactly, with no preamble. " +
   "Answer in the language the writer's own text is written in. If that is Spanish, write natural Mexican Spanish: " +
   "never use Spain-only words (say 'agarra' or 'toma', never 'coge'; 'ustedes', never 'vosotros'), and double-check that every word you use is a real word.";
@@ -83,7 +83,7 @@ export async function download() {
   const free = await FileSystem.getFreeDiskStorageAsync();
   if (free < FREE_SPACE_NEEDED - have) {
     const gb = ((FREE_SPACE_NEEDED - have) / 1e9).toFixed(1);
-    set({ message: `Muse needs about ${gb} GB of free space on this phone. Free some up and try again.` });
+    set({ message: `The Moon needs about ${gb} GB of free space on this phone. Free some up and try again.` });
     return;
   }
   pausing = false;
@@ -179,7 +179,7 @@ export function load(): Promise<boolean> {
     }
     llm = null;
     loadPromise = null;
-    set({ state: "unsupported", message: "This phone can't run full Muse right now, so Muse-lite is helping instead." });
+    set({ state: "unsupported", message: "This phone can't run the full Moon right now, so Moonlight is helping instead." });
     return false;
   })();
   return loadPromise;

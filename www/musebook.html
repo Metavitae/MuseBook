@@ -264,10 +264,10 @@
 
 <div id="museIntro" hidden>
   <div class="sheet">
-    <h2>Meet Muse ✦</h2>
-    <p>Muse is your writing helper. When you're stuck, it suggests ideas. It never writes your book for you.</p>
-    <p>Muse lives inside your phone, so it works without internet. It needs a <b>one-time 2.6 GB download</b>. Please use wifi.</p>
-    <p class="hint" style="margin:0">You can keep writing while it downloads. Until it's done, Muse-lite helps with guiding questions.</p>
+    <h2>Meet the Moon ✦</h2>
+    <p>The Moon is your writing helper. When you're stuck, it suggests ideas. It never writes your book for you.</p>
+    <p>The Moon lives inside your phone, so it works without internet. It needs a <b>one-time 2.6 GB download</b>. Please use wifi.</p>
+    <p class="hint" style="margin:0">You can keep writing while it downloads. Until it's done, Moonlight helps with guiding questions.</p>
     <div class="btns">
       <button class="act" id="introDownload">Download now</button>
       <button class="ghost" id="introLater">Later</button>
@@ -398,7 +398,7 @@
       <label>Theme — what is this really about?</label>
       <p class="hint term">Your theme is the deeper idea under the plot: what your story says about life. A story about a robbery can really be about trust.</p>
       <input data-bind="premise.theme" placeholder="Loyalty vs. truth / Grief / Belonging" />
-      <div class="btns"><button class="muse" id="museLogline">✦ Ask Muse to tighten this</button></div>
+      <div class="btns"><button class="muse" id="museLogline">✦ Ask the Moon to tighten this</button></div>
       <div id="museLoglineOut"></div>
     </div>
     <div class="card"><h3>Promise check</h3><p class="hint term">Your promise is what your book promises the reader. This checks that it's clear: each ○ turns into ✓ when you complete it.</p><div id="premiseCheck"></div></div>
@@ -472,7 +472,7 @@
   <section id="tab-settings">
     <h2>Settings</h2>
     <div class="btns" style="margin:0 0 12px"><button class="ghost" id="gBackFromSettings" hidden>‹ Back to my book</button><button class="ghost" id="toShelfBtn" hidden>My books</button></div>
-    <p class="hint">Muse, how Moonbook looks, and where your book is saved.</p>
+    <p class="hint">The Moon, how Moonbook looks, and where your book is saved.</p>
     <div class="card">
       <h3>How you write</h3>
       <p class="hint" style="margin:0 0 10px">Guided shows one step at a time: your page, your chapters, and what comes next. Full view shows all six stages of planning. Your book stays the same in both.</p>
@@ -490,8 +490,8 @@
       <p class="hint" style="margin:10px 0 0">The keyboard you type with belongs to Google (or your phone's maker), not to Moonbook. It may learn your words to suggest them; Moonbook never sees that.</p>
     </div>
     <div class="card" id="museCard">
-      <h3>Muse</h3>
-      <p class="hint" style="margin:0 0 10px" id="museStateText">Checking Muse…</p>
+      <h3>The Moon</h3>
+      <p class="hint" style="margin:0 0 10px" id="museStateText">Checking the Moon…</p>
       <div class="bar" id="museBar" hidden><i id="museBarFill"></i></div>
       <p class="hint" style="margin:8px 0 0" id="museMsg" hidden></p>
       <div class="btns" id="museBtns"></div>
@@ -539,7 +539,7 @@
     </div>
   </section>
 </main>
-<footer>Moonbook · your book, your voice. Muse only ever suggests; it never writes your book for you.</footer>
+<footer>Moonbook · your book, your voice. The Moon only ever suggests; it never writes your book for you.</footer>
 
 <script>/*I18N*/</script>
 <script>/*SOUND*/</script>
@@ -1006,7 +1006,7 @@ document.getElementById("ambToggle").addEventListener("change", e=>{ DB.ui.ambie
    and one plain line about what it does. Same words in every look. */
 const KEY_TIPS=[
   ["#stagesToggle","Stages","Opens the list of stages: your plan, characters, scenes and writing."],
-  ["#settingsToggle","Settings","Language, Muse, how Moonbook looks, and backups."],
+  ["#settingsToggle","Settings","Language, The Moon, how Moonbook looks, and backups."],
   ['[data-cmd="bold"]',"Bold","Makes the selected words bold."],
   ['[data-cmd="italic"]',"Italic","Makes the selected words italic."],
   ['[data-cmd="underline"]',"Underline","Draws a line under the selected words."],
@@ -1016,7 +1016,7 @@ const KEY_TIPS=[
   ['[data-pop="more"]',"More","Headings, quotes, alignment and clearing a style."],
   ['[data-cmd="undo"]',"Undo","Takes back your last change."],
   ['[data-cmd="redo"]',"Redo","Puts back what you just undid."],
-  ["#museContinue","Muse","Ask for an idea when you're stuck. Only when you ask."]
+  ["#museContinue","The Moon","Ask for an idea when you're stuck. Only when you ask."]
 ];
 const KEY_SEL=KEY_TIPS.map(k=>k[0]).join(",");
 function tipFor(el){ const k=KEY_TIPS.find(k=>el.matches(k[0])); return k?[t(k[1]),t(k[2])]:null; }
@@ -1503,7 +1503,7 @@ function renderChapterBreakdown(){
 async function askMuse(prompt, targetEl, label, kind){
   if(!sampleApi){ return; }
   const st = window.MuseNative ? MuseNative.status.state : "loaded";
-  targetEl.innerHTML = `<div class="musebox"><span class="lbl">Muse</span>${t(st==="loading"?"Muse is waking up…":"Muse is thinking…")}</div>`;
+  targetEl.innerHTML = `<div class="musebox"><span class="lbl">The Moon</span>${t(st==="loading"?"The Moon is waking up…":"The Moon is thinking…")}</div>`;
   label = t(label);
   if(LANG==="es") prompt += "\n\nWrite your whole answer in natural Mexican Spanish.";
   try{
@@ -1568,15 +1568,15 @@ function liteBeat(){
 }
 function showLite(targetEl, kind){
   const LITE_L = LANG==="es" ? LITE_ES : LITE;
-  let label="Muse-lite", text="";
-  if(kind==="logline"){ label="Muse-lite · shape your logline"; text=pick(LITE_L.logline,1)[0]; }
-  else if(kind==="beat"){ label="Muse-lite · a possible next beat"; text=liteBeat(); }
-  else if(kind==="stuck"){ label="Muse-lite · 3 directions to try"; text=pick(LITE_L.stuck,3).map((x,i)=>(i+1)+". "+x).join("\n"); }
-  else { label="Muse-lite · a way forward"; text=pick(LITE_L.cont,1)[0]; }
+  let label="Moonlight", text="";
+  if(kind==="logline"){ label="Moonlight · shape your logline"; text=pick(LITE_L.logline,1)[0]; }
+  else if(kind==="beat"){ label="Moonlight · a possible next beat"; text=liteBeat(); }
+  else if(kind==="stuck"){ label="Moonlight · 3 directions to try"; text=pick(LITE_L.stuck,3).map((x,i)=>(i+1)+". "+x).join("\n"); }
+  else { label="Moonlight · a way forward"; text=pick(LITE_L.cont,1)[0]; }
   const st = window.MuseNative ? MuseNative.status.state : "";
-  const note = st==="unsupported" ? "Full Muse can't run on this phone, so Muse-lite is helping."
-    : st==="downloading" ? "Full Muse is still downloading. It will answer here once it's ready."
-    : "Full Muse isn't downloaded yet. Get it in Settings ⚙.";
+  const note = st==="unsupported" ? "The full Moon can't run on this phone, so Moonlight is helping."
+    : st==="downloading" ? "The full Moon is still downloading. It will answer here once it's ready."
+    : "The full Moon isn't downloaded yet. Get it in Settings ⚙.";
   targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(t(label))}</span>${esc(text)}<span class="note">${esc(t(note))}</span></div>`;
 }
 
@@ -1588,25 +1588,25 @@ function renderMuseCard(s){
   if(!txt) return;
   const pct=Math.floor((s.progress||0)*100);
   const T={
-    none:"Muse isn't on this phone yet. It's a one-time 2.6 GB download (use wifi). After that it works offline. Until then, Muse-lite helps.",
-    downloading:`Downloading Muse… ${pct}% (${fmtGB(s.progress||0)} of 2.6 GB). You can keep writing. Keep Moonbook open; if you leave, it pauses.`,
+    none:"The Moon isn't on this phone yet. It's a one-time 2.6 GB download (use wifi). After that it works offline. Until then, Moonlight helps.",
+    downloading:`Downloading the Moon… ${pct}% (${fmtGB(s.progress||0)} of 2.6 GB). You can keep writing. Keep Moonbook open; if you leave, it pauses.`,
     paused:`Download paused at ${pct}%. Resume continues where it left off.`,
-    ready:"Muse is downloaded and works offline.",
-    loading:"Muse is waking up…",
-    loaded:"Muse is ready and works offline."+(s.backend==="cpu"?" (Running on the processor, so answers take a little longer.)":""),
-    unsupported:"Muse is downloaded, but this phone can't run it right now. Muse-lite is helping instead."
+    ready:"The Moon is downloaded and works offline.",
+    loading:"The Moon is waking up…",
+    loaded:"The Moon is ready and works offline."+(s.backend==="cpu"?" (Running on the processor, so answers take a little longer.)":""),
+    unsupported:"The Moon is downloaded, but this phone can't run it right now. Moonlight is helping instead."
   };
   txt.textContent = s.state==="loaded"
-    ? t("Muse is ready and works offline.")+(s.backend==="cpu"?" "+t("(Running on the processor, so answers take a little longer.)"):"")
+    ? t("The Moon is ready and works offline.")+(s.backend==="cpu"?" "+t("(Running on the processor, so answers take a little longer.)"):"")
     : t(T[s.state]||"");
   bar.hidden=!(s.state==="downloading"||s.state==="paused");
   fill.style.width=pct+"%";
   msg.hidden=!s.message; msg.textContent=t(s.message||"");
   let b="";
-  if(s.state==="none") b=`<button class="act" data-muse="download">Download Muse (2.6 GB)</button>`;
+  if(s.state==="none") b=`<button class="act" data-muse="download">Download the Moon (2.6 GB)</button>`;
   if(s.state==="downloading") b=`<button class="ghost" data-muse="pause">Pause</button>`;
   if(s.state==="paused") b=`<button class="act" data-muse="download">Resume download</button><button class="danger" data-muse="remove">Cancel and delete</button>`;
-  if(["ready","loaded","unsupported"].includes(s.state)) b=`<button class="danger" data-muse="remove">Remove Muse (frees 2.6 GB)</button>`;
+  if(["ready","loaded","unsupported"].includes(s.state)) b=`<button class="danger" data-muse="remove">Remove the Moon (frees 2.6 GB)</button>`;
   btns.innerHTML=b;
 }
 let removeArmed=false;
@@ -1627,8 +1627,8 @@ function initMuseUI(){
     setTimeout(()=>{ intro.hidden=false; }, 2600);
   }
   const close=()=>{ intro.hidden=true; MuseNative.markFirstRunSeen(); };
-  document.getElementById("introDownload").addEventListener("click", ()=>{ close(); MuseNative.download(); toast("Muse is downloading. Keep writing!"); });
-  document.getElementById("introLater").addEventListener("click", ()=>{ close(); toast("You can get Muse anytime in Settings ⚙."); });
+  document.getElementById("introDownload").addEventListener("click", ()=>{ close(); MuseNative.download(); toast("The Moon is downloading. Keep writing!"); });
+  document.getElementById("introLater").addEventListener("click", ()=>{ close(); toast("You can get the Moon anytime in Settings ⚙."); });
 }
 document.getElementById("museLogline").addEventListener("click",()=>{
   const p=DB.premise;
