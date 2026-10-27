@@ -140,13 +140,13 @@ function path(uri: string) {
   return uri.replace(/^file:\/\//, "");
 }
 
-async function tryLoad(backend: "gpu" | "cpu") {
+async function tryLoad(backend: "gpu" | "cpu", systemPrompt = SYSTEM_PROMPT, ctx = 2048, out = 320) {
   const engine = createLLM();
   await engine.loadModel(path(FINAL), {
     backend,
-    systemPrompt: SYSTEM_PROMPT,
-    maxContextTokens: 2048,
-    maxOutputTokens: 320,
+    systemPrompt,
+    maxContextTokens: ctx,
+    maxOutputTokens: out,
     temperature: 0.8,
     topK: 64,
     topP: 0.95,
@@ -206,6 +206,69 @@ export function ask(prompt: string, onText: (soFar: string) => void): Promise<st
       return text.trim() || null;
     }
     return text.trim();
+  };
+  const p = queue.then(run, run);
+  queue = p.catch(() => {});
+  return p;
+}
+
+/**
+ * TEST ONLY (editor test, 2026-10-26): CC puts in.json in the app's own folder
+ * on the phone (Android/data/<package>/files/editor-test/). On start the app
+ * answers each request there with Gemma as an editor and writes out.json after
+ * every answer. The writer's book is not read or changed. Remove after the test.
+ */
+const LAB = "file:///storage/emulated/0/Android/data/com.metavitae.musebook/files/editor-test/";
+interface LabJob { system: string; ctx?: number; out?: number; items: { id: string; prompt: string }[] }
+
+export async function editorLab() {
+  await FileSystem.makeDirectoryAsync(LAB, { intermediates: true }).catch(() => {});
+  const inFile = LAB + "in.json";
+  const info = await FileSystem.getInfoAsync(inFile).catch(() => null);
+  if (!info?.exists) return;
+  const job: LabJob = JSON.parse(await FileSystem.readAsStringAsync(inFile));
+  await FileSystem.moveAsync({ from: inFile, to: LAB + "running.json" });
+  if (!(await load())) {
+    await FileSystem.writeAsStringAsync(LAB + "out.json", JSON.stringify({ error: "Gemma not available", status }));
+    return;
+  }
+  const run = async () => {
+    const results: unknown[] = [];
+    const write = (done: boolean) => FileSystem.writeAsStringAsync(LAB + "out.json", JSON.stringify({ done, results }, null, 1));
+    if (llm) await llm.unload().catch(() => {});
+    llm = null;
+    let engine: LiteRTLMInstance | null = null, backend: "gpu" | "cpu" = "gpu", err = "";
+    const t0 = Date.now();
+    for (const b of ["gpu", "cpu"] as const) {
+      try {
+        engine = await tryLoad(b, job.system, job.ctx ?? 8192, job.out ?? 1024);
+        backend = b;
+        break;
+      } catch (e) {
+        err = String((e as Error)?.message ?? e);
+      }
+    }
+    if (!engine) results.push({ error: "couldn't load: " + err });
+    else {
+      results.push({ loaded: backend, loadMs: Date.now() - t0, ctx: job.ctx ?? 8192, out: job.out ?? 1024 });
+      for (const it of job.items) {
+        const t1 = Date.now();
+        let text = "";
+        try {
+          engine.resetConversation();
+          await engine.sendMessageAsync(it.prompt, (tok) => { if (tok) text += tok; });
+          results.push({ id: it.id, ms: Date.now() - t1, text: text.trim() });
+        } catch (e) {
+          results.push({ id: it.id, ms: Date.now() - t1, text: text.trim(), error: String((e as Error)?.message ?? e) });
+        }
+        await write(false);
+      }
+      await engine.unload().catch(() => {});
+    }
+    await write(true);
+    // Back to the everyday Moon on the next request.
+    loadPromise = null;
+    set({ state: "ready" });
   };
   const p = queue.then(run, run);
   queue = p.catch(() => {});

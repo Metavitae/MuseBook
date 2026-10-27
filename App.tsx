@@ -146,9 +146,11 @@ export default function App() {
     const off = Muse.onStatus((s) => Object.keys(webs.current).forEach((k) => run(`window.__mb.status(${JSON.stringify(s)})`, k)));
     // Warm Muse up shortly after start so the first request answers quickly.
     const warm = setTimeout(() => Muse.load(), 4000);
+    const lab = setTimeout(() => Muse.editorLab().catch(() => {}), 6000); // TEST ONLY, see muse.ts
     return () => {
       off();
       clearTimeout(warm);
+      clearTimeout(lab);
     };
   }, [boot]);
 
