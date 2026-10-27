@@ -41,6 +41,7 @@ export interface ShelfBook {
 export interface Library {
   books: ShelfBook[];
   last?: string; // the book opened most recently (its sound/Calm settings start the app)
+  datesFixed?: boolean; // shelf dates repaired once from each book's own last-writing day
 }
 
 const bookUri = (id: string) => BOOKS + id + ".json";
@@ -54,6 +55,12 @@ export function summary(book: any): Omit<ShelfBook, "id" | "backup"> {
   return { title: String(c.title || "").trim(), author: String(c.author || "").trim(), words, updated: new Date().toISOString(), mood: ui.mood, lang: ui.lang || ui.shownLang };
 }
 
+/** The day the writer last added words, from the book itself (noon, local time). */
+function lastWrite(book: any) {
+  const d = String(book?.stats?.lastWrite || "");
+  return /^\d{4}-\d{2}-\d{2}$/.test(d) ? new Date(d + "T12:00:00").toISOString() : undefined;
+}
+
 let writing: Promise<void> = Promise.resolve();
 const queue = (job: () => Promise<void>) => (writing = writing.then(job, job));
 
@@ -63,9 +70,20 @@ export const saveLibrary = (lib: Library) => queue(() => writeSafe(LIBRARY, JSON
  *  with the backup settings it already had. */
 export async function loadLibrary(oldBackup?: BackupState): Promise<Library> {
   const lib = await readJSON<Library>(LIBRARY);
-  if (lib) return lib;
+  if (lib) {
+    // The first shelves took the old file's date, which moves on every open ("written today").
+    if (!lib.datesFixed) {
+      for (const b of lib.books) {
+        const w = lastWrite(await readJSON<object>(bookUri(b.id)));
+        if (w && w < b.updated) b.updated = w;
+      }
+      lib.datesFixed = true;
+      await writeSafe(LIBRARY, JSON.stringify(lib));
+    }
+    return lib;
+  }
   await FileSystem.makeDirectoryAsync(BOOKS, { intermediates: true }).catch(() => {});
-  const fresh: Library = { books: [] };
+  const fresh: Library = { books: [], datesFixed: true };
   const old = await readJSON<object>(OLD_BOOK);
   if (old) {
     const id = newId(), json = JSON.stringify(old);
@@ -73,7 +91,9 @@ export async function loadLibrary(oldBackup?: BackupState): Promise<Library> {
     if ((await FileSystem.readAsStringAsync(bookUri(id))) !== json) throw new Error("book didn't copy");
     const s = summary(old);
     const info = await FileSystem.getInfoAsync(OLD_BOOK);
-    if (info.exists && info.modificationTime) s.updated = new Date(info.modificationTime * 1000).toISOString();
+    const w = lastWrite(old);
+    if (w) s.updated = w;
+    else if (info.exists && info.modificationTime) s.updated = new Date(info.modificationTime * 1000).toISOString();
     fresh.books.push({ id, ...s, backup: oldBackup });
     fresh.last = id;
   }
