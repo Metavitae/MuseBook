@@ -179,7 +179,7 @@ export function load(): Promise<boolean> {
     }
     llm = null;
     loadPromise = null;
-    set({ state: "unsupported", message: "This phone can't run the full Moon right now, so Moonlight is helping instead." });
+    set({ state: "unsupported", message: undefined }); // the card's own line says it
     return false;
   })();
   return loadPromise;

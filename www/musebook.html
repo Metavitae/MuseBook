@@ -422,7 +422,7 @@
   <!-- BIBLE -->
   <section id="tab-bible">
     <h2>Stage 3 — Story Bible</h2>
-    <p class="hint">Your continuity source of truth. Fill in only what you need — you can always add more later.</p>
+    <p class="hint">Keep track of who's who and what's where. Fill in only what you need; you can always add more later.</p>
     <div class="card"><h3>Characters</h3><div id="charList"></div><button class="ghost" data-add="characters">+ Add character</button></div>
     <div class="card"><h3>Locations</h3><div id="locList"></div><button class="ghost" data-add="locations">+ Add location</button></div>
     <div class="card"><h3>World rules / facts</h3><div id="ruleList"></div><button class="ghost" data-add="rules">+ Add rule</button></div>
@@ -431,7 +431,7 @@
   <!-- OUTLINE -->
   <section id="tab-outline">
     <h2>Stage 4 — Outline &amp; Beats</h2>
-    <p class="hint">Pick a structure template, or build your own. Skipping this is allowed — but it's the #1 cause of a stuck draft.</p>
+    <p class="hint">Pick a structure, or build your own. You can skip this, but a few beats make it much easier to keep going.</p>
     <div class="card"><h3>Load a structure</h3><div class="btns" id="templateBtns"></div></div>
     <div class="card">
       <h3>Your beats</h3>
@@ -448,7 +448,7 @@
   <!-- SCENES -->
   <section id="tab-scenes">
     <h2>Stage 5 — Scene Cards</h2>
-    <p class="hint">Every scene needs a POV, a goal, a conflict, and an outcome. If it has none, it's not a scene — it's a note.</p>
+    <p class="hint">Every scene needs a point of view, a goal, a conflict and an outcome. Without them, it's still a note, not a scene.</p>
     <div id="sceneList"></div>
     <button class="ghost" data-add="scenes">+ Add scene</button>
   </section>
@@ -456,14 +456,14 @@
   <!-- DRAFT -->
   <section id="tab-draft">
     <h2>Stage 6 — Draft</h2>
-    <p class="hint">Write forward. Do not edit. Fix it in revision.</p>
+    <p class="hint">Keep moving forward. Polishing comes later, in revision.</p>
     <div id="draftWrap"></div>
   </section>
 
   <!-- DASHBOARD -->
   <section id="tab-dash">
     <h2>Dashboard</h2>
-    <p class="hint">Where you actually are, versus where you said you'd be.</p>
+    <p class="hint">Where you are now, and where you're heading.</p>
     <div id="dashBody"></div>
     <div class="card">
       <h3>Back up your book</h3>
@@ -835,7 +835,7 @@ function setSaved(state){
   if(mini) mini.className="dotmini"+(state==="cloud"?" on":state==="local"?" mid":"");
   txt.textContent = state==="cloud"?"saved on this phone"
     : state==="saving"?"saving…"
-    : state==="local"?"saved on this device only"
+    : state==="local"?"saved on this screen only"
     : state==="error"?"couldn't save — export a backup"
     : "starting…";
 }
@@ -1306,7 +1306,7 @@ function renderDraft(){
         </div>
         <div class="edpop" id="edpop" hidden></div>
       </div>
-      <div class="platen"><div id="draftArea" class="editor" contenteditable="true" spellcheck="true" autocapitalize="sentences" data-ph="Write here. Don't edit. Just go."></div></div>
+      <div class="platen"><div id="draftArea" class="editor" contenteditable="true" spellcheck="true" autocapitalize="sentences" data-ph="Start writing here."></div></div>
       <div class="btns"><button class="muse" id="museContinue" ${sampleApi?'':'hidden'}>✦ Suggest how this could continue</button><button class="muse" id="museEditor" ${sampleApi?'':'hidden'}>✦ Read this like an editor</button></div>
       <div id="museContinueOut"></div>
     </div>`;
@@ -1476,10 +1476,10 @@ function renderDash(){
   const written = DB.scenes.filter(s=>words(s.text)>0).length;
   const dailyPct = Number(c.dailyGoal||0)? Math.min(100,Math.round(st.wordsToday/Number(c.dailyGoal)*100)):0;
   let issues=[];
-  if(!c.title) issues.push("No title set in your Book Contract.");
-  if(!c.targetWords) issues.push("No target word count — you can't measure progress without one.");
-  if(!DB.premise.logline) issues.push("No logline yet. The book doesn't know what it is.");
-  if(!DB.beats.length && !DB.scenes.length) issues.push("No outline and no scenes. You're free-writing into the void.");
+  if(!c.title) issues.push("Your book doesn't have a title yet. Give it one in the Book Contract.");
+  if(!c.targetWords) issues.push("Set a target word count to see how far you've come.");
+  if(!DB.premise.logline) issues.push("No logline yet. One sentence will show you what your book is about.");
+  if(!DB.beats.length && !DB.scenes.length) issues.push("No outline or scenes yet. That's fine for now; a few beats will light the way when you want them.");
   const weakScenes = DB.scenes.filter(s=>!s.goal||!s.conflict||!s.outcome).length;
   if(weakScenes) issues.push(weakScenes+" scene(s) missing a goal, conflict, or outcome.");
   if(c.deadline){
@@ -1488,7 +1488,7 @@ function renderDash(){
       const need=Math.round((target-total)/days);
       if(c.dailyGoal && need>Number(c.dailyGoal)) issues.push("You need "+fmt(need)+" words/day to finish on time, but your goal is "+fmt(c.dailyGoal)+".");
     }
-    if(days<0) issues.push("Your deadline has passed.");
+    if(days<0) issues.push("Your deadline has passed. Pick a new date when you're ready.");
   }
   document.getElementById("dashBody").innerHTML=`
     <div class="grid" style="margin-bottom:12px">
@@ -1508,7 +1508,7 @@ function renderDash(){
     <div class="card">
       <h3>Checks &amp; balances</h3>
       ${issues.length? issues.map(i=>`<div class="warnbox" style="margin-bottom:8px">${esc(i)}</div>`).join("")
-        : `<div style="color:var(--good)">✓ No structural issues detected. Keep going.</div>`}
+        : `<div style="color:var(--good)">✓ Your structure looks sound. Keep going.</div>`}
     </div>
     <div class="card"><h3>Chapter breakdown</h3>${renderChapterBreakdown()}</div>
   `;
@@ -1552,7 +1552,11 @@ async function askMuse(prompt, targetEl, label, kind){
 const LITE = {
   logline:[
     "Answer these four, then join them into one sentence:\n1. Who is your hero?\n2. What do they want more than anything?\n3. What stands in their way?\n4. What do they lose if they fail?",
-    "Try this shape:\n\"When [something happens], [your hero] must [do something hard] before [what's at stake].\"\nFill in the brackets with your story."
+    "Try this shape:\n\"When [something happens], [your hero] must [do something hard] before [what's at stake].\"\nFill in the brackets with your story.",
+    "Tell your book to an imaginary friend in ten seconds. Write down exactly what you said, then trim it.",
+    "Start with the stakes: what does your hero lose if they fail? Build the sentence backward from there.",
+    "Name your hero by what makes them different, not by their name: “a grieving baker”, “a retired spy”.",
+    "Write three versions: one too long, one too short, one in between. Keep the best of each."
   ],
   stuck:[
     "What does your POV character want in this exact moment? Make someone stop them.",
@@ -1566,7 +1570,19 @@ const LITE = {
     "Add a clock: something must happen in the next ten minutes.",
     "Write the scene from the point where your character decides something.",
     "Bring back an object or a detail from an earlier chapter.",
-    "What would your villain do right now if they were watching?"
+    "What would your villain do right now if they were watching?",
+    "Let two characters want opposite things from the same moment.",
+    "Take something away from your hero: a tool, a friend, a way out.",
+    "Write what your character would never say out loud, then let them almost say it.",
+    "Let the weather, a sound or a stranger interrupt the scene.",
+    "Decide where this scene must end, then write toward that moment.",
+    "Let someone lie here. The reader can know it before your hero does.",
+    "Give your character a small task for their hands while the big thing happens.",
+    "What does your character fear most in this scene? Bring it one step closer.",
+    "Skip the opening you planned. Start in the middle of something already happening.",
+    "Let a memory surface that changes how your character sees this moment.",
+    "Write one line that only this character could say.",
+    "Make the easy choice impossible. What does your character do now?"
   ],
   cont:[
     "Write one sentence about what your character sees, hears or smells right now.",
@@ -1576,7 +1592,23 @@ const LITE = {
     "Write the next line as dialogue. Who speaks, and what do they want?",
     "Show what your character feels through what they do with their hands.",
     "Let something small go wrong.",
-    "Write the very next thing that happens, even if it's ordinary. Momentum first."
+    "Write the very next thing that happens, even if it's ordinary. Momentum first.",
+    "Let your character notice something they missed before.",
+    "Write the silence: what goes unsaid between them?",
+    "Move the clock forward an hour. What has changed?",
+    "Let your character answer a question with another question.",
+    "Write what they are thinking but not saying.",
+    "Bring in a smell or a sound from their past.",
+    "Let the place push back: a locked door, a long line, a dead phone.",
+    "Make the next sentence shorter than the last one.",
+    "Let someone want something from your character, right now.",
+    "Describe one object in the room the way your character feels about it.",
+    "Write the thing your character is trying not to think about.",
+    "Have your character make a choice, even a small one.",
+    "Let the next line surprise you, too.",
+    "End this paragraph with a question your character can't answer yet.",
+    "Let another character see this moment differently, and say so.",
+    "Go back to what your character wanted when the chapter began. Are they closer?"
   ],
   editor:[
     "Read it out loud. Where do you stumble or run out of breath? Shorten that sentence.",
@@ -1586,9 +1618,36 @@ const LITE = {
     "Check each line of dialogue: could you tell who is speaking without the name?",
     "Find the moment where the scene changes something. Is it clear enough?",
     "Cut one sentence that only repeats what the reader already knows.",
-    "Is there one concrete detail (a smell, a sound, an object) in each paragraph?"
+    "Is there one concrete detail (a smell, a sound, an object) in each paragraph?",
+    "Find your strongest sentence. Does the paragraph around it hold it up?",
+    "Look at the first word of each sentence. If many start the same way, change a few.",
+    "Underline every word ending in -ly. Keep only the ones that earn their place.",
+    "Is it clear where we are? One detail of the place in the first lines is enough.",
+    "Read the last line again. Does it make the reader want the next one?",
+    "Find your longest paragraph. Would it breathe better in two?",
+    "Look for “very”, “really” and “just”. Most of them can go.",
+    "Is it clear when this happens? The reader should never have to guess.",
+    "Read only the dialogue. Does each person sound like themselves?",
+    "Find an abstract word like love, fear or sadness. Could an image say it better?",
+    "Is anything explained twice? Trust the reader to get it once.",
+    "Listen to the rhythm. Put one short sentence among the long ones.",
+    "Does every person in this part have a reason to be there?",
+    "Find where the tension drops. Could something small raise it again?",
+    "Look at your verbs. Swap a weak one (was, had, went) for one that shows more.",
+    "What does the reader feel at the end of this part? Is it what you want them to feel?"
   ]
 };
+/* Moonlight never repeats itself: each list is dealt like a deck (EN and ES lists share the same
+   order), and a line comes back only after every other one has been shown. */
+function pickFresh(kind, arr, n){
+  let seen=[]; try{ seen=JSON.parse(localStorage.getItem("mbLite:"+kind)||"[]"); }catch(e){}
+  seen=seen.filter(i=>i<arr.length);
+  let fresh=arr.map((_,i)=>i).filter(i=>!seen.includes(i));
+  if(fresh.length<n){ seen=[]; fresh=arr.map((_,i)=>i); }
+  const out=pick(fresh, n);
+  try{ localStorage.setItem("mbLite:"+kind, JSON.stringify(seen.concat(out))); }catch(e){}
+  return out.map(i=>arr[i]);
+}
 function pick(arr, n){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a.slice(0,n); }
 function liteBeat(){
   const titles = DB.beats.map(b=>(b.title||"").trim().toLowerCase());
@@ -1608,15 +1667,15 @@ function liteBeat(){
 function showLite(targetEl, kind){
   const LITE_L = LANG==="es" ? LITE_ES : LITE;
   let label="Moonlight", text="";
-  if(kind==="logline"){ label="Moonlight · shape your logline"; text=pick(LITE_L.logline,1)[0]; }
+  if(kind==="logline"){ label="Moonlight · shape your logline"; text=pickFresh("logline", LITE_L.logline,1)[0]; }
   else if(kind==="beat"){ label="Moonlight · a possible next beat"; text=liteBeat(); }
-  else if(kind==="editor"){ label="Moonlight · an editor's checklist"; text=pick(LITE_L.editor,4).map(x=>"• "+x).join("\n"); }
-  else if(kind==="stuck"){ label="Moonlight · 3 directions to try"; text=pick(LITE_L.stuck,3).map((x,i)=>(i+1)+". "+x).join("\n"); }
-  else { label="Moonlight · a way forward"; text=pick(LITE_L.cont,1)[0]; }
+  else if(kind==="editor"){ label="Moonlight · an editor's checklist"; text=pickFresh("editor", LITE_L.editor,4).map(x=>"• "+x).join("\n"); }
+  else if(kind==="stuck"){ label="Moonlight · 3 directions to try"; text=pickFresh("stuck", LITE_L.stuck,3).map((x,i)=>(i+1)+". "+x).join("\n"); }
+  else { label="Moonlight · a way forward"; text=pickFresh("cont", LITE_L.cont,1)[0]; }
   const st = window.MuseNative ? MuseNative.status.state : "";
-  const note = st==="unsupported" ? "The full Moon can't run on this phone, so Moonlight is helping."
-    : st==="downloading" ? "The full Moon is still downloading. It will answer here once it's ready."
-    : "The full Moon isn't downloaded yet. Get it in Settings ⚙.";
+  const note = st==="unsupported" ? "The Moon can't run on this phone right now."
+    : st==="downloading" ? "The Moon is still downloading. It will answer here when it's ready."
+    : "For the Moon's own ideas, get it in Settings ⚙.";
   targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(t(label))}</span>${esc(text)}<span class="note">${esc(t(note))}</span></div>`;
 }
 
@@ -1628,20 +1687,19 @@ function renderMuseCard(s){
   if(!txt) return;
   const pct=Math.floor((s.progress||0)*100);
   const T={
-    none:"The Moon isn't on this phone yet. It's a one-time 2.6 GB download (use wifi). After that it works offline. Until then, Moonlight helps.",
+    none:"The Moon isn't on this phone yet. It's a one-time 2.6 GB download over wifi, and then it works without internet. Until then, Moonlight helps.",
     downloading:`Downloading the Moon… ${pct}% (${fmtGB(s.progress||0)} of 2.6 GB). You can keep writing. Keep Moonbook open; if you leave, it pauses.`,
     paused:`Download paused at ${pct}%. Resume continues where it left off.`,
-    ready:"The Moon is downloaded and works offline.",
+    ready:"The Moon is downloaded and works without internet.",
     loading:"The Moon is waking up…",
-    loaded:"The Moon is ready and works offline."+(s.backend==="cpu"?" (Running on the processor, so answers take a little longer.)":""),
-    unsupported:"The Moon is downloaded, but this phone can't run it right now. Moonlight is helping instead."
+    unsupported:"The Moon is downloaded, but this phone can't wake it right now. Until it can, Moonlight helps."
   };
   txt.textContent = s.state==="loaded"
-    ? t("The Moon is ready and works offline.")+(s.backend==="cpu"?" "+t("(Running on the processor, so answers take a little longer.)"):"")
+    ? t("The Moon is ready and works without internet.")+(s.backend==="cpu"?" "+t("(It runs on the processor here, so answers take a little longer.)"):"")
     : t(T[s.state]||"");
   bar.hidden=!(s.state==="downloading"||s.state==="paused");
   fill.style.width=pct+"%";
-  msg.hidden=!s.message; msg.textContent=t(s.message||"");
+  msg.hidden=!s.message || t(s.message)===txt.textContent; msg.textContent=t(s.message||"");
   let b="";
   if(s.state==="none") b=`<button class="act" data-muse="download">Download the Moon (2.6 GB)</button>`;
   if(s.state==="downloading") b=`<button class="ghost" data-muse="pause">Pause</button>`;

@@ -37,7 +37,19 @@
           }
         }
       ],
-      "expo-video"
+      "expo-video",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#f2f4f4",
+          "image": "./assets/splash-empty.png",
+          "imageWidth": 1,
+          "dark": {
+            "backgroundColor": "#f2f4f4",
+            "image": "./assets/splash-empty.png"
+          }
+        }
+      ]
     ]
   }
 }

@@ -146,7 +146,7 @@ function welcome(){
     <div class="g-center">
     <div class="g-brand">Moonbook</div>
     <h1 class="g-h1">${L("Write your book","Escribe tu libro")}</h1>
-    <p class="g-lead">${L("Everything stays on your phone. Write at your pace; I'll ask small questions only when you want them.","Todo se queda en tu teléfono. Escribe a tu ritmo; solo te haré preguntas pequeñas cuando tú quieras.")}</p>
+    <p class="g-lead">${L("Everything stays on your phone. Write at your pace; I'll ask small questions only when you want them.","Todo se queda en tu celular. Escribe a tu ritmo; solo te haré preguntas pequeñas cuando tú quieras.")}</p>
     <div class="g-stack">
       <button class="act g-big" data-g="start">${L("Start a new book","Empezar un libro nuevo")}</button>
       <p class="g-sub">${L("Takes about a minute to set up. Then you write.","Toma como un minuto. Después escribes.")}</p>
@@ -182,7 +182,7 @@ function renderPage(r){
     <div class="g-own g-head">
       <div class="g-lab">${esc(label(s))}</div>
       <input class="g-ctitle" data-gi="ctitle" value="${esc(title(s))}" placeholder="${esc(L("Chapter title (optional)","Título del capítulo (opcional)"))}">
-      <div class="g-status"><span id="gWords">${fmt(w)} ${L(w===1?"word":"words",w===1?"palabra":"palabras")}</span> · ${L("Saved on this phone","Guardado en este teléfono")}
+      <div class="g-status"><span id="gWords">${fmt(w)} ${L(w===1?"word":"words",w===1?"palabra":"palabras")}</span> · ${L("Saved on this phone","Guardado en este celular")}
         <button class="g-chip" data-g="idea">+ ${L("Jot an idea","Anotar una idea")}</button></div>
       ${empty?`<p class="g-prompt">${L("Tell me the moment where everything begins.","Cuéntame el momento en que todo empieza.")}</p>`:""}
     </div>
@@ -239,7 +239,7 @@ function chapters(){
     <label class="g-lbl">${L("Book title · tap to rename","Título del libro · tócalo para cambiarlo")}</label>
     <input class="g-field g-titlefield" data-gi="booktitle" value="${esc(bookTitle())}" placeholder="${esc(L("Name your book","Ponle nombre a tu libro"))}">
     ${DB.premise.logline?`<p class="g-logline">“${esc(DB.premise.logline.slice(0,160))}”</p>`:""}
-    <p class="g-sub">${esc(countText)} · ${fmt(total)} ${L("words","palabras")}. ${L("Tap a chapter to keep writing it. Everything is saved on this phone.","Toca un capítulo para seguir escribiéndolo. Todo se guarda en este teléfono.")}</p>
+    <p class="g-sub">${esc(countText)} · ${fmt(total)} ${L("words","palabras")}. ${L("Tap a chapter to keep writing it.","Toca un capítulo para seguir escribiéndolo.")}</p>
     <div class="g-rowsbox">${rows}</div>
     ${specials.length?`<p class="g-sub g-spec">${L("Add a page that goes before or after your chapters:","Agrega una página que va antes o después de tus capítulos:")}</p><div class="btns">${specials.map(([k,n])=>`<button class="ghost" data-g="special" data-k="${k}">+ ${n}</button>`).join("")}</div>`:""}
     ${ideas?`<h3 class="g-h3">${L("Your ideas","Tus ideas")}</h3>${ideas}`:""}
@@ -253,7 +253,7 @@ function chapters(){
 function done(){
   const i=cur(), s=DB.scenes[i]||{}, w=wc(s);
   const st=(window.MuseBackup&&MuseBackup.state)||{};
-  const safe= st.last ? L("Safe on this phone. Last copy to ","A salvo en este teléfono. Última copia en ")+(st.last.place==="phone"?L("your phone","tu teléfono"):st.last.place)+": "+backupWhen(st.last.at)+"." : L("Safe on this phone.","A salvo en este teléfono.");
+  const safe= st.last ? L("Safe on this phone. Last copy to ","A salvo en este celular. Última copia en ")+(st.last.place==="phone"?L("your phone","tu celular"):st.last.place)+": "+backupWhen(st.last.at)+"." : L("Safe on this phone.","A salvo en este celular.");
   const keep=keepList(i);
   const shore=document.documentElement.getAttribute("data-mood")==="shore";
   return `<div class="g-moment">
@@ -296,7 +296,7 @@ function back(){
   const i=cur(), s=DB.scenes[i]||{};
   const lw=lastWords(s,14), ago=agoText(DB.ui.lastSeen);
   return `<div class="g-center">
-    <div class="g-brand">${L("WELCOME BACK","BIENVENIDO DE NUEVO")}</div>
+    <div class="g-brand">${L("WELCOME BACK","QUÉ GUSTO VERTE")}</div>
     <h1 class="g-h1">${L("Your pages were kept exactly as you left them.","Tus páginas están tal como las dejaste.")}</h1>
     <p class="g-lead">${L("You were in ","Estabas en ")}${esc(label(s))}${ago?", "+ago:""}. ${lw?L("You stopped at:","Te quedaste en:"):""}</p>
     <div class="card g-quote">${lw?esc(lw):L("A blank page. Start whenever you're ready.","Una página en blanco. Empieza cuando quieras.")}</div>
@@ -321,7 +321,7 @@ function finish(){
       <button class="iconbtn g-key" data-g="chapters">‹ ${L("All chapters","Todos los capítulos")}</button>
       <button class="gearbtn g-key" data-g="settings" aria-label="${L("Settings","Ajustes")}">⚙</button></div>
     <h1 class="g-h1 g-left">${L("Finish your book","Termina tu libro")}</h1>
-    <p class="g-lead">${L("Your writing is already saved on this phone. Nothing leaves it unless you send it.","Tu texto ya está guardado en este teléfono. Nada sale de aquí a menos que tú lo envíes.")} ${fmt(n)} ${L(n===1?"chapter":"chapters",n===1?"capítulo":"capítulos")} · ${fmt(total)} ${L("words.","palabras.")}</p>
+    <p class="g-lead">${L("Your writing is already saved on this phone. Nothing leaves it unless you send it.","Tu texto ya está guardado en este celular. Nada sale de aquí a menos que tú lo envíes.")} ${fmt(n)} ${L(n===1?"chapter":"chapters",n===1?"capítulo":"capítulos")} · ${fmt(total)} ${L("words.","palabras.")}</p>
     ${unfinished.length?`<div class="card g-unf"><h3>${L("Still in progress","Todavía en progreso")}</h3>
       <p class="g-sub">${unfinished.map(i=>esc(label(DB.scenes[i]))).join(", ")}. ${L("A half-written chapter goes into your file only if you say so.","Un capítulo a medias entra en tu archivo solo si tú lo dices.")}</p>
       <div class="segmented"><button class="${inc?"active":""}" data-g="incYes">${L("Include them","Incluirlos")}</button><button class="${!inc?"active":""}" data-g="incNo">${L("Leave them out","Dejarlos fuera")}</button></div></div>`:""}
@@ -335,10 +335,10 @@ function finish(){
         <button class="act" data-g="file" data-k="ebook">${L("eBook","Libro electrónico")}</button><button class="ghost" data-g="file" data-k="text">${L("Text","Texto")}</button></div>
       ${fileBusy?`<p class="g-note">${L("Making your ","Haciendo tu archivo ")}${fileNames[fileBusy]}${L(" file…","…")}</p>`:""}
       ${fileReady?`<p class="g-note">${L("Your ","Tu archivo ")}${fileNames[fileReady.kind]}${L(" file is ready. Where should it go?"," está listo. ¿A dónde lo mandas?")}</p>
-        <div class="btns"><button class="act" data-g="fileShare">${L("Share","Compartir")}</button><button class="ghost" data-g="fileSave">${L("Save to phone or Drive","Guardar en el teléfono o Drive")}</button></div>`:""}
+        <div class="btns"><button class="act" data-g="fileShare">${L("Share","Compartir")}</button><button class="ghost" data-g="fileSave">${L("Save to phone or Drive","Guardar en el celular o Drive")}</button></div>`:""}
     </div>
     <div class="card"><h3>${L("Keep a safe copy","Guarda una copia segura")}</h3>
-      <p class="g-sub">${st.last?esc(L("Last copy: ","Última copia: ")+backupWhen(st.last.at)+" · "+(st.last.place==="phone"?L("this phone","este teléfono"):st.last.place)):L("You choose the place once, such as your Google Drive. After that, a copy is saved every time you stop writing.","Eliges el lugar una vez, por ejemplo tu Google Drive. Después se guarda una copia cada vez que dejas de escribir.")}</p>
+      <p class="g-sub">${st.last?esc(L("Last copy: ","Última copia: ")+backupWhen(st.last.at)+" · "+(st.last.place==="phone"?L("this phone","este celular"):st.last.place)):L("You choose the place once, such as your Google Drive. After that, a copy is saved every time you stop writing.","Eliges el lugar una vez, por ejemplo tu Google Drive. Después se guarda una copia cada vez que dejas de escribir.")}</p>
       <div class="btns"><button class="ghost" data-g="backup">${st.dir?L("Back up now","Respaldar ahora"):L("Choose where to keep it","Elegir dónde guardarla")}</button></div></div>
     <div class="g-stack g-end"><button class="ghost g-big" data-g="toPage">${L("Not yet, keep writing","Todavía no, seguir escribiendo")}</button></div>`;
 }
@@ -357,7 +357,7 @@ function paste(){
     <h1 class="g-h1 g-left">${L("Bring your text","Trae tu texto")}</h1>
     <p class="g-lead">${L("Paste it here. I'll look for chapters and show you what I found before changing anything.","Pégalo aquí. Buscaré los capítulos y te mostraré lo que encontré antes de cambiar nada.")}</p>
     <button class="ghost g-big" data-g="pasteFile">${L("Open a text file","Abrir un archivo de texto")}</button>
-    <p class="g-sub">${L("A .txt or .md file from anywhere: your phone, Drive, or a Moonbook “YOUR BOOK” copy.","Un archivo .txt o .md de donde sea: tu teléfono, Drive o una copia “TU LIBRO” de Moonbook.")}</p>
+    <p class="g-sub">${L("A .txt or .md file from anywhere: your phone, Drive, or a Moonbook “YOUR BOOK” copy.","Un archivo .txt o .md de donde sea: tu celular, Drive o una copia “TU LIBRO” de Moonbook.")}</p>
     <p class="g-sub g-or">${L("or paste it:","o pégalo:")}</p>
     <textarea class="g-field g-pastebox" data-gi="pasteText" placeholder="${esc(L("Paste your text here.","Pega tu texto aquí."))}"></textarea>
     <div class="g-stack"><button class="act g-big" data-g="detect">${L("Continue","Seguir")}</button></div>`;
@@ -479,7 +479,7 @@ async function act(a, el){
     case "readClose": readOpen=false; return renderLayer();
     case "file": return makeFile(el.dataset.k);
     case "fileShare": try{ await MuseFiles.share(fileReady.f); }catch(e){ toast(L("Couldn't open the share screen. Try again.","No se pudo abrir la pantalla para compartir. Inténtalo de nuevo.")); } return;
-    case "fileSave": try{ const p=await MuseFiles.save(fileReady.f); if(p){ snd("saved"); toast(L("Saved to ","Guardado en ")+(p==="phone"?L("your phone","tu teléfono"):p)); } }catch(e){ toast(L("That didn't work. Try another folder.","No funcionó. Prueba otra carpeta.")); } return;
+    case "fileSave": try{ const p=await MuseFiles.save(fileReady.f); if(p){ snd("saved"); toast(L("Saved to ","Guardado en ")+(p==="phone"?L("your phone","tu celular"):p)); } }catch(e){ toast(L("That didn't work. Try another folder.","No funcionó. Prueba otra carpeta.")); } return;
     case "backup": try{ if(!(MuseBackup.state||{}).dir){ const ok=await MuseBackup.choose(); if(!ok) return; } if(!(await window.backupManual(JSON.parse(JSON.stringify(DB))))) return render(); snd("saved"); toast(L("Backed up","Respaldo hecho")); }catch(e){ toast(L("The backup didn't work. Try again.","El respaldo no funcionó. Inténtalo de nuevo.")); } return render();
     case "detect": return detect();
     case "pasteFile": return openTextFile();
@@ -638,7 +638,7 @@ function createFromPaste(one){
   if(pasteMeta.title) DB.contract.title=pasteMeta.title.trim();
   if(pasteMeta.subtitle) DB.contract.subtitle=pasteMeta.subtitle.trim();
   DB.ui.scene=0; DB.ui.gStarted=true; trackWords(); save(); pasteParts=null;
-  toast(L("Your text is in. Everything is saved on this phone.","Tu texto ya está aquí. Todo se guarda en este teléfono."));
+  toast(L("Your text is in.","Tu texto ya está aquí."));
   show("chapters");
 }
 
