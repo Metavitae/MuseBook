@@ -62,7 +62,7 @@ const ES = {
   "Bold":"Negritas","Italic":"Cursiva","Underline":"Subrayado","Font":"Letra","Size":"Tamaño","Color":"Color","More":"Más","Undo":"Deshacer","Redo":"Rehacer",
   "Write here. Don't edit. Just go.":"Escribe aquí. No corrijas. Solo avanza.",
   "Small":"Chica","Normal":"Normal","Large":"Grande","Huge":"Enorme","Heading":"Título","Subheading":"Subtítulo","Quote":"Cita","Body":"Texto","⟸ Left":"⟸ Izquierda","Center":"Centro","Right ⟹":"Derecha ⟹","S̶trike":"T̶achar","Clear style":"Quitar formato",
-  "✦ Suggest how this could continue":"✦ Sugiere cómo podría seguir","Nothing written in this chapter yet.":"Todavía no hay nada escrito en este capítulo.",
+  "✦ Suggest how this could continue":"✦ Sugiere cómo podría seguir","✦ Read this like an editor":"✦ Léelo como un editor","The editor":"El editor","The Moon reads this part like an editor: what works and what to improve. It never rewrites your sentences.":"La Luna lee esta parte como un editor: qué funciona y qué se puede mejorar. Nunca reescribe tus oraciones.","Nothing written in this chapter yet.":"Todavía no hay nada escrito en este capítulo.",
   // dashboard
   "Where you actually are, versus where you said you'd be.":"Dónde vas de verdad, contra dónde dijiste que irías.",
   "Total words":"Palabras totales","Progress":"Avance","set a target":"pon una meta","Streak":"Racha","day in a row":"día seguido","days in a row":"días seguidos",
@@ -108,7 +108,7 @@ const ES = {
   // Muse
   "The Moon is thinking…":"La Luna está pensando…","The Moon is waking up…":"La Luna se está despertando…",
   "3 tightened loglines":"3 loglines más pulidos","Next beat, suggested":"Siguiente momento sugerido","3 directions to try":"3 caminos para probar","A way forward":"Una forma de seguir",
-  "Moonlight · shape your logline":"Luz de luna · arma tu logline","Moonlight · a possible next beat":"Luz de luna · un posible siguiente momento","Moonlight · 3 directions to try":"Luz de luna · 3 caminos para probar","Moonlight · a way forward":"Luz de luna · una forma de seguir",
+  "Moonlight · shape your logline":"Luz de luna · arma tu logline","Moonlight · a possible next beat":"Luz de luna · un posible siguiente momento","Moonlight · 3 directions to try":"Luz de luna · 3 caminos para probar","Moonlight · a way forward":"Luz de luna · una forma de seguir","Moonlight · an editor's checklist":"Luz de luna · la lista de un editor","An editor's read":"La lectura de un editor","Write a little more first: the editor needs at least 100 words to read.":"Escribe un poco más primero: el editor necesita al menos 100 palabras para leer.",
   "The full Moon can't run on this phone, so Moonlight is helping.":"La Luna llena no puede funcionar en este celular, así que Luz de luna te está ayudando.",
   "The full Moon is still downloading. It will answer here once it's ready.":"La Luna llena todavía se está descargando. Contestará aquí cuando esté lista.",
   "The full Moon isn't downloaded yet. Get it in Settings ⚙.":"La Luna llena todavía no está descargada. Descárgala en Ajustes ⚙.",
@@ -283,6 +283,16 @@ const LITE_ES = {
     "Muestra lo que siente tu personaje a través de lo que hace con las manos.",
     "Deja que algo pequeño salga mal.",
     "Escribe lo siguiente que pasa, aunque sea algo común. Primero el impulso."
+  ],
+  editor:[
+    "Léelo en voz alta. ¿Dónde te trabas o te quedas sin aire? Acorta esa oración.",
+    "Busca un lugar donde dices lo que alguien siente. ¿Un gesto o una acción lo podría mostrar?",
+    "Busca una palabra que repites muy cerca. Quédate con la más fuerte.",
+    "¿La primera línea atrapa al lector? Si no, prueba empezar un párrafo después.",
+    "Revisa cada diálogo: ¿sabrías quién habla sin ver el nombre?",
+    "Encuentra el momento en que la escena cambia algo. ¿Se nota lo suficiente?",
+    "Quita una oración que solo repite lo que el lector ya sabe.",
+    "¿Hay un detalle concreto (un olor, un sonido, un objeto) en cada párrafo?"
   ]
 };
 

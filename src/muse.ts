@@ -2,8 +2,6 @@
 // phone. Tiers: Gemma on the graphics chip → Gemma on the processor →
 // Muse-lite (no AI, handled in the page) when the phone can't run Gemma.
 import * as FileSystem from "expo-file-system/legacy";
-import { Directory, File } from "expo-file-system";
-import { ToastAndroid } from "react-native";
 import { createLLM, isMemoryError, type LiteRTLMInstance } from "react-native-litert-lm";
 
 // Pinned to one model revision so a resumed download never mixes two files.
@@ -215,146 +213,39 @@ export function ask(prompt: string, onText: (soFar: string) => void): Promise<st
 }
 
 /**
- * TEST ONLY (editor test, 2026-10-26/27): CC leaves a list of editor requests on the
- * phone; on start the app answers them with Gemma as an editor and writes the answers
- * back after every one. The writer's book is not read or changed. Remove after the test.
- * Two places, tried in order (the first build only had A, and its file reads failed silently):
- *  A. the app's own phone folder: Android/data/<package>/files/editor-test/in.json → out.json
- *  B. a book's backup folder (Drive): "editor-test in.json" → "editor-test out.json"
- * Every step is noted in the answer file's "trace", in logcat ([editor-test]) and in a short toast.
+ * The Editor reads a whole scene, which doesn't fit the everyday Moon (2048 / 320).
+ * It loads Gemma once more with room for it (8192 / 1024, as in the 2026-10-26/27
+ * test on the 8T: 45–75 s per chapter), answers, and frees it again; the everyday
+ * Moon loads back on the next request.
  */
-const LAB = "file:///storage/emulated/0/Android/data/com.metavitae.musebook/files/editor-test/";
-const LAB_IN = "editor-test in.json", LAB_OUT = "editor-test out.json";
-interface LabJob { system: string; ctx?: number; out?: number; items: { id: string; prompt: string }[] }
-interface LabPlace { name: string; read: () => Promise<string | null>; answers: () => Promise<string | null>; write: (text: string) => Promise<void> }
-
-const labErr = (e: unknown) => String((e as Error)?.message ?? e);
-
-function labPlaces(): LabPlace[] {
-  const places: LabPlace[] = [{
-    name: "phone folder",
-    read: async () => {
-      // Expo only writes files that exist outside its own folders, so CC leaves out.json there too.
-      const info = await FileSystem.getInfoAsync(LAB + "in.json");
-      return info.exists ? FileSystem.readAsStringAsync(LAB + "in.json") : null;
-    },
-    answers: () => FileSystem.readAsStringAsync(LAB + "out.json"),
-    write: (text) => FileSystem.writeAsStringAsync(LAB + "out.json", text),
-  }];
-  return places;
-}
-
-/** Backup folders the writer picked for their books (content:// trees, usually Drive). */
-async function backupPlaces(trace: string[]): Promise<LabPlace[]> {
-  const lib = JSON.parse(await FileSystem.readAsStringAsync(FileSystem.documentDirectory + "library.json"));
-  const dirs = [...new Set<string>((lib?.books ?? []).map((b: any) => b?.backup?.dir).filter(Boolean))];
-  trace.push(`backup folders: ${dirs.length}`);
-  return dirs.map((uri, n) => {
-    const dir = new Directory(uri);
-    // In Drive a file's uri is an id: names come from the listing, in the same order as list().
-    const find = (name: string) => {
-      const names = dir.info().files ?? [], items = dir.list();
-      const i = names.length === items.length ? names.indexOf(name) : -1;
-      return i >= 0 && items[i] instanceof File ? (items[i] as File) : null;
-    };
-    let out: File | null = null;
-    return {
-      name: `backup folder ${n + 1}`,
-      read: async () => { const f = find(LAB_IN); return f ? f.text() : null; },
-      answers: async () => { const f = find(LAB_OUT); return f ? f.text() : null; },
-      write: async (text) => {
-        out ??= find(LAB_OUT) ?? dir.createFile(LAB_OUT, "application/json");
-        out.write(text);
-      },
-    };
-  });
-}
-
-export async function editorLab() {
-  const trace: string[] = [];
-  const note = (s: string) => { trace.push(s); console.warn("[editor-test] " + s); };
-  const toast = (s: string) => { try { ToastAndroid.show("Editor test: " + s, ToastAndroid.LONG); } catch {} };
-  let job: LabJob | null = null, place: LabPlace | null = null, raw = "";
-  const places = labPlaces();
-  try { places.push(...(await backupPlaces(trace))); } catch (e) { note("backup folders: " + labErr(e)); }
-  for (const p of places) {
-    try {
-      const text = await p.read();
-      if (text == null) { note(`${p.name}: no requests`); continue; }
-      job = JSON.parse(text);
-      place = p;
-      raw = text;
-      note(`${p.name}: ${job!.items.length} requests`);
-      break;
-    } catch (e) {
-      note(`${p.name}: ${labErr(e)}`);
-    }
-  }
-  if (!job || !place) {
-    // Leave the trail in the phone folder only: nothing new goes into a writer's backup folder.
-    await places[0].write(JSON.stringify({ done: true, trace }, null, 1)).catch(() => {});
-    toast("no requests found · " + trace.join(" · ").slice(0, 160));
-    return;
-  }
-  // The same requests are answered once: the answers carry a fingerprint of them.
-  let h = 0x811c9dc5;
-  for (let i = 0; i < raw.length; i++) h = Math.imul(h ^ raw.charCodeAt(i), 0x01000193);
-  const sig = raw.length + ":" + (h >>> 0).toString(36);
-  try {
-    const prior = JSON.parse((await place.answers()) || "{}");
-    if (prior.sig === sig && prior.done) { note("already answered"); return; }
-  } catch {}
-  const sink = place;
-  const results: unknown[] = [];
-  const write = async (done: boolean) => {
-    try { await sink.write(JSON.stringify({ sig, done, trace, results }, null, 1)); }
-    catch (e) { note("couldn't write answers: " + labErr(e)); }
-  };
-  if (!(await load())) {
-    note("Gemma not available: " + status.state);
-    await write(true);
-    toast("Gemma not available");
-    return;
-  }
-  toast(`answering ${job.items.length} requests (${sink.name})`);
-  await write(false);
+export function askEditor(prompt: string, onText: (soFar: string) => void): Promise<string | null> {
   const run = async () => {
+    if (status.state !== "ready" && status.state !== "loading" && status.state !== "loaded") return null;
+    if (loadPromise) await loadPromise.catch(() => {});
     if (llm) await llm.unload().catch(() => {});
     llm = null;
-    let engine: LiteRTLMInstance | null = null, backend: "gpu" | "cpu" = "gpu", err = "";
-    const t0 = Date.now();
-    for (const b of ["gpu", "cpu"] as const) {
-      try {
-        engine = await tryLoad(b, job!.system, job!.ctx ?? 8192, job!.out ?? 1024);
-        backend = b;
-        break;
-      } catch (e) {
-        err = labErr(e);
-      }
-    }
-    if (!engine) results.push({ error: "couldn't load: " + err });
-    else {
-      results.push({ loaded: backend, loadMs: Date.now() - t0, ctx: job!.ctx ?? 8192, out: job!.out ?? 1024 });
-      for (const it of job!.items) {
-        const t1 = Date.now();
-        let text = "";
-        try {
-          engine.resetConversation();
-          await engine.sendMessageAsync(it.prompt, (tok) => { if (tok) text += tok; });
-          results.push({ id: it.id, ms: Date.now() - t1, text: text.trim() });
-        } catch (e) {
-          results.push({ id: it.id, ms: Date.now() - t1, text: text.trim(), error: labErr(e) });
-        }
-        await write(false);
-      }
-      await engine.unload().catch(() => {});
-    }
-    note("finished");
-    await write(true);
-    toast("finished");
-    // Back to the everyday Moon on the next request.
     loadPromise = null;
+    set({ state: "loading" });
+    let engine: LiteRTLMInstance | null = null;
+    for (const backend of ["gpu", "cpu"] as const) {
+      try {
+        engine = await tryLoad(backend, SYSTEM_PROMPT, 8192, 1024);
+        break;
+      } catch {}
+    }
     set({ state: "ready" });
+    if (!engine) return null;
+    let text = "";
+    try {
+      await engine.sendMessageAsync(prompt, (token) => {
+        if (token) {
+          text += token;
+          onText(text);
+        }
+      });
+    } catch {}
+    await engine.unload().catch(() => {});
+    return text.trim() || null;
   };
   const p = queue.then(run, run);
   queue = p.catch(() => {});

@@ -1018,7 +1018,8 @@ const KEY_TIPS=[
   ['[data-cmd="undo"]',"Undo","Takes back your last change."],
   ['[data-cmd="redo"]',"Redo","Puts back what you just undid."],
   ['[data-go="end"]',"To the end","Jumps to the last line of this part, ready to keep writing."],
-  ["#museContinue","The Moon","Ask for an idea when you're stuck. Only when you ask."]
+  ["#museContinue","The Moon","Ask for an idea when you're stuck. Only when you ask."],
+  ["#museEditor","The editor","The Moon reads this part like an editor: what works and what to improve. It never rewrites your sentences."]
 ];
 const KEY_SEL=KEY_TIPS.map(k=>k[0]).join(",");
 function tipFor(el){ const k=KEY_TIPS.find(k=>el.matches(k[0])); return k?[t(k[1]),t(k[2])]:null; }
@@ -1050,7 +1051,7 @@ function tipFor(el){ const k=KEY_TIPS.find(k=>el.matches(k[0])); return k?[t(k[1
   }
   document.addEventListener("scroll",hide,true);
 })();
-const ICON_FACE={"#stagesToggle":"☰","#settingsToggle":"⚙",'[data-go="end"]':"⤓",'[data-cmd="bold"]':"<b>B</b>",'[data-cmd="italic"]':"<i>I</i>",'[data-cmd="underline"]':"<u>U</u>",'[data-pop="font"]':"Aa",'[data-pop="size"]':"Size",'[data-pop="color"]':"Color",'[data-pop="more"]':"¶",'[data-cmd="undo"]':"↶",'[data-cmd="redo"]':"↷","#museContinue":"✦"};
+const ICON_FACE={"#stagesToggle":"☰","#settingsToggle":"⚙",'[data-go="end"]':"⤓",'[data-cmd="bold"]':"<b>B</b>",'[data-cmd="italic"]':"<i>I</i>",'[data-cmd="underline"]':"<u>U</u>",'[data-pop="font"]':"Aa",'[data-pop="size"]':"Size",'[data-pop="color"]':"Color",'[data-pop="more"]':"¶",'[data-cmd="undo"]':"↶",'[data-cmd="redo"]':"↷","#museContinue":"✦","#museEditor":"✦"};
 document.getElementById("keysHelpBtn").addEventListener("click",()=>{
   document.getElementById("keysHelpList").innerHTML=KEY_TIPS.map(k=>`<div class="tiprow"><span class="k">${ICON_FACE[k[0]]||""}</span><p><b>${esc(t(k[1]))}</b>${esc(t(k[2]))}</p></div>`).join("");
   document.getElementById("keysHelp").hidden=false;
@@ -1303,7 +1304,7 @@ function renderDraft(){
         <div class="edpop" id="edpop" hidden></div>
       </div>
       <div class="platen"><div id="draftArea" class="editor" contenteditable="true" spellcheck="true" autocapitalize="sentences" data-ph="Write here. Don't edit. Just go."></div></div>
-      <div class="btns"><button class="muse" id="museContinue" ${sampleApi?'':'hidden'}>✦ Suggest how this could continue</button></div>
+      <div class="btns"><button class="muse" id="museContinue" ${sampleApi?'':'hidden'}>✦ Suggest how this could continue</button><button class="muse" id="museEditor" ${sampleApi?'':'hidden'}>✦ Read this like an editor</button></div>
       <div id="museContinueOut"></div>
     </div>`;
   } else {
@@ -1343,6 +1344,8 @@ function renderDraft(){
   }));
   const mc=document.getElementById("museContinue");
   if(mc) mc.addEventListener("click",()=>museContinue(idx));
+  const me=document.getElementById("museEditor");
+  if(me) me.addEventListener("click",()=>museEditor(idx));
   initEditor(idx);
 }
 
@@ -1527,12 +1530,14 @@ async function askMuse(prompt, targetEl, label, kind){
   targetEl.innerHTML = `<div class="musebox"><span class="lbl">The Moon</span>${t(st==="loading"?"The Moon is waking up…":"The Moon is thinking…")}</div>`;
   label = t(label);
   if(LANG==="es") prompt += "\n\nWrite your whole answer in natural Mexican Spanish.";
+  // The model sometimes marks text up (**bold**, --- lines); the box shows plain words.
+  const tidy = s => kind==="editor" ? s.replace(/\*\*|__/g,"").replace(/^\s*(\*{3,}|-{3,})\s*$/gm,"").replace(/\n{3,}/g,"\n\n").trim() : s;
   try{
     const res = await sampleApi(prompt, { onText:({text})=>{
-      targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(label)}</span>${esc(text)}</div>`;
-    }, modelTier:"quick" });
+      targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(label)}</span>${esc(tidy(text))}</div>`;
+    }, modelTier:"quick", kind });
     if(res && res.lite) return showLite(targetEl, kind);
-    targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(label)}</span>${esc(res.text)}</div>`;
+    targetEl.innerHTML = `<div class="musebox"><span class="lbl">${esc(label)}</span>${esc(tidy(res.text))}</div>`;
     if(window.SND) SND.play("muse");
   }catch(e){
     showLite(targetEl, kind);
@@ -1569,6 +1574,16 @@ const LITE = {
     "Show what your character feels through what they do with their hands.",
     "Let something small go wrong.",
     "Write the very next thing that happens, even if it's ordinary. Momentum first."
+  ],
+  editor:[
+    "Read it out loud. Where do you stumble or run out of breath? Shorten that sentence.",
+    "Find one place where you say what someone feels. Could a gesture or an action show it instead?",
+    "Look for a word you repeat close together. Keep the strongest one.",
+    "Does the first line pull the reader in? If not, try starting one paragraph later.",
+    "Check each line of dialogue: could you tell who is speaking without the name?",
+    "Find the moment where the scene changes something. Is it clear enough?",
+    "Cut one sentence that only repeats what the reader already knows.",
+    "Is there one concrete detail (a smell, a sound, an object) in each paragraph?"
   ]
 };
 function pick(arr, n){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a.slice(0,n); }
@@ -1592,6 +1607,7 @@ function showLite(targetEl, kind){
   let label="Moonlight", text="";
   if(kind==="logline"){ label="Moonlight · shape your logline"; text=pick(LITE_L.logline,1)[0]; }
   else if(kind==="beat"){ label="Moonlight · a possible next beat"; text=liteBeat(); }
+  else if(kind==="editor"){ label="Moonlight · an editor's checklist"; text=pick(LITE_L.editor,4).map(x=>"• "+x).join("\n"); }
   else if(kind==="stuck"){ label="Moonlight · 3 directions to try"; text=pick(LITE_L.stuck,3).map((x,i)=>(i+1)+". "+x).join("\n"); }
   else { label="Moonlight · a way forward"; text=pick(LITE_L.cont,1)[0]; }
   const st = window.MuseNative ? MuseNative.status.state : "";
@@ -1689,6 +1705,36 @@ function museContinue(idx){
     `Here is the end of what they've written so far:\n"""${tail||"(nothing written yet)"}"""\n\n`+
     `Suggest ONE short possible next beat or line of action (2-3 sentences) to get them moving again. This is a suggestion only, not text to insert — make that implicit by writing it as a note, not as prose to copy verbatim. No preamble.`,
     document.getElementById("museContinueOut"), "A way forward", "cont"
+  );
+}
+
+/* The Editor: reads this scene like a human editor and says what works and what
+   to improve. Critique only, no rewritten sentences (founder 2026-10-27): on the
+   phone's small model, about half of its rewrites were wrong. */
+const EDITOR_MAX_WORDS = 3500; // what fits the editor's 8192-token window with room for the answer
+function museEditor(idx){
+  flushEditor();
+  const s=DB.scenes[idx], c=DB.contract||{}, out=document.getElementById("museContinueOut");
+  let words=(s.text||"").trim().split(/\s+/).filter(Boolean);
+  if(words.length<100){
+    out.innerHTML=`<div class="musebox"><span class="lbl">${esc(t("An editor's read"))}</span>${esc(t("Write a little more first: the editor needs at least 100 words to read."))}</div>`;
+    return;
+  }
+  const cut=words.length>EDITOR_MAX_WORDS;
+  if(cut) words=words.slice(-EDITOR_MAX_WORDS);
+  const es=LANG==="es";
+  const H=es?["IMPRESIÓN GENERAL","LO QUE FUNCIONA","LO QUE SE PUEDE MEJORAR"]:["OVERALL","WHAT WORKS","WHAT TO IMPROVE"];
+  const book=(c.title||"").trim();
+  askMuse(
+    `You are an experienced literary editor reading a writer's manuscript. Judge the style honestly, like a good human editor: no empty praise and no harshness. `+
+    `Respect the writer's voice and never change the facts. Don't invent anything that isn't in the text.\n\n`+
+    `${book?`This is from the book "${book}". `:""}${cut?"Below is the end of a long scene. ":"Below is one scene. "}Give your editor's read in exactly this format:\n\n`+
+    `${H[0]}: (2-3 sentences: what the text achieves and what it still lacks)\n\n`+
+    `${H[1]}:\n- (2 or 3 points, each quoting a short exact phrase from the text)\n\n`+
+    `${H[2]}:\n- (3 concrete points: pacing, clarity, showing instead of telling, dialogue, repetition, punctuation)\n\n`+
+    `Do NOT rewrite any sentence and do NOT give a corrected version: the writer makes every change. No preamble.\n\n`+
+    `TEXT:\n${words.join(" ")}`,
+    out, "An editor's read", "editor"
   );
 }
 

@@ -80,7 +80,7 @@ export function bridgeScript(book: any, status: MuseStatus, firstRunSeen: boolea
       opts = opts || {};
       var s = status.state;
       if (s !== "ready" && s !== "loading" && s !== "loaded") return Promise.resolve({text: "", lite: true});
-      return call("museAsk", [prompt], function(t){ if (opts.onText) opts.onText({text: t}); })
+      return call(opts.kind === "editor" ? "museEditor" : "museAsk", [prompt], function(t){ if (opts.onText) opts.onText({text: t}); })
         .then(function(t){ return t ? {text: t} : {text: "", lite: true}; });
     });
     return Promise.resolve(null);

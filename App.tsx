@@ -146,11 +146,9 @@ export default function App() {
     const off = Muse.onStatus((s) => Object.keys(webs.current).forEach((k) => run(`window.__mb.status(${JSON.stringify(s)})`, k)));
     // Warm Muse up shortly after start so the first request answers quickly.
     const warm = setTimeout(() => Muse.load(), 4000);
-    const lab = setTimeout(() => Muse.editorLab().catch(() => {}), 6000); // TEST ONLY, see muse.ts
     return () => {
       off();
       clearTimeout(warm);
-      clearTimeout(lab);
     };
   }, [boot]);
 
@@ -272,8 +270,10 @@ export default function App() {
           setTheme({ bg: String(a[0]) || "#f6f2e9", dark: !!a[1] });
           pageReady(key); // the page reports its colors once it has drawn itself
           return reply(id, true, null);
-        case "museAsk": {
-          const text = await Muse.ask(String(a[0]), (t) => run(`window.__mb.stream(${id}, ${JSON.stringify(t)})`, key));
+        case "museAsk":
+        case "museEditor": {
+          const ask = m === "museEditor" ? Muse.askEditor : Muse.ask;
+          const text = await ask(String(a[0]), (t) => run(`window.__mb.stream(${id}, ${JSON.stringify(t)})`, key));
           return reply(id, true, text);
         }
         default:
