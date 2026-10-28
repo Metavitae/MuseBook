@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, AppState, StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
@@ -30,7 +30,7 @@ interface Boot {
 interface Page {
   key: string;
   id: string | null;
-  injected: string;
+  source: { html: string; baseUrl: string };
 }
 
 export default function App() {
@@ -79,12 +79,31 @@ export default function App() {
 
   /** Loads a page for this book (or the shelf) behind the one on screen. */
   function showPage(id: string | null, book: object | null) {
+    freshTries.current = 0;
     const key = (id ?? "shelf") + ":" + ++pageSeq.current;
     const injected = bridgeScript(book, Muse.getStatus(), !!prefs.current.firstRunSeen, Backup.getState(), hasDrive.current,
       id, id ? null : shelfData(), pageSeq.current > 1);
-    setPages((ps) => [...ps, { key, id, injected }]);
+    setPages((ps) => [...ps, { key, id, source: pageSource(injected) }]);
     // If a page never reports in, show it anyway.
     setTimeout(() => pageReady(key), 6000);
+  }
+  /** The page with the link to the phone written into it as its first script. Handing it in
+   *  from outside (injectedJavaScriptBeforeContentLoaded) runs only once Android says the page
+   *  has started, and on the 8T the page's own scripts often ran first: no Moon, no saving to
+   *  the book's file. Made once per page, so the WebView never sees a new source and reloads. */
+  function pageSource(injected: string) {
+    const safe = injected.replace(/<\/(script)/gi, "<\\/$1").replace(/<!--/g, "<\\!--");
+    const html = WWW_HTML.replace("<head>", () => "<head><script>(function(){\n" + safe + "\n})();</script>");
+    return { html, baseUrl: "https://musebook.local/" };
+  }
+  /** A page started without the link to the phone: put a new page in its place (a few tries). */
+  const freshTries = useRef(0);
+  function freshPage(key: string) {
+    if (++freshTries.current > 3) return run("window.__mbGiveUp && window.__mbGiveUp()", key);
+    const next = key.split(":")[0] + ":" + ++pageSeq.current;
+    delete webs.current[key];
+    setPages((ps) => ps.map((p) => (p.key === key ? { ...p, key: next } : p)));
+    setTimeout(() => pageReady(next), 6000);
   }
   /** The newest page has drawn itself: it takes over the screen and the older ones close. */
   function pageReady(key: string) {
@@ -182,6 +201,7 @@ export default function App() {
       return;
     }
     const { id, m, a } = msg;
+    if (m === "noBridge") return freshPage(key);
     try {
       switch (m) {
         case "save": {
@@ -284,8 +304,6 @@ export default function App() {
     }
   }
 
-  // Stable props: a new source object would make the WebView reload the page.
-  const source = useMemo(() => ({ html: WWW_HTML, baseUrl: "https://musebook.local/" }), []);
 
   const opening = intro && (
     <Intro sound={intro.sound} calm={intro.calm} onEnd={introEnded} onBars={(bg, dark) => setTheme({ bg, dark })} />
@@ -303,8 +321,7 @@ export default function App() {
         key={p.key} // a new page for each book, so nothing from one book stays in the next
         ref={(w) => { if (w) webs.current[p.key] = w; }}
         originWhitelist={["*"]}
-        source={source}
-        injectedJavaScriptBeforeContentLoaded={p.injected}
+        source={p.source}
         onMessage={(e) => onMessage(e, p.key)}
         domStorageEnabled
         mediaPlaybackRequiresUserAction={false}

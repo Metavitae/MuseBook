@@ -10,20 +10,19 @@
 /* In the app, the link to the phone (window.claude, MuseNative: which book, the Moon,
    saving) is put in before the page starts. On some opens it came late, and the page ran
    without it: no Moon, the old title card on screen, and writing kept only inside the
-   page instead of in the book's file. Without the link the page starts nothing and reloads. */
+   page instead of in the book's file. Without the link the page starts nothing and asks the app for a fresh one. */
 (function(){
   if(!window.ReactNativeWebView || window.claude) return;
   window.__mbNoBridge = true;
   document.documentElement.style.visibility = "hidden";
-  var n = 0;
-  try{ n = Number(sessionStorage.getItem("mbBridgeTries")||0); sessionStorage.setItem("mbBridgeTries", n+1); }catch(e){}
-  if(n < 5){ setTimeout(function(){ location.reload(); }, 150 + n*250); return; }
-  document.addEventListener("DOMContentLoaded", function(){
+  // A reload can't work here (the page has no real address), so the app is asked for a
+  // fresh page. It gives up after a few tries and says so here (__mbGiveUp).
+  window.ReactNativeWebView.postMessage(JSON.stringify({ m: "noBridge" }));
+  window.__mbGiveUp = function(){
     document.documentElement.style.visibility = "";
     document.body.innerHTML = '<p style="padding:40px 24px;font:17px/1.5 sans-serif">Moonbook couldn\'t open this page. Your book is safe. Close Moonbook and open it again.<br><br>Moonbook no pudo abrir esta página. Tu libro está a salvo. Cierra Moonbook y vuelve a abrirlo.</p>';
-  });
+  };
 })();
-try{ if(window.claude) sessionStorage.removeItem("mbBridgeTries"); }catch(e){}
 </script>
 <script>/*INTRO*/</script>
 <title>Moonbook</title>
@@ -2054,7 +2053,7 @@ function renderAll(){
 }
 
 (async ()=>{
-  if(window.__mbNoBridge) return; // reloading until the link to the phone is there (see the first script)
+  if(window.__mbNoBridge) return; // waiting for the link to the phone (see the first script)
   if(window.MuseNative && MuseNative.shelf){ SHELF.start(); return; }
   const local = localLoad();
   if(local) DB = mergeDefaults(local);
