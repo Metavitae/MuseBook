@@ -6,6 +6,25 @@
   #intro video, #intro img{width:100%; height:100%; object-fit:cover; display:block}
 </style>
 <div id="intro" data-nosound></div>
+<script>
+/* In the app, the link to the phone (window.claude, MuseNative: which book, the Moon,
+   saving) is put in before the page starts. On some opens it came late, and the page ran
+   without it: no Moon, the old title card on screen, and writing kept only inside the
+   page instead of in the book's file. Without the link the page starts nothing and reloads. */
+(function(){
+  if(!window.ReactNativeWebView || window.claude) return;
+  window.__mbNoBridge = true;
+  document.documentElement.style.visibility = "hidden";
+  var n = 0;
+  try{ n = Number(sessionStorage.getItem("mbBridgeTries")||0); sessionStorage.setItem("mbBridgeTries", n+1); }catch(e){}
+  if(n < 5){ setTimeout(function(){ location.reload(); }, 150 + n*250); return; }
+  document.addEventListener("DOMContentLoaded", function(){
+    document.documentElement.style.visibility = "";
+    document.body.innerHTML = '<p style="padding:40px 24px;font:17px/1.5 sans-serif">Moonbook couldn\'t open this page. Your book is safe. Close Moonbook and open it again.<br><br>Moonbook no pudo abrir esta página. Tu libro está a salvo. Cierra Moonbook y vuelve a abrirlo.</p>';
+  });
+})();
+try{ if(window.claude) sessionStorage.removeItem("mbBridgeTries"); }catch(e){}
+</script>
 <script>/*INTRO*/</script>
 <title>Moonbook</title>
 <style>
@@ -78,13 +97,7 @@
   .shelf-more{background:none; border:0; border-left:1px solid var(--border); color:var(--muted); font:inherit; padding:0 14px; min-width:52px; cursor:pointer}
   .shelf-more.armed{color:var(--bad); max-width:130px; font-size:.85rem}
   #shelfNew{width:100%; margin-top:8px}
-  html.mb-quick #splash{display:none}
-  #splash{position:fixed; inset:0; z-index:200; background:var(--bg); display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px; cursor:pointer; transition:opacity .35s ease, transform .35s ease}
-  #splash.out{opacity:0; transform:scale(1.02); pointer-events:none}
   /* "Kithe presents Moonbook" opening (intro.js): above everything, white like the video's first frame. */
-  #splash h1{font-size:clamp(34px,11vw,54px); margin:0; font-weight:700}
-  #splash h1 em{color:var(--accent); font-style:normal}
-  #splash .tap{color:var(--muted); font-size:12px; letter-spacing:1.5px; text-transform:uppercase; margin-top:10px}
 
   /* ---- Slim top bar + collapsible stage switcher ---- */
   header{position:sticky; top:env(safe-area-inset-top,0px); z-index:30; background:var(--bg); margin-inline:-16px; padding-inline:16px; border-bottom:1px solid var(--border); transition:background .35s,border-color .35s}
@@ -102,6 +115,12 @@
   nav.open{max-height:64px; opacity:1; padding-block:2px 12px}
   nav button{flex:0 0 auto; background:var(--surface); color:var(--muted); border:1px solid var(--border); border-radius:999px; padding:7px 14px; font-size:13px; font-weight:600; cursor:pointer; white-space:nowrap; font-family:var(--font-body)}
   nav button.active{background:var(--accent); color:var(--bg); border-color:var(--accent)}
+  /* The stages fold down as a list under "☰ <stage>" (founder 2026-10-27), one per line with
+     what it's for. #nav outranks each look's nav rules, which were made for the old sideways row. */
+  #nav{flex-direction:column; gap:6px; overflow-x:hidden; overflow-y:auto}
+  #nav.open{max-height:80vh; padding-block:6px 14px}
+  #nav button{display:flex; flex-direction:column; align-items:flex-start; gap:2px; width:100%; margin:0; padding:10px 16px; border-radius:14px; text-align:left; white-space:normal; font-size:15px}
+  #nav button .nd{font-size:12px; font-weight:400; opacity:.8}
 
   .moodrow{display:flex; gap:10px; flex-wrap:wrap}
   .moodopt{flex:0 0 auto; width:84px; display:flex; flex-direction:column; align-items:center; gap:6px; background:transparent; border:none; cursor:pointer; padding:4px}
@@ -212,7 +231,7 @@
   #museIntro p{margin:0 0 10px; font-size:14.5px}
   .musebox .note{display:block; margin-top:8px; font-size:12px; color:var(--muted); white-space:normal}
   @media (max-width:420px){ .row > div{flex:1 1 100%} }
-  @media (prefers-reduced-motion: reduce){ #splash, #nav{ transition:none !important } }
+  @media (prefers-reduced-motion: reduce){ #nav{ transition:none !important } }
   /* Calm: every look keeps its materials, but nothing moves or tilts */
   :root[data-calm="1"] *, :root[data-calm="1"] *::before, :root[data-calm="1"] *::after{animation:none !important; transition:none !important}
   :root[data-calm="1"] #atmos .motion{display:none}
@@ -307,10 +326,6 @@
   </div>
 </div>
 
-<div id="splash">
-  <h1>Moon<em>book</em></h1>
-  <div class="tap">tap to begin</div>
-</div>
 
 <div id="shelf" hidden>
   <h1 class="wordmark">Moon<em>book</em></h1>
@@ -326,13 +341,13 @@
     <button class="gearbtn" id="settingsToggle" title="Settings" aria-label="Settings"><span class="dotmini" id="savedDotMini"></span>&nbsp;⚙</button>
   </div>
   <nav id="nav">
-    <button data-tab="contract" class="active">1 · Contract</button>
-    <button data-tab="premise">2 · Premise</button>
-    <button data-tab="bible">3 · Story Bible</button>
-    <button data-tab="outline">4 · Outline</button>
-    <button data-tab="scenes">5 · Scenes</button>
-    <button data-tab="draft">6 · Draft</button>
-    <button data-tab="dash">Dashboard</button>
+    <button data-tab="contract" class="active">1 · Contract<span class="nd">What your book is, who it's for, how long</span></button>
+    <button data-tab="premise">2 · Premise<span class="nd">Your story in one sentence, and what it's about</span></button>
+    <button data-tab="bible">3 · Story Bible<span class="nd">Your characters and places</span></button>
+    <button data-tab="outline">4 · Outline<span class="nd">The big moments, in order</span></button>
+    <button data-tab="scenes">5 · Scenes<span class="nd">One card for each scene</span></button>
+    <button data-tab="draft">6 · Draft<span class="nd">Where you write</span></button>
+    <button data-tab="dash">Dashboard<span class="nd">How far you've come</span></button>
   </nav>
 </header>
 
@@ -828,6 +843,7 @@ function setSaved(state){
 
 let saveTimer=null;
 function save(){
+  if(window.__mbNoBridge) return;
   lastEditAt=Date.now();
   try{ DB.ui.shownLang=LANG; }catch(e){} // the backup's reading copy uses the language on screen
   clearTimeout(saveTimer);
@@ -1069,18 +1085,6 @@ function initMood(){
   const tt=document.getElementById("typingToggle"); if(tt) tt.checked = DB.ui.typingSound!==false;
   const am=document.getElementById("ambToggle"); if(am) am.checked = DB.ui.ambience!==false;
 }
-
-/* ============================================================
-   SPLASH
-   ============================================================ */
-function dismissSplash(){
-  const el=document.getElementById("splash");
-  if(!el || el.hidden) return;
-  el.classList.add("out");
-  setTimeout(()=>{ el.hidden=true; },360);
-}
-document.getElementById("splash").addEventListener("click", dismissSplash);
-setTimeout(dismissSplash, 2400);
 
 /* ============================================================
    NAV — top bar toggles a hideable stage switcher; picking a
@@ -2004,7 +2008,6 @@ const SHELF=(()=>{
     initMood();
     render();
     INTRO.after(()=>{
-      const sp=document.getElementById("splash"); if(sp) sp.hidden=true;
       const cs=getComputedStyle(document.documentElement); MuseNative.theme(cs.getPropertyValue("--bg").trim(), cs.colorScheme==="dark");
     });
   }
@@ -2051,6 +2054,7 @@ function renderAll(){
 }
 
 (async ()=>{
+  if(window.__mbNoBridge) return; // reloading until the link to the phone is there (see the first script)
   if(window.MuseNative && MuseNative.shelf){ SHELF.start(); return; }
   const local = localLoad();
   if(local) DB = mergeDefaults(local);
@@ -2069,7 +2073,6 @@ function renderAll(){
   G.init(); G.renderModeCard();
   // The opening started as soon as the page opened; the look's own opening sound follows it.
   INTRO.after(()=>{
-    const sp=document.getElementById("splash"); if(sp) sp.hidden=true; // the opening replaces the old title card
     if(window.MuseNative && MuseNative.theme){ const cs=getComputedStyle(document.documentElement); MuseNative.theme(cs.getPropertyValue("--bg").trim(), cs.colorScheme==="dark"); }
     if(window.SND) SND.boot();
   });

@@ -16,7 +16,7 @@ const ES = {
   "Download now":"Descargar ahora", "Later":"Después",
   "tap to begin":"toca para empezar",
   "Contract":"Contrato","Premise":"Premisa","Story Bible":"Biblia de la historia","Outline":"Esquema","Scenes":"Escenas","Draft":"Borrador","Dashboard":"Tablero","Settings":"Ajustes",
-  "1 · Contract":"1 · Contrato","2 · Premise":"2 · Premisa","3 · Story Bible":"3 · Biblia","4 · Outline":"4 · Esquema","5 · Scenes":"5 · Escenas","6 · Draft":"6 · Borrador",
+  "1 · Contract":"1 · Contrato","2 · Premise":"2 · Premisa","3 · Story Bible":"3 · Biblia","4 · Outline":"4 · Esquema","5 · Scenes":"5 · Escenas","6 · Draft":"6 · Borrador","What your book is, who it's for, how long":"Qué es tu libro, para quién y qué tan largo","Your story in one sentence, and what it's about":"Tu historia en una oración, y de qué trata","Your characters and places":"Tus personajes y lugares","The big moments, in order":"Los momentos importantes, en orden","One card for each scene":"Una tarjeta por cada escena","Where you write":"Donde escribes","How far you've come":"Cuánto has avanzado",
   // contract
   "Stage 1 — The Book Contract":"Etapa 1 — El contrato del libro",
   "Define the promise you're making to yourself. Everything else in Moonbook checks against this.":"Define la promesa que te haces a ti. Todo lo demás en Moonbook se compara con esto.",
