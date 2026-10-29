@@ -136,6 +136,7 @@ const ES = {
   "Pick a folder on your phone or in your cloud, like Google Drive. Moonbook saves copies there. We never see them.":"Elige una carpeta en tu celular o en tu nube, como Google Drive. Moonbook guarda ahí las copias. Nosotros nunca las vemos.",
   "In Drive, open or create a folder first (like Moonbook).":"En Drive, primero abre o crea una carpeta (por ejemplo, Moonbook).",
   "Back up when I stop writing":"Respaldar al dejar de escribir",
+  "Moonbook backs up by itself when you close it or stop writing for 5 minutes.":"Moonbook se respalda solo cuando lo cierras o dejas de escribir por 5 minutos.",
   "Restore from a backup":"Restaurar un respaldo","Send a copy":"Enviar una copia",
   "Backup saved":"Respaldo guardado",
   "There's already a backup of this exact book in your files. Make another anyway?":"Ya hay un respaldo de este mismo libro en tus archivos. ¿Hacer otro de todos modos?",

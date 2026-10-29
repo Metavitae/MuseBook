@@ -84,7 +84,7 @@ export default function App() {
     freshTries.current = 0;
     const key = (id ?? "shelf") + ":" + ++pageSeq.current;
     const injected = bridgeScript(book, Muse.getStatus(), !!prefs.current.firstRunSeen, Backup.getState(), hasDrive.current,
-      id, id ? null : shelfData(), pageSeq.current > 1, Tester.pageInfo());
+      id, id ? null : shelfData(), pageSeq.current > 1, testerInfo());
     setPages((ps) => [...ps, { key, id, source: pageSource(injected) }]);
     // If a page never reports in, show it anyway.
     setTimeout(() => pageReady(key), 6000);
@@ -126,7 +126,9 @@ export default function App() {
 
   async function openBook(id: string) {
     const book = await loadBook(id);
-    Backup.init(lib.current.books.find((b) => b.id === id)?.backup, book, async (b) => {
+    const own = lib.current.books.find((b) => b.id === id)?.backup;
+    const folder = prefs.current.backupFolder;
+    Backup.init(own?.dir || !folder ? own : { ...own, dir: folder.dir, place: folder.place }, book, async (b) => {
       const entry = lib.current.books.find((x) => x.id === id);
       if (entry) entry.backup = b;
       await saveLibrary(lib.current);
@@ -140,6 +142,17 @@ export default function App() {
     }
     openId.current = id;
     showPage(id, book);
+  }
+
+  /** Moonbook Test's state for the page, and whether the backup folder is picked (null in Moonbook). */
+  function testerInfo() {
+    const t = Tester.pageInfo();
+    return t && { ...t, folder: !!prefs.current.backupFolder || !!(openId.current && Backup.getState().dir) };
+  }
+
+  function rememberFolder(f: { dir: string; place: string }) {
+    prefs.current = { ...prefs.current, backupFolder: f };
+    savePrefs(prefs.current);
   }
 
   /** Back to the bookshelf: everything written is on disk and backed up first. */
@@ -245,8 +258,21 @@ export default function App() {
           }
           return reply(id, true, shelfData().books);
         }
-        case "backupChoose":
-          return reply(id, true, await Backup.chooseFolder());
+        case "backupChoose": {
+          const ok = await Backup.chooseFolder();
+          const s = Backup.getState();
+          if (ok && s.dir) rememberFolder({ dir: s.dir, place: s.place ?? "" });
+          return reply(id, true, ok);
+        }
+        case "backupDefault": {
+          // Moonbook Test's first open: one folder for every book's backups.
+          const f = await Backup.pickDefault();
+          if (f) {
+            rememberFolder(f);
+            if (openId.current) await Backup.useFolder(f);
+          }
+          return reply(id, true, f ? f.place : null);
+        }
         case "backupNow":
           return reply(id, true, await Backup.backupNow(a[0]));
         case "backupSame":

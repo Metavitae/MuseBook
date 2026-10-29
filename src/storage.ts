@@ -129,6 +129,7 @@ export interface Prefs {
   firstRunSeen?: boolean;
   backup?: BackupState; // before the bookshelf: the one book's backups (moved onto the shelf)
   introUi?: { sound: boolean; calm: boolean }; // the last book's sound and Calm, so the opening needn't wait for it
+  backupFolder?: { dir: string; place: string }; // the last folder picked: books without their own folder back up here
 }
 export const loadPrefs = async () => (await readJSON<Prefs>(PREFS)) ?? {};
 export const savePrefs = (p: Prefs) => FileSystem.writeAsStringAsync(PREFS, JSON.stringify(p));

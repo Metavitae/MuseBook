@@ -1,8 +1,9 @@
 /* ============================================================
    MOONBOOK TEST — only in the testers' app (MuseNative.tester is null
-   in Moonbook). First open: invite code > reports yes/no > before you
-   start. Settings gets a "Moonbook Test" card: the code, the daily
-   report switch, and "Tell us what you think". The phone side is
+   in Moonbook). First open: invite code > the daily report (a tester
+   agrees to it; that's what testing is) > the backup folder > before you
+   start. Settings gets a "Moonbook Test" card: the code, the last
+   report, and "Tell us what you think". The phone side is
    src/tester.ts; nothing about the writing ever leaves the phone.
    ============================================================ */
 (function(){
@@ -45,7 +46,7 @@
 
   function stepCode(){
     const g = show(`
-      <div class="gstep">MOONBOOK TEST · 1/3</div>
+      <div class="gstep">MOONBOOK TEST · 1/4</div>
       <h2>${L("Welcome to Moonbook Test","Te damos la bienvenida a Moonbook Test")}</h2>
       <p>${L("You're one of the first people to try Moonbook. Thank you.","Eres de las primeras personas en probar Moonbook. Gracias.")}</p>
       <p>${L("Type the invite code you got.","Escribe el código de invitación que te dieron.")}</p>
@@ -62,7 +63,7 @@
       msg.textContent = {
         unknown: L("That code doesn't exist. Check it and try again.","Ese código no existe. Revísalo e intenta otra vez."),
         off: L("This code was switched off. Ask the person who invited you.","Este código fue desactivado. Pregúntale a quien te invitó."),
-        full: L("This code is already on 2 phones. Ask for a new one.","Este código ya está en 2 celulares. Pide uno nuevo.")
+        full: L("This code is already on another phone. Ask for a new one.","Este código ya está en otro celular. Pide uno nuevo.")
       }[r] || L("No internet. Connect to wifi and try again.","No hay internet. Conéctate al wifi e intenta otra vez.");
     };
     go.addEventListener("click", tryIt);
@@ -71,27 +72,42 @@
 
   function stepReports(){
     const g = show(`
-      <div class="gstep">MOONBOOK TEST · 2/3</div>
+      <div class="gstep">MOONBOOK TEST · 2/4</div>
       <h2>${L("Help make Moonbook better","Ayúdanos a mejorar Moonbook")}</h2>
-      <p>${L("Once a day, Moonbook Test can send a short report with numbers only:","Una vez al día, Moonbook Test puede mandar un reporte corto, solo con números:")}</p>
+      <p>${L("Being a tester means Moonbook Test sends a short report once a day, with numbers only:","Ser tester significa que Moonbook Test manda un reporte corto una vez al día, solo con números:")}</p>
       <ul>
         <li>${L("how many words you wrote and how long Moonbook was open","cuántas palabras escribiste y cuánto tiempo estuvo abierto Moonbook")}</li>
         <li>${L("how the Moon worked: did it wake up, how fast it answered","cómo funcionó la Luna: si despertó y qué tan rápido respondió")}</li>
         <li>${L("errors, backups, and your phone's model","errores, respaldos y el modelo de tu celular")}</li>
       </ul>
       <p><b>${L("It never sends your writing: no text, no titles, no names. Your book stays on your phone.","Nunca manda lo que escribes: ni texto, ni títulos, ni nombres. Tu libro se queda en tu celular.")}</b></p>
-      <p style="color:var(--muted)">${L("You can change this anytime in Settings ⚙.","Puedes cambiarlo cuando quieras en Ajustes ⚙.")}</p>
-      <div class="gbtns"><button class="go" id="mbYes">${L("I agree","Acepto")}</button><button id="mbNo">${L("No thanks","No, gracias")}</button></div>`);
-    const pick = async on => { T.reports = on; await N.testerReports(on).catch(()=>{}); stepStart(); };
-    g.querySelector("#mbYes").addEventListener("click", () => pick(true));
-    g.querySelector("#mbNo").addEventListener("click", () => pick(false));
+      <div class="gbtns"><button class="go" id="mbYes">${L("I agree","Acepto")}</button></div>`);
+    g.querySelector("#mbYes").addEventListener("click", async () => { T.reports = true; await N.testerReports(true).catch(()=>{}); T.folder ? stepStart() : stepFolder(); });
+  }
+
+  function stepFolder(){
+    const g = show(`
+      <div class="gstep">MOONBOOK TEST · 3/4</div>
+      <h2>${L("Where your backups go","Dónde van tus respaldos")}</h2>
+      <p>${L("Moonbook backs up your book by itself when you close it or stop writing for 5 minutes. Choose the folder for those copies.","Moonbook respalda tu libro solo cuando lo cierras o dejas de escribir por 5 minutos. Elige la carpeta para esas copias.")}</p>
+      <p>${L("Best: a folder in your Google Drive, so your book is safe even if you lose your phone. Open Drive, make a folder called Moonbook, and pick it.","Lo mejor: una carpeta en tu Google Drive, así tu libro está a salvo aunque pierdas el celular. Abre Drive, crea una carpeta llamada Moonbook y elígela.")}</p>
+      <div class="gmsg" id="mbMsg"></div>
+      <div class="gbtns"><button class="go" id="mbPick">${L("Choose a folder","Elegir una carpeta")}</button></div>`);
+    const go = g.querySelector("#mbPick"), msg = g.querySelector("#mbMsg");
+    go.addEventListener("click", async () => {
+      go.disabled = true;
+      const place = await N.backupFolder().catch(() => null);
+      go.disabled = false;
+      if (place){ T.folder = true; return stepStart(); }
+      msg.textContent = L("No folder chosen yet. Your book needs one.","Todavía no eliges una carpeta. Tu libro necesita una.");
+    });
   }
 
   function stepStart(){
     const g = show(`
-      <div class="gstep">MOONBOOK TEST · 3/3</div>
+      <div class="gstep">MOONBOOK TEST · 4/4</div>
       <h2>${L("Before you start","Antes de empezar")}</h2>
-      <p>${L("This is a test version, so something may break. Back up your book often: Settings ⚙ › Back up your book.","Esta es una versión de prueba, así que algo puede fallar. Respalda tu libro seguido: Ajustes ⚙ › Respaldar tu libro.")}</p>
+      <p>${L("This is a test version, so something may break. Your book backs up by itself; for an extra copy anytime: Settings ⚙ › Back up now.","Esta es una versión de prueba, así que algo puede fallar. Tu libro se respalda solo; para una copia extra cuando quieras: Ajustes ⚙ › Respaldar ahora.")}</p>
       <p>${L("Anything you like, don't like, or that went wrong: write it in Settings ⚙ › Tell us what you think. We read everything.","Lo que te guste, lo que no, o lo que falle: escríbelo en Ajustes ⚙ › Cuéntanos qué piensas. Leemos todo.")}</p>
       <div class="gbtns"><button class="go" id="mbStart">${L("Start writing","Empezar a escribir")}</button></div>`);
     g.querySelector("#mbStart").addEventListener("click", done);
@@ -109,13 +125,11 @@
       <p class="hint" style="margin:0 0 10px">${L("Invite code","Código de invitación")} <b>${esc(T.code)}</b> · ${L("version","versión")} ${esc(T.version)}</p>
       ${T.newer ? `<p class="warnbox" style="margin:0 0 10px">${L("A new Moonbook Test is ready. Back up your book, then get it from the same place you got this one.","Hay un Moonbook Test nuevo. Respalda tu libro y luego descárgalo del mismo lugar donde conseguiste este.")}</p>` : ""}
       ${T.off ? `<p class="warnbox" style="margin:0 0 10px">${L("This invite code was switched off, so nothing is sent anymore. Your book is safe on this phone.","Este código de invitación fue desactivado, así que ya no se manda nada. Tu libro está a salvo en este celular.")}</p>` : ""}
-      <label class="swrow"><input type="checkbox" id="mbReports" ${T.reports ? "checked" : ""}> <span>${L("Send the daily report (numbers only, never your writing)","Mandar el reporte diario (solo números, nunca lo que escribes)")}</span></label>
-      <p class="hint" style="margin:4px 0 14px">${last ? L("Last report: ","Último reporte: ") + esc(last) : L("No report sent yet.","Todavía no se ha mandado ningún reporte.")}</p>
+      <p class="hint" style="margin:0 0 14px">${L("Daily report (numbers only, never your writing). ","Reporte diario (solo números, nunca lo que escribes). ")}${last ? L("Last one: ","El último: ") + esc(last) : L("None sent yet.","Todavía no se manda ninguno.")}</p>
       <h3 style="margin-top:6px">${L("Tell us what you think","Cuéntanos qué piensas")}</h3>
       <p class="hint" style="margin:0">${L("What you like, what you don't, what went wrong. Only what you type here is sent.","Lo que te gusta, lo que no, lo que falló. Solo se manda lo que escribas aquí.")}</p>
       <textarea id="mbNote" maxlength="3900"></textarea>
       <div class="btns"><button class="act" id="mbSend">${L("Send","Enviar")}</button></div>`;
-    c.querySelector("#mbReports").addEventListener("change", e => { T.reports = e.target.checked; N.testerReports(T.reports).catch(()=>{}); });
     c.querySelector("#mbSend").addEventListener("click", async e => {
       const box = c.querySelector("#mbNote"), note = box.value.trim();
       if (!note) return box.focus();
@@ -132,7 +146,8 @@
 
   const start = () => {
     if (!T.code) stepCode();
-    else if (T.reports === null) stepReports();
+    else if (T.reports !== true) stepReports();
+    else if (!T.folder) stepFolder();
     else settingsCard();
     if (T.code && T.newer) setTimeout(() => toast(L("A new Moonbook Test is ready. See Settings ⚙.","Hay un Moonbook Test nuevo. Mira Ajustes ⚙.")), 4000);
   };

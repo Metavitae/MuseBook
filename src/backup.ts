@@ -14,7 +14,7 @@ import * as Tester from "./tester";
 export interface BackupState {
   dir?: string; // folder the writer picked (content:// tree uri)
   place?: string; // what to call it on screen
-  auto?: boolean; // back up when the writer stops writing (default on)
+  auto?: boolean; // no longer a choice: automatic backups are always on (founder, 2026-10-29)
   last?: { at: string; place: string }; // last good backup
   failed?: string; // when the last try failed (cleared by a good one)
   files?: Record<string, string>; // "YYYY-MM-DD" → restore file written that day; "YYYY-MM-DD-read" → reading copy
@@ -23,7 +23,7 @@ export interface BackupState {
 }
 
 const SAFETY_DIR = FileSystem.documentDirectory + "safety/";
-const AUTO_DELAY = 20_000; // after the last change
+const AUTO_DELAY = 5 * 60_000; // 5 minutes without writing (founder, 2026-10-29)
 const MIN_GAP = 120_000; // at most once every 2 minutes
 
 let state: BackupState = {};
@@ -39,7 +39,7 @@ export function init(saved: BackupState | undefined, book: unknown,
   // Each book has its own backups: opening another book starts over with its state.
   if (timer) { clearTimeout(timer); timer = null; }
   dirty = false;
-  state = { auto: true, ...(saved ?? {}) };
+  state = { ...(saved ?? {}), auto: true };
   latest = book;
   persist = onPersist;
   notify = onChange;
@@ -252,11 +252,26 @@ export function bookChanged(book: unknown) {
   if (state.dir && state.auto !== false) schedule(AUTO_DELAY);
 }
 
-/** The app is going to the background or closing: back up now if anything changed. */
+/** The app is going to the background or closing: back up now if anything changed
+ *  (even if the last backup was a moment ago; a timer may never run once it's closed). */
 export function leaving() {
-  if (!dirty || !state.dir || state.auto === false) return;
-  if (sinceLast() < MIN_GAP) return schedule(MIN_GAP - sinceLast());
+  if (!dirty || !state.dir) return;
   backupNow().catch(() => schedule(MIN_GAP));
+}
+
+/** The folder new books back up to (picked once): a book with no folder of its own starts using it. */
+export async function pickDefault() {
+  try {
+    const dir = await Directory.pickDirectoryAsync();
+    return { dir: dir.uri, place: placeName(dir.uri) };
+  } catch {
+    return null;
+  }
+}
+export async function useFolder(f: { dir: string; place: string }) {
+  if (state.dir) return;
+  await update({ dir: f.dir, place: f.place, files: {}, names: {}, sig: undefined, failed: undefined });
+  if (latest) { dirty = true; schedule(AUTO_DELAY); }
 }
 
 /** Closing this book (back to the bookshelf): back up first if anything changed. */

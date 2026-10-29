@@ -539,7 +539,7 @@
       </div>
       <p class="hint" style="margin:8px 0 0" id="backupPlaceHint">Pick a folder on your phone or in your cloud, like Google Drive. Moonbook saves copies there. We never see them.</p>
       <p class="hint" style="margin:4px 0 0" id="backupDriveHint">In Drive, open or create a folder first (like Moonbook).</p>
-      <label class="swrow"><input type="checkbox" id="backupAuto" checked> <span>Back up when I stop writing</span></label>
+      <p class="hint" style="margin:8px 0 0">Moonbook backs up by itself when you close it or stop writing for 5 minutes.</p>
       <div class="btns">
         <button class="ghost" id="restoreBtn">Restore from a backup</button>
         <button class="ghost" id="sendCopyBtn">Send a copy</button>
@@ -1899,7 +1899,6 @@ function renderBackupUI(){
   const hint=document.getElementById("backupPlaceHint");
   if(hint) hint.textContent = st.dir ? "Copies go to: "+(st.place==="phone"?t("this phone"):st.place) : "Pick a folder on your phone or in your cloud, like Google Drive. Moonbook saves copies there. We never see them.";
   const dh=document.getElementById("backupDriveHint"); if(dh) dh.hidden=!!st.dir;
-  const auto=document.getElementById("backupAuto"); if(auto) auto.checked = st.auto!==false;
   const ms=document.getElementById("msEmpty"); if(ms) ms.hidden = totalWords()>0;
 }
 async function backupNowFlow(){
@@ -1953,7 +1952,6 @@ document.getElementById("backupChooseBtn").addEventListener("click", async ()=>{
   let ok=false; try{ ok=await MuseBackup.choose(); }catch(e){}
   if(ok) backupNowFlow();
 });
-document.getElementById("backupAuto").addEventListener("change", e=>{ if(window.MuseBackup) MuseBackup.setAuto(e.target.checked); });
 if(window.MuseBackup) MuseBackup.onState(renderBackupUI);
 
 // Restore: check the file, show what's in it, keep a safety copy, then replace.

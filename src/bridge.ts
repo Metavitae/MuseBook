@@ -69,6 +69,7 @@ export function bridgeScript(book: any, status: MuseStatus, firstRunSeen: boolea
     // Moonbook Test only (null in Moonbook): invite code, reports choice, "Tell us what you think". See src/tester.ts.
     tester: ${JSON.stringify(tester)},
     testerClaim: function(code){ return call("testerClaim", [code]); },
+    backupFolder: function(){ return call("backupDefault"); },
     testerReports: function(on){ return call("testerReports", [!!on]); },
     testerFeedback: function(note){ return call("testerFeedback", [note]); },
     testerError: function(msg){ return call("testerError", [msg]); }
