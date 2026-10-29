@@ -5,7 +5,7 @@ import type { MuseStatus } from "./muse";
 import type { BackupState } from "./backup";
 
 export function bridgeScript(book: any, status: MuseStatus, firstRunSeen: boolean, backup: BackupState, hasDrive: boolean,
-  bookId: string | null, shelf: object | null, quick: boolean) {
+  bookId: string | null, shelf: object | null, quick: boolean, tester: object | null) {
   return `(function(){
   // After the first page the opening has already played: no title card while a book loads.
   ${quick ? 'document.documentElement.classList.add("mb-quick");' : ""}
@@ -65,7 +65,13 @@ export function bridgeScript(book: any, status: MuseStatus, firstRunSeen: boolea
     pause: function(){ return call("musePause"); },
     remove: function(){ return call("museDelete"); },
     markFirstRunSeen: function(){ this.firstRunSeen = true; return call("firstRunSeen"); },
-    theme: function(bg, dark){ return call("theme", [bg, !!dark]); }
+    theme: function(bg, dark){ return call("theme", [bg, !!dark]); },
+    // Moonbook Test only (null in Moonbook): invite code, reports choice, "Tell us what you think". See src/tester.ts.
+    tester: ${JSON.stringify(tester)},
+    testerClaim: function(code){ return call("testerClaim", [code]); },
+    testerReports: function(on){ return call("testerReports", [!!on]); },
+    testerFeedback: function(note){ return call("testerFeedback", [note]); },
+    testerError: function(msg){ return call("testerError", [msg]); }
   };
   var doc = {
     get: function(){ return Promise.resolve({data: book}); },

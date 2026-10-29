@@ -9,6 +9,7 @@
 // Automatic backups only run when the book itself changed since the last one.
 import { Directory, File } from "expo-file-system";
 import * as FileSystem from "expo-file-system/legacy";
+import * as Tester from "./tester";
 
 export interface BackupState {
   dir?: string; // folder the writer picked (content:// tree uri)
@@ -216,8 +217,10 @@ export async function backupNow(book?: unknown) {
     try {
       dirty = false;
       await runBackup(latest);
+      Tester.backedUp(true);
     } catch (e) {
       dirty = true;
+      Tester.backedUp(false);
       await update({ failed: new Date().toISOString() });
       throw e;
     }

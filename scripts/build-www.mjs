@@ -42,7 +42,7 @@ html = html.replace(/env\(safe-area-inset-(top|bottom),0px\)/g, "0px");
   fs.writeFileSync(new URL("www/.intro.built.js", root), intro);
 }
 // Guided mode and the file makers, each its own file.
-for (const [ph, f] of [["/*SOUND*/", ".sound.built.js"], ["/*EXPORT*/", "export.js"], ["/*GUIDED*/", "guided.js"], ["/*GUIDEDCSS*/", "guided.css"], ["/*INTRO*/", ".intro.built.js"]]) {
+for (const [ph, f] of [["/*SOUND*/", ".sound.built.js"], ["/*EXPORT*/", "export.js"], ["/*GUIDED*/", "guided.js"], ["/*GUIDEDCSS*/", "guided.css"], ["/*INTRO*/", ".intro.built.js"], ["/*TESTER*/", "tester.js"]]) {
   if (!html.includes(ph)) throw new Error(ph + " placeholder missing");
   html = html.replace(ph, () => fs.readFileSync(new URL("www/" + f, root), "utf8"));
 }

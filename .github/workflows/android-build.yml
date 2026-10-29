@@ -8,7 +8,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Two apps from the same code, built side by side: Moonbook (the founder's own)
+    # and Moonbook Test for the VIP Circle testers (see app.config.js).
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [moonbook, moonbook-test]
     env:
+      MB_TESTER: ${{ matrix.app == 'moonbook-test' && '1' || '0' }}
       KEYSTORE_B64: ${{ secrets.MUSEBOOK_KEYSTORE_B64 }}
       KEY_PASSWORD: ${{ secrets.MUSEBOOK_KEY_PASSWORD }}
     defaults:
@@ -43,6 +50,9 @@ jobs:
 
       - name: Build the offline page bundle
         run: npm run build:www
+
+      - name: Which app this is (Moonbook or Moonbook Test) and its version
+        run: npm run flavor
 
       - name: Type check
         run: npx tsc --noEmit
@@ -79,5 +89,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: musebook-release-apk
+          name: ${{ matrix.app }}-apk
           path: android/app/build/outputs/apk/release/app-release.apk

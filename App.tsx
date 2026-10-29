@@ -8,6 +8,7 @@ import { bridgeScript } from "./src/bridge";
 import * as Muse from "./src/muse";
 import * as Backup from "./src/backup";
 import * as Files from "./src/files";
+import * as Tester from "./src/tester";
 import * as IntentLauncher from "expo-intent-launcher";
 import { Intro } from "./src/Intro";
 import {
@@ -64,6 +65,7 @@ export default function App() {
         setIntro(introUi(last));
       }
       await Muse.init();
+      await Tester.init();
       hasDrive.current = await IntentLauncher.getApplicationIconAsync(DRIVE_APP).then(() => true, () => false);
       setBoot({ prefs: p, status: Muse.getStatus(), hasDrive: hasDrive.current });
       // Every open starts at the bookshelf; with no books yet, straight into a new one.
@@ -82,7 +84,7 @@ export default function App() {
     freshTries.current = 0;
     const key = (id ?? "shelf") + ":" + ++pageSeq.current;
     const injected = bridgeScript(book, Muse.getStatus(), !!prefs.current.firstRunSeen, Backup.getState(), hasDrive.current,
-      id, id ? null : shelfData(), pageSeq.current > 1);
+      id, id ? null : shelfData(), pageSeq.current > 1, Tester.pageInfo());
     setPages((ps) => [...ps, { key, id, source: pageSource(injected) }]);
     // If a page never reports in, show it anyway.
     setTimeout(() => pageReady(key), 6000);
@@ -165,9 +167,12 @@ export default function App() {
     const off = Muse.onStatus((s) => Object.keys(webs.current).forEach((k) => run(`window.__mb.status(${JSON.stringify(s)})`, k)));
     // Warm Muse up shortly after start so the first request answers quickly.
     const warm = setTimeout(() => Muse.load(), 4000);
+    // Moonbook Test: the daily report, once the Moon has had its chance to wake.
+    const daily = setTimeout(() => Tester.maybeDaily(lib.current, Muse.getStatus()), 30000);
     return () => {
       off();
       clearTimeout(warm);
+      clearTimeout(daily);
     };
   }, [boot]);
 
@@ -176,6 +181,8 @@ export default function App() {
     const sub = AppState.addEventListener("change", (s) => {
       if (s === "background" && Muse.getStatus().state === "downloading") Muse.pause();
       if (s === "background" && openId.current) Backup.leaving();
+      Tester.shown(s === "active");
+      if (s === "background") Tester.maybeDaily(lib.current, Muse.getStatus());
     });
     return () => sub.remove();
   }, []);
@@ -293,13 +300,28 @@ export default function App() {
         case "museAsk":
         case "museEditor": {
           const ask = m === "museEditor" ? Muse.askEditor : Muse.ask;
+          const t0 = Date.now();
           const text = await ask(String(a[0]), (t) => run(`window.__mb.stream(${id}, ${JSON.stringify(t)})`, key));
+          Tester.moonAnswered((Date.now() - t0) / 1000, !!text, m === "museEditor");
           return reply(id, true, text);
         }
+        case "testerClaim":
+          return reply(id, true, await Tester.claim(String(a[0] ?? "")));
+        case "testerReports":
+          await Tester.setReports(!!a[0]);
+          // The first report goes as soon as the tester says yes, so the Circle sees the phone.
+          if (a[0]) Tester.maybeDaily(lib.current, Muse.getStatus());
+          return reply(id, true, Tester.pageInfo());
+        case "testerFeedback":
+          return reply(id, true, await Tester.send("feedback", String(a[0] ?? ""), lib.current, Muse.getStatus()));
+        case "testerError":
+          Tester.error("page", String(a[0] ?? ""));
+          return reply(id, true, null);
         default:
           return reply(id, false, "unknown call " + m);
       }
     } catch (err) {
+      Tester.error(m, String((err as Error)?.message ?? err));
       reply(id, false, String((err as Error)?.message ?? err));
     }
   }
